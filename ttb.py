@@ -12,8 +12,9 @@ fig.tight_layout()
 
 #---------------------------------
 L = 22
-alpha = 0.3
+alpha = 0.5
 periods = 3
+sigma = alpha/(1-alpha)
 #---------------------------------
 
 def phi(t):
@@ -31,10 +32,19 @@ elif choice==2:
     shift[::2] = 0
     name = 'block'
 else:
+    #-------------------------------------------------
+    # die einzig wichtige Zeile !
+    #-------------------------------------------------
+    #
+    # shift ist die Phasenverschiebung
     shift = np.arange(L)*alpha*L
-    name = 'opt?'
+    # np.arange(3)
+    # array([0, 1, 2])
+    #-------------------------------------------------
+    #-------------------------------------------------
+    name = f'opt_{sigma=}'
 
-fig.suptitle(f"{alpha=:4.2f}   sigma={alpha/(1-alpha):4.2f}   maen_back={alpha*L:3.1f}")
+fig.suptitle(f"{alpha=:5.3f}   sigma={sigma:5.3f}   mean_back={alpha*L:5.3f}")
 axl.set_xlim([0, L])
 axl.set_ylim([0, L])
 axr.set_xlim([0, L])
@@ -95,7 +105,7 @@ def animate(i):
 anim = animation.FuncAnimation(fig, animate, init_func=init,
                                frames=len(times), interval=20, blit=True, repeat=False)
 
-plt.show()
-# writergif = animation.PillowWriter(fps=30)
-# anim.save(name+".gif", writer=writergif)
+# plt.show()
+writergif = animation.PillowWriter(fps=30)
+anim.save(name+".gif", writer=writergif)
 
