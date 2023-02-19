@@ -16,7 +16,7 @@ def compute_error_sequence(app, method, ref='random', kmax=10, nmax = None, add_
             if ref == 'random': t[1:-1] += (t[2:] - t[:-2])*(np.random.rand(n-2)-0.5)*0.375
         elif ref == 'adaptive':
             if kiter:
-                t = utils.adapt_mesh(t, est)
+                t, info = utils.adapt_mesh(t, est['nl'] + est['ap'])
             else:
                 t = np.linspace(0,app.T, 10)
             n = len(t)
@@ -150,20 +150,16 @@ def test_adaptive(method, apps, kmax=30):
 
 
 # ------------------------------------------------------------------
-def test_errors(method):
-    import analytical_solutions
-    add_errors = ['L2_mid', 'L2_nod']
-    add_errors = []
-    kmax = 10
+def test_errors(method, apps, add_errors =[], kmax=10, ref='random'):
     kplots = np.arange(0,kmax,5)
     for app in apps:
-        data_print, data_plot = compute_error_sequence(app, method, kmax=kmax, add_errors=add_errors)
+        data_print, data_plot = compute_error_sequence(app, method, kmax=kmax, add_errors=add_errors, ref=ref)
         for kplot in kplots:
             plot_error_sequence(app, method, data_plot, kplot)
         print_error_sequence(app, method, data_print)
         import matplotlib.pyplot as plt
         plt.loglog(data_print['n'], data_print['err'][method.error_type], label=f'e ({method.error_type})')
-        plt.loglog(data_print['n'], data_print['est'], label=f'est')
+        plt.loglog(data_print['n'], data_print['est'], '-X', label=f'est')
         plt.legend()
         plt.grid()
         plt.title(f"rates {app.name} {method.name}")
@@ -172,15 +168,21 @@ def test_errors(method):
 #------------------------------------------------------------------
 if __name__ == "__main__":
     import analytical_solutions
-    import cg1, cg2
+    import cg1, cg2, cgp
     # method = cg2.Cg2P()
     # method = cg1.Cg1D(alpha=0.1)
-    method = cg1.Cg1P(alpha=0.1)
-    apps = [analytical_solutions.Exponential(), analytical_solutions.Oscillator(), analytical_solutions.Quadratic()]
+    # method = cg1.Cg1P(alpha=0)
+    method = cgp.CgP(k=2)
     apps = [analytical_solutions.Exponential()]
+    apps = [analytical_solutions.Quadratic()]
+    apps = [analytical_solutions.Oscillator()]
+    apps = [analytical_solutions.QuadraticIntegration()]
+    apps = [analytical_solutions.SinusIntegration()]
 
-    # test_errors(method, apps)
 
-    test_adaptive(method, apps, kmax=10)
+    # add_errors = []
+    test_errors(method, apps, add_errors = ['L2_mid', 'L2_nod', 'L2', 'max_mid'], kmax=5)
+
+    # test_adaptive(method, apps, kmax=10)
 
 

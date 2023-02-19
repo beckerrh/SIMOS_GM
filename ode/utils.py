@@ -9,7 +9,7 @@ def add_neighbors(refine, n):
 
 
 #------------------------------------------------------------------
-def adapt_mesh(t, eta, theta=0.6, plot=False, filter=False, thetafac=1.1, refneighbors=False, doubleref=True):
+def adapt_mesh(t, eta, theta=0.6, plot=False, filter=False, thetafac=1.1, refneighbors=False, doubleref=False):
     if plot:
         import matplotlib.pyplot as plt
         fig = plt.figure(figsize=plt.figaspect(1))

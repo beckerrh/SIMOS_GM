@@ -37,6 +37,17 @@ class Quadratic(Application):
         self.sol_ex = lambda t: [u0/(1-u0*t)]
         self.dsol_ex = lambda t: [u0**2/(1-u0*t)**2]
 #------------------------------------------------------------------
+class SinusIntegration(Application):
+    # u'=f(u)      2t = f(u0+t**2) 2*sqrt(w-u0) = f(w)
+    def __init__(self, u0=1):
+        super().__init__(u0=u0, T=2)
+        self.f = lambda u: [0]
+        self.df = lambda u: [0]
+        self.sol_ex = lambda t: [self.u0+np.sin(t)]
+        self.dsol_ex = lambda t: [np.cos(t)]
+    def l(self, t):
+        return self.dsol_ex(t)
+#------------------------------------------------------------------
 class QuadraticIntegration(Application):
     # u'=f(u)      2t = f(u0+t**2) 2*sqrt(w-u0) = f(w)
     def __init__(self, u0=1):

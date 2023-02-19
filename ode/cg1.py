@@ -214,6 +214,7 @@ class Cg1P(classes.Method):
         return {"nl": estnl, "ap": estap}, {'sum': np.sqrt(np.sum(estnl+estap))}
 
 #------------------------------------------------------------------
+#------------------------------------------------------------------
     def compute_error(self, t, sol_ex, dsol_ex, u1):
         dim, nt = u1.shape[1], t.shape[0]
         dt = (t[1:]-t[:-1])[:,np.newaxis]
@@ -242,7 +243,6 @@ class Cg1P(classes.Method):
         err['H1'] = np.sqrt(np.sum( err_du**2*dt*2/3 + err_dul**2*dt/6 + err_dur**2*dt/6, axis=0))
         # print(f"{err=}")
         return errfct, err
-#------------------------------------------------------------------
     def interpolate(self, t, u_ap):
         dt = t[1:,np.newaxis]-t[:-1,np.newaxis]
         alpha = self.alpha * np.minimum(dt, 1)
