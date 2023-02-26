@@ -13,7 +13,7 @@ def plot_sol_mesh_est(t, app, u_node, est, kiter, z_node=None, est_d=None):
     figshape = (1, nplots)
     figshape = (2, 2)
     app.plot(fig, t, u_node, axkey=(*figshape, 1), label_ad="u")
-    ax = fig.add_subplot(*figshape, 2)
+    ax = fig.add_subplot(*figshape, 4)
     tm = 0.5 * (t[1:] + t[:-1])
     ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.1e}"))
     ax.yaxis.tick_right()
@@ -28,15 +28,15 @@ def plot_sol_mesh_est(t, app, u_node, est, kiter, z_node=None, est_d=None):
     plt.legend()
     plt.grid()
     if z_node is not None:
-        app.plot(fig, t, z_node, axkey=(*figshape, 4), label_ad="z")
+        app.plot(fig, t, z_node, axkey=(*figshape, 2), label_ad="z")
     plt.show()
 
 
 #------------------------------------------------------------------
-def run_adaptive(app, method, n0, kmax, nplots=5, eps=1e-4, theta=0.8, F=None):
-    kplots = [(i+1)*(kmax-1)//nplots for i in range(nplots)]
+def run_adaptive(app, method, n0, itermax, nplots=5, eps=1e-4, theta=0.8, F=None):
+    kplots = [(i+1) * (itermax - 1) // nplots for i in range(nplots)]
     ns, estvals_p, estvals_d = [], [], []
-    for kiter in range(kmax):
+    for kiter in range(itermax):
         if kiter:
             eta_p = est_p['nl'] + est_p['ap']
             if F is not None:
@@ -58,7 +58,7 @@ def run_adaptive(app, method, n0, kmax, nplots=5, eps=1e-4, theta=0.8, F=None):
             # axs[1].plot(tm, z_ap[1], label=f"z_{k} EP")
             # axs[1].plot(np.repeat(t[-1],2), z_ap[2], 'X', label=f"z_{k} EP")
             uT_apd = method.compute_functional_dual(t, z_ap, app)
-            est_goafem = estval_p['sum']*estval_d['sum']
+            est_goafem = estval_p['sum']*estval_d['sum']+estval_p['sum']**2
             estvals_d.append(estval_d['sum'])
             # print(f"{uT_ap=:9.2e}  err_val={np.fabs(val-uT_ap):8.2e} {est_goafem=:8.2e}")
             z_node, z_mid = method.interpolate_dual(t, z_ap)
@@ -92,10 +92,10 @@ def run_adaptive(app, method, n0, kmax, nplots=5, eps=1e-4, theta=0.8, F=None):
         if refinfo: nperc=refinfo['nperc']
         if kiter:
             message = f"{kiter:3d} {len(t):8d} ({nperc:4.2f}) {eta:7.2e} "
-            message += f"{rho_p:5.2f} {rho_d:5.2f} {uT_ap:13.8e} {uT_apd:13.8e}"
+            message += f"{rho_p:5.2f} {rho_d:5.2f} {uT_ap:13.8e}"
         else:
             message = 68*'='+'\n'
-            message += f"{'iter':3s} {'n (%ref)':>15s} {'eta':>7} {'rho_p':>5s} {'rho_d':>5s} {'F_ap':>13s} {'F_apd':>13s}"
+            message += f"{'iter':3s} {'n (%ref)':>15s} {'eta':>7} {'rho_p':>5s} {'rho_d':>5s} {'F_ap':>13s}"
             message += '\n' + 68 * '='
         print(message)
         if eta < eps:
@@ -135,12 +135,13 @@ def compare_methods(app, methods, n):
         sol_ap = method.run_forward(t, app)
         est, estval = method.estimator(t, sol_ap, app)
         u_ap, u_apm = method.interpolate(t, sol_ap)
-        app.plot(fig, t, u_ap, axkey=(nm, 2, pltcount), txt_ad=method.name)
+        app.plot(fig, t, u_ap, axkey=(nm, 2, pltcount), title=method.name)
         pltcount += 1
         ax = fig.add_subplot(nm, 2, pltcount)
+        ax.set_title(f'{method.name}')
         pltcount += 1
         for k in est.keys():
-            ax.plot(tm, est[k], label=f'est_{k} {method.name}')
+            ax.plot(tm, est[k], label=f'est_{k}')
         ax.legend()
         ax.grid()
     plt.show()
@@ -148,13 +149,16 @@ def compare_methods(app, methods, n):
 
 #------------------------------------------------------------------
 if __name__ == "__main__":
-    import cg1, cg2
-    import applications, classes
-    methods = [cg1.Cg1P(), cg1.Cg1D(), cg2.Cg2P()]
+    import cg1, cg2, cgp
+    import applications, analytical_solutions, classes
+    methods = [cgp.CgP(k=1), cgp.CgP(k=2), cgp.CgP(k=3)]
     # compare_methods(applications.Cubic(), methods, n=60)
     # compare_methods(applications.Lorenz(), methods, n=400)
+    # compare_methods(analytical_solutions.Oscillator(), methods, n=30)
+    # compare_methods(analytical_solutions.SinusIntegration(), methods, n=30)
+    # compare_methods(applications.BockTest(), methods, n=100)
 
-    # run_adaptive(applications.Cubic(), cg1.Cg1P(), n0=10, kmax=30, nplots=10)
     # X1(30) ≃ −3.892637
     F = classes.FunctionalEndTime(0)
-    run_adaptive(applications.Lorenz(T=30), cg1.Cg1P(alpha=0.1), n0=1000, kmax=60, F=F, theta=0.6, nplots=10, eps=1e-3)
+    # F = classes.FunctionalMean(0)
+    run_adaptive(applications.Lorenz(T=25), cgp.CgP(k=2), n0=1000, itermax=60, F=F, theta=0.9, nplots=20, eps=1e-8)

@@ -1,17 +1,18 @@
 import numpy as np
-import classes
+from SIMOS_GM.ode import classes
 
 #==================================================================
 class CgP(classes.Method):
 #==================================================================
     """
-    Attempt to do cg1 on [-1,1]
+    cgp on [-1,1]
     """
-    def __init__(self, k=1):
+    def __init__(self, k=1, plotbasis=False):
         super().__init__(error_type = "H1")
+        self.name = self.name + f"_{k}"
         assert k>=1
         self.k = k
-        self.int_x, self.int_w = np.polynomial.legendre.leggauss(k+2)
+        self.int_x, self.int_w = np.polynomial.legendre.leggauss(k+1)
         self.int_n = len(self.int_w)
         self.psi, self.phi = [], []
         for i in range(k):
@@ -20,117 +21,218 @@ class CgP(classes.Method):
             q = p.integ()
             self.phi.append(q-q(-1))
             assert self.phi[-1].deriv() == self.psi[-1]
-        import matplotlib.pyplot as plt
-        t = np.linspace(-1,1)
-        fig = plt.figure(figsize=plt.figaspect(2))
-        ax = plt.subplot(211)
-        for i in range(len(self.phi)):
-            plt.plot(t, self.psi[i](t), '-', label=r"$\psi_{:2d}$".format(i))
-        plt.legend()
-        plt.grid()
-        ax = plt.subplot(212)
-        for i in range(len(self.phi)):
-            plt.plot(t, self.phi[i](t), '-x', label=r"$\phi_{:2d}$".format(i))
-        plt.legend()
-        plt.grid()
-        plt.show()
+        if plotbasis:
+            import matplotlib.pyplot as plt
+            t = np.linspace(-1,1)
+            fig = plt.figure(figsize=plt.figaspect(2))
+            ax = plt.subplot(211)
+            for i in range(len(self.phi)):
+                plt.plot(t, self.psi[i](t), '-', label=r"$\psi_{:2d}$".format(i))
+            plt.legend()
+            plt.grid()
+            ax = plt.subplot(212)
+            for i in range(len(self.phi)):
+                plt.plot(t, self.phi[i](t), '-x', label=r"$\phi_{:2d}$".format(i))
+            plt.legend()
+            plt.grid()
+            plt.show()
         self.M = np.zeros(shape=(k,k))
         self.T = np.zeros(shape=(k,k))
+        self.int_phiphi = np.zeros(shape=(k,k))
+        self.int_psipsi = np.zeros(shape=(k,k))
         for i in range(k):
             for j in range(k):
                 for ii in range(self.int_n):
                     self.M[i,j] += self.int_w[ii]* self.psi[i](self.int_x[ii])* self.phi[j](self.int_x[ii])
                     self.T[i, j] += self.int_w[ii] * self.psi[i](self.int_x[ii]) * self.psi[j](self.int_x[ii])
+                    self.int_phiphi[i, j] += self.int_w[ii] * self.phi[i](self.int_x[ii]) * self.phi[j](self.int_x[ii])
+                    self.int_psipsi[i, j] += self.int_w[ii] * self.psi[i](self.int_x[ii]) * self.psi[j](self.int_x[ii])
         self.diagT = np.diagonal(self.T)[1:]
         self.coefM = np.diagonal(self.M, offset=-1)
         self.int_psi_weights = np.empty(shape=(len(self.psi),self.int_n))
         self.int_psi = np.empty(shape=(len(self.psi),self.int_n))
+        self.int_psik = np.empty(shape=(self.int_n))
         self.int_phi = np.empty(shape=(len(self.psi),self.int_n))
         for i in range(k):
             for ii in range(self.int_n):
                 self.int_psi_weights[i,ii] = self.psi[i](self.int_x[ii])*self.int_w[ii]
                 self.int_psi[i, ii] = self.psi[i](self.int_x[ii])
                 self.int_phi[i, ii] = self.phi[i](self.int_x[ii])
-        self.phi_mid = np.array([self.phi[ik](0) for ik in range(self.k)])
+        p = np.polynomial.legendre.Legendre.basis(deg=k, domain=[-1, 1])
+        self.int_psik = p(self.int_x)
+        self.int_phik2 = np.sum((self.phi[-1](self.int_x))**2*self.int_w)
         self.psi_mid = np.array([self.psi[ik](0) for ik in range(self.k)])
-        # print(f"{self.diagT=}")
-        # print(f"{self.coefM=}")
-        # print("\nM")
-        # for i in range(k):
-        #     for j in range(k):
-        #         print(f"{self.M[i,j]:10.6f}",end='')
-        #     print()
-        # print("\nA",end='')
-        # for i in range(k):
-        #     for j in range(k):
-        #         print(f"{self.A[i, j]:10.6f}",end='')
-        #     print()
-
-
-    #------------------------------------------------------------------
-    def run_forward(self, t, app):
-        u_ic = app.u0
-        dim, nt = len(u_ic), t.shape[0]
+        self.phi_mid = np.array([self.phi[ik](0) for ik in range(self.k)])
+#------------------------------------------------------------------
+    def run_forward(self, t, app, linearization=None):
+        if linearization is not None:
+            utilde_node, utilde_coef = linearization
+        u_ic = app.u_zero()
+        dim, nt = app.dim, t.shape[0]
+        # print(f"{dim=} {u_ic=}")
+        # dim, nt = len(u_ic), t.shape[0]
+        # assert dim==app.dim
         apphasl = hasattr(app,'l')
         dt = t[1:] - t[:-1]
         if apphasl:
             tm = 0.5*(t[1:]+t[:-1])
+            # fl_vec = np.vectorize(app.l, signature="(k,n)->(p,k,n)", otypes=[float])
+            # lint = np.asarray(fl_vec(tm+0.5*self.int_x[:,np.newaxis]*dt)).T
             lint = np.asarray(app.l(tm+0.5*self.int_x[:,np.newaxis]*dt)).T
-        u_ap = np.empty(shape=(nt, dim), dtype=u_ic.dtype)
-        u_coef = np.empty(shape=(nt-1, self.k, dim), dtype=u_ic.dtype)
-        # bloc = np.empty(self.k*dim, dtype=u_ic.dtype)
-        bloc2 = np.empty(shape=(self.k,dim), dtype=u_ic.dtype)
-        Aloc2 = np.zeros((self.k,self.k, dim, dim), dtype=u_ic.dtype)
-        # Aloc = np.zeros((self.k*dim,self.k*dim), dtype=u_ic.dtype)
-        M = np.eye(dim, dtype=u_ic.dtype)
-        u_ap[0] = u_ic
+            # print(f"{(tm+0.5*self.int_x[:,np.newaxis]*dt).shape=} {lint.shape=}")
+        if linearization is not None:
+            uint = utilde_node[:-1, np.newaxis] + np.einsum('ikp,kl->ilp', utilde_coef, self.int_phi)
+            lintf = np.asarray(app.f(uint.T)).T.reshape(uint.shape)
+        u_node = np.empty(shape=(nt, dim), dtype=app.dtype)
+        u_coef = np.empty(shape=(nt-1, self.k, dim), dtype=u_node.dtype)
+        bloc = np.empty(shape=(self.k,dim), dtype=u_node.dtype)
+        Aloc = np.zeros((self.k,self.k, dim, dim), dtype=u_node.dtype)
+        M = np.eye(dim, dtype=app.dtype)
+        u_node[0] = u_ic
         for it in range(nt-1):
             dt = t[it+1]-t[it]
             assert(dt>0)
-            utilde = u_ap[it]
-            f0 = np.asarray(app.f(utilde), dtype=u_ic.dtype)
-            A0 = np.asarray(app.df(utilde), dtype=u_ic.dtype).reshape(dim, dim)
-            # bloc[:] = 0
-            # bloc[:dim] = dt * f0
-            bloc2.fill(0)
-            bloc2[0] = dt*f0
-            if apphasl:
-                # print(f"{lint[it].shape=} {self.int_psi_weights.shape=} {bloc2.shape=}")
-                bloc2 += 0.5*dt*np.einsum('jk,lj->lk', lint[it], self.int_psi_weights)
-                # for ik in range(self.k):
-                #     bloc[ik*dim:(ik+1)*dim] += 0.5*dt * np.einsum('ij,i', lint[it], self.int_psi_weights[ik])
-            # for ik in range(self.k):
-            #     for jk in range(self.k):
-            #         Aloc[ik*dim: (ik+1)*dim, jk*dim: (jk+1)*dim] = self.T[ik,jk]*M - 0.5*dt *self.M[ik,jk]*A0
-            # Aloc[:dim, :dim] = 2*M - dt*A0
-            Aloc2[0, 0] = 2*M - dt*A0
+            bloc.fill(0)
+            if linearization is None:
+                utilde = u_node[it]
+                f0 = np.asarray(app.f(utilde), dtype=u_node.dtype)
+                bloc[0] = dt * f0
+            else:
+                utilde = 0.5*(utilde_node[it]+utilde_node[it+1])
+                # f0 = np.asarray(app.f(utilde), dtype=u_node.dtype)
+                # print(f"{lintf[it].shape=} {self.int_psi_weights.shape=}")
+                bloc += 0.5*dt*np.einsum('jk,lj->lk', lintf[it], self.int_psi_weights)
+            # print(f"{utilde.shape=} {utilde=} {app.f(utilde.T)=} {app.f=}")
+            A0 = np.asarray(app.df(utilde), dtype=u_node.dtype).reshape(dim, dim)
+            if linearization is not None:
+                bloc[0] += dt*A0@u_node[it]
+            Aloc[0, 0] = 2*M - dt*A0
             for ik in range(1,self.k):
-                # Aloc[ik * dim:(ik + 1) * dim, ik * dim:(ik + 1) * dim] = self.diagT[ik - 1]*M
-                # Aloc[(ik-1) * dim : ik * dim, ik * dim : (ik + 1) * dim] = 0.5 * dt * self.coefM[ik - 1]* A0
-                # Aloc[ik * dim:(ik + 1) * dim, (ik-1) * dim : ik * dim] = -0.5 * dt * self.coefM[ik - 1] * A0
-                Aloc2[ik, ik] = self.diagT[ik - 1] * M
-                Aloc2[ik - 1, ik] = 0.5 * dt * self.coefM[ik - 1] * A0
-                Aloc2[ik, ik - 1] = -0.5 * dt * self.coefM[ik - 1] * A0
-            # assert np.allclose(bloc, bloc2.flat)
-            # print(f"{Aloc=}")
-            # print(f"{Aloc2.swapaxes(1,2)=}")
-            # assert np.allclose(Aloc, Aloc2.swapaxes(1,2).reshape(self.k*dim,self.k*dim))
-            # usol = np.linalg.solve(Aloc, bloc2.flat)
-            usol2 = np.linalg.solve(Aloc2.swapaxes(1,2).reshape(self.k*dim,self.k*dim), bloc2.flat).reshape((self.k,dim))
-            # usol2 = usol.reshape((self.k,dim))
-            # usol = np.linalg.solve(Aloc, bloc)
-            # for ik in range(self.k):
-            #     # print(f"{ik=} {self.phi[ik](1)=}")
-            #     assert np.allclose(usol2[ik], usol[ik*dim:(ik+1)*dim])
-            #     u_coef[it,ik] = usol[ik*dim:(ik+1)*dim]
-            u_coef[it] = usol2
-            u_ap[it + 1] = 2*usol2[0] + utilde
-            # u_ap[it + 1] = 2 * usol[:dim] + utilde
-        return u_ap, u_coef
+                Aloc[ik, ik] = self.diagT[ik - 1] * M
+                Aloc[ik - 1, ik] = 0.5 * dt * self.coefM[ik - 1] * A0
+                Aloc[ik, ik - 1] = -0.5 * dt * self.coefM[ik - 1] * A0
+            if apphasl:
+                bloc += 0.5*dt*np.einsum('jk,lj->lk', lint[it], self.int_psi_weights)
+            usol = np.linalg.solve(Aloc.swapaxes(1,2).reshape(self.k*dim,self.k*dim), bloc.flat).reshape((self.k,dim))
+            u_coef[it] = usol
+            u_node[it + 1] = 2*usol[0] + u_node[it]
+        return u_node, u_coef
+#------------------------------------------------------------------
+    def run_backward(self, t, u_ap, app, func):
+        #app needs to be derivative app!!
+        u_node, u_coef = u_ap
+        nt, dim = u_node.shape
+        funchasl = hasattr(func,'l_prime')
+        funchaslT = hasattr(func,'lT_prime')
+        dt = t[1:] - t[:-1]
+        if funchasl:
+            tm = 0.5*(t[1:]+t[:-1])
+            uint = u_node[:-1, np.newaxis] + np.einsum('ikp,kl->ilp', u_coef, self.int_phi)
+            lint = np.asarray(func.l_prime(tm+0.5*self.int_x[:,np.newaxis]*dt, uint.T)).T
+            # print(f"{lint.shape=}")
+        z_coef = np.empty(shape=(nt-1, self.k, dim), dtype=u_node.dtype)
+        bloc = np.empty(shape=(self.k,dim), dtype=u_node.dtype)
+        Aloc = np.zeros((self.k,self.k, dim, dim), dtype=u_node.dtype)
+        M = np.eye(dim, dtype=u_node.dtype)
+        b0 = np.zeros(shape=(dim), dtype=u_node.dtype)
+        b1 = np.zeros_like(b0)
+        if funchaslT:
+            zT = np.asarray(func.lT_prime(u_node[-1]), dtype=u_node.dtype)
+        else:
+            zT = np.zeros_like(b0)
+        for it in range(nt-2,-1,-1):
+            dt = t[it+1]-t[it]
+            #matrix
+            A0 = np.asarray(app.df(0.5*(u_node[it]+u_node[it+1])), dtype=u_node.dtype).reshape(dim, dim)
+            # A0 = 0.5*np.asarray(app.df(u_node[it]), dtype=u_node.dtype).reshape(dim, dim)
+            # A0 += 0.5*np.asarray(app.df(u_node[it+1]), dtype=u_node.dtype).reshape(dim, dim)
+            Aloc[0, 0] = 2*M - dt*A0
+            for ik in range(1,self.k):
+                Aloc[ik, ik] = self.diagT[ik - 1] * M
+                Aloc[ik - 1, ik] = 0.5 * dt * self.coefM[ik - 1] * A0
+                Aloc[ik, ik - 1] = -0.5 * dt * self.coefM[ik - 1] * A0
+            #correction for continuity of test-fct, we build the transposed!
+            Aloc[0, 0] *= 0.5
+            # if self.k>1: Aloc[0, 1] *= 0.25
+            if self.k>1: Aloc[1, 0] *= 0.25
+            #rhs
+            bloc.fill(0)
+            if funchasl:
+                bloc = 0.5 * dt * np.einsum('jk,lj,j->lk', lint[it], self.int_phi, self.int_w)
+                bloc[0] *= 0.5
+                # integral (fct test=1)
+                b1 = 0.5 * dt * np.einsum('jk,j->k', lint[it], self.int_w)
+                b1 -=  bloc[0]
+            if it==nt-2:
+                # print(f"{bloc[0].shape=} {zT.shape=}")
+                bloc[0] += zT
+            else:
+                bloc[0] += b0
+            z_coef[it] = np.linalg.solve(Aloc.swapaxes(1,2).reshape(self.k*dim,self.k*dim).T, bloc.flat).reshape((self.k,dim))
+            b0 = b1+ (M + 0.5* dt * A0.T) @ z_coef[it,0]
+            # if self.k > 1: b0 += 0.5* dt * A0.T @ z_coef[it,1]
+        return b0, z_coef, zT
 # ------------------------------------------------------------------
     def interpolate(self, t, u_ap):
         u_node, u_coef = u_ap
         return u_node, u_node[:-1]+np.einsum('ijk,j', u_coef, self.phi_mid)
+#------------------------------------------------------------------
+    def interpolate_dual(self, t, z_ap):
+        z0, z_coef, zT = z_ap
+        z_n = np.empty(shape=(len(t),len(z0)))
+        z_n[-1] = np.einsum('kp,k->p', z_coef[-1,:,:], [self.psi[j](1) for j in range(self.k)])
+        z_n[1:-1] = 0.5*np.einsum('ikp,k->ip', z_coef[:-1,:,:], [self.psi[j](1) for j in range(self.k)])
+        z_n[1:-1] += 0.5*np.einsum('ikp,k->ip', z_coef[1:,:,:], [self.psi[j](-1) for j in range(self.k)])
+        z_n[0] = np.einsum('kp,k->p', z_coef[0,:,:], [self.psi[j](-1) for j in range(self.k)])
+        # z_n[0] += 0.5*z0
+        # z_n[-1] = zT
+        # z_n[0] = z0
+        return z_n, np.einsum('ijk,j', z_coef, self.psi_mid)
+#------------------------------------------------------------------
+    def compute_functional(self, t, u_ap, func):
+        funchasl = hasattr(func, 'l')
+        funchaslT = hasattr(func, 'lT')
+        assert int(funchasl) + int(funchaslT) == 1
+        tm = 0.5 * (t[1:] + t[:-1])
+        dt = t[1:] - t[:-1]
+        if funchaslT:
+            if isinstance(u_ap, tuple):
+                u_node, u_coef = u_ap
+                return func.lT(u_node[-1])
+            else:
+                return func.lT(np.array(u_ap(t[-1])).T)
+        if isinstance(u_ap, tuple):
+            u_node, u_coef = u_ap
+            uint = u_node[:-1, np.newaxis] + np.einsum('ikp,kl->ilp', u_coef, self.int_phi)
+        else:
+            uint = np.array(u_ap(tm + 0.5 * self.int_x[:, np.newaxis] * dt)).T
+        lint = func.l(tm + 0.5 * self.int_x[:, np.newaxis] * dt, uint.T).T
+        lintval = 0.5*np.einsum('ik,i,k->', lint, dt, self.int_w)
+        return lintval
+#------------------------------------------------------------------
+    def compute_functional_dual(self, t, z_ap, app, linearization=None):
+        z0, z_coef, zT = z_ap
+        #richtig?
+        val = np.dot(app.u_zero(), z0)
+        dt = t[1:] - t[:-1]
+        if hasattr(app,'l'):
+            tm = 0.5 * (t[:-1] + t[1:])
+            lint = np.asarray(app.l(tm + 0.5 * self.int_x[:, np.newaxis] * dt)).T
+            # print(f"{lint.shape=} {z_coef.shape=} {self.int_psi_weights.shape=} {dt.shape=}")
+            val += 0.5*np.einsum('ikp,ilp,lk,i', lint, z_coef, self.int_psi_weights, dt)
+        if linearization is not None:
+            utilde_node, utilde_coef = linearization
+            uint = utilde_node[:-1, np.newaxis] + np.einsum('ikp,kl->ilp', utilde_coef, self.int_phi)
+            # uint = np.einsum('ikp,kl->ilp', utilde_coef, self.int_phi)
+            # print(f"{uint.shape=} {uint.T.shape=}")
+            # f_vec = np.vectorize(app.f, signature="(k,p,n)->(n,p,k)", otypes=[float])
+            # lint = np.asarray(f_vec(uint.T)).T
+            # print(f"{app.f=}")
+            lint = np.asarray(app.f(uint.T)).T.reshape(uint.shape)
+            # print(f"{uint.shape=} {lint.shape=} {z_coef.shape=} {self.int_psi_weights.shape=} {dt.shape=}")
+            val += 0.5*np.einsum('ikp,ilp,lk,i', lint, z_coef, self.int_psi_weights, dt)
+            # val += 0.5 * np.einsum('pki,ilp,lk,i', lint.T, z_coef, self.int_psi_weights, dt)
+        return val
 #------------------------------------------------------------------
     def compute_error(self, t, sol_ex, dsol_ex, u_ap):
         u_node, u_coef = u_ap
@@ -161,62 +263,104 @@ class CgP(classes.Method):
         u_node, u_coef = u_ap
         apphasl = hasattr(app,'l')
         nt, dim = u_node.shape
-        estnl = np.empty(shape=(nt-1), dtype=u_node.dtype)
-        estap = np.empty(shape=(nt-1), dtype=u_node.dtype)
+        dt = t[1:] - t[:-1]
+        tm = 0.5 * (t[1:] + t[:-1])
+        df0 = np.array([np.sum( (app.df(u_node[it])@u_coef[it,-1])**2) for it in range(nt-1)])
+        estap = 0.5 * df0*dt*self.int_phik2
         if apphasl:
-            tm = 0.5*(t[1:]+t[:-1])
             lint = np.asarray(app.l(tm+0.5*self.int_x[:,np.newaxis]*dt)).T
-        if apphasl:
-            lt = np.asarray(app.l(t), dtype=u_node.dtype).T
-            tm = 0.5*(t[1:]+t[:-1])
-            lm = np.asarray(app.l(tm), dtype=u_node.dtype).T
-        for it in range(nt-1):
-            dt = t[it+1] - t[it]
-            df0 = np.asarray(app.df(u_node[it]), dtype=u_node.dtype)
-            f0 = np.asarray(app.f(u_node[it]), dtype=u_node.dtype)
-            f1 = np.asarray(app.f(u_node[it+1]), dtype=u_node.dtype)
-            fm = np.asarray(app.f(0.5*(u_node[it]+u_node[it+1])), dtype=u_node.dtype)
-            r1 = f1 - f0 - df0@(u_node[it+1]-u_node[it])
-            rm = fm - f0 - 0.5*df0@(u_node[it+1]-u_node[it])
-            estnl[it] = dt * (1 / 6) * np.sum(r1 ** 2)
-            estnl[it] += dt * (2 / 3) * np.sum(rm ** 2)
-            du = u_node[it+1]-u_node[it]
-            r = df0@du
-            # print(f"{it=} {u1[it]=} {np.sum(du*du)=} {np.sum(r*r)=}")
-            # alpha = self.alpha*np.fmin(dt,1)
-            alpha=0
-            r2 = 3*alpha*r.copy()
-            if apphasl:
-                r += lt[it+1]-lt[it]
-                r2 += 2*lm[it] - lt[it+1]-lt[it]
-            estap[it] = dt*np.sum(r*r)/12 + dt*np.sum(r2*r2)/9
-
-
-        # estnlnew = np.empty(shape=(nt-1), dtype=u1.dtype)
-        # estapnew = np.empty(shape=(nt-1), dtype=u1.dtype)
-        # dt = t[1:] - t[:-1]
-        # # f_vec = np.vectorize(app.f, signature="(k,n)->(k,n)")
-        # f_vec = np.vectorize(app.f, signature="(k,n)->(k,n)", otypes=[float])
-        # df_vec = np.vectorize(app.df, signature="(k,n)->(k,k,n)", otypes=[float])
-        # # print(f"{u1.shape=} {app.f} {app.f.__name__}")
-        # f1 = f_vec(u1).T
-        # # print(f"{f1=}")
-        # # print(f"{f1.shape=}")
-        # um = 0.5*(u1[1:]+u1[:-1])
-        # fm = f_vec(um.T).T
-        # df0 = df_vec(u1.T).T
-        # du = u1[1:] - u1[:-1]
-        # r1 = f1[1:] - f1[:-1] - df0 @ (du)
-        # rm = fm - f1[:-1] - 0.5 * df0 @ (u1[1:] - u1[:-1])
-        # estnlnew =  (1 / 6) * np.sum(dt *r1 ** 2)
-        # estnlnew += (2 / 3) * np.sum(dt * rm ** 2)
-        # r = df0 @ du
-        # # alpha = dt
-        # estapnew =  np.sum(dt *r * r) / 6 +  np.sum(dt ** 2 *du * du) / 3
-        # if apphasl:
-        #     dl = lt[1:] - lt[:-1]
-        #     estapnew +=  0.25 * np.sum(dt *dl * dl)
-
-        # assert np.allclose(estap, estapnew)
-        # assert np.allclose(estnl, estnlnew)
+            lintk = np.einsum('ilk,l,l', lint, self.int_w, self.int_psik)
+            estap += 0.5 * np.einsum('ik,ik->i', lintk ** 2, dt[:, np.newaxis])
+        df = np.array([np.sum((np.array(app.df(u_node[it])) - np.array(app.df(u_node[it+1]))) ** 2) for it in range(nt - 1)])
+        u2 = np.einsum('ikp,ilp,kl->i', u_coef, u_coef, self.int_phiphi)
+        estnl = 0.5*dt*df*u2
         return {"nl": estnl, "ap": estap}, {'sum': np.sqrt(np.sum(estnl+estap))}
+# ------------------------------------------------------------------
+    def estimator_dual(self, t, u_ap, z_ap, app, func):
+        z0, z_coef, zT = z_ap
+        u_node, u_coef = u_ap
+        nt, dim = u_node.shape
+        dt = t[1:] - t[:-1]
+        df = np.array([np.sum((np.array(app.df(u_node[it])) - np.array(app.df(u_node[it+1]))) ** 2) for it in range(nt - 1)])
+        z2 = np.einsum('ikp,ilp,kl->i', z_coef, z_coef, self.int_psipsi)
+        estnl = (1/96)*dt**3*df*z2
+        dfT = np.array([np.array(np.array(app.df(u_node[it])).reshape(dim,dim).T) for it in range(nt - 1)])
+        # print(f"{dfT.shape=} {z_coef.shape=} {self.int_psipsi.shape=}")
+        z = np.einsum('ipq, ikq, kl->ilp', dfT, z_coef[:,-1:,:], self.int_psi[-1:])
+        # print(f"{dt.shape=} {z.shape=} {self.int_w.shape=}")
+        estap = (1/96)*dt**3* np.einsum('ilp,ilp,l->i', z,z, self.int_w.shape)
+        # jump = np.einsum('ikp,k->ip', z_coef[:-1,:,:], [self.psi[j](1) for j in range(self.k)])
+        # jump -= np.einsum('ikp,k->ip', z_coef[1:,:,:], [self.psi[j](-1) for j in range(self.k)])
+        # # print(f"{jump.shape=} {(dt[1:]+dt[:-1]).shape=}")
+        # estap = np.zeros_like(estnl)
+        # jump = np.einsum('ip,ip,i->i', jump, jump, 0.5 * (dt[1:] + dt[:-1]))
+        # estap[1:] = 0.5*jump
+        # estap[:-1] = 0.5*jump
+        # # print(f"{estap=}")
+        # jumpT = np.einsum('kp,k->p', z_coef[0,:,:], [self.psi[j](-1) for j in range(self.k)]) -z0
+        # estap[0] += np.sum(jumpT*jumpT)*dt[0]
+        # print(f"{estap=}")
+        return {"nl": estnl, "ap": estap}, {'sum': np.sqrt(np.sum(estnl+estap))}
+#------------------------------------------------------------------
+def test_alpha_wave(method):
+    import matplotlib.pyplot as plt
+    import analytical_solutions
+    app = analytical_solutions.Oscillator()
+    t = np.linspace(0,app.T,20)
+    u_ap = method.run_forward(t, app)
+    u_node, u_mid = method.interpolate(t, u_ap)
+    tm = 0.5*(t[1:]+t[:-1])
+    fig = plt.figure(figsize=1.5*plt.figaspect(1))
+    ax = fig.add_subplot(111)
+    ax.plot(t, np.asarray(app.sol_ex(t)).T, 'k--', label='exact')
+    ax.plot(tm, u_mid, label=f'cg{method.k} (mid)')
+    ax.plot(t, u_node, label=f'cg{method.k} (nod)')
+    ax.legend()
+    plt.show()
+#------------------------------------------------------------------
+def test_dual_wave(method, nt=20):
+    import matplotlib.pyplot as plt
+    import analytical_solutions
+    app = analytical_solutions.Oscillator()
+    t = np.linspace(0,app.T, nt)
+    tm = 0.5*(t[1:]+t[:-1])
+    u_ap = method.run_forward(t, app)
+    u_node, u_mid = method.interpolate(t, u_ap)
+    est_p, estval_p = method.estimator(t, u_ap, app)
+    fig = plt.figure(figsize=1.5*plt.figaspect(1))
+    ax = fig.add_subplot(511)
+    ax.plot(t, np.asarray(app.sol_ex(t)).T, 'k--', label='exact')
+    ax.plot(tm, u_mid, label=f'cg{method.k} (mid)')
+    ax.plot(t, u_node, label=f'cg{method.k} (nod)')
+    ax.legend()
+
+    u_ex = np.asarray(app.sol_ex(t)).T
+    functionals = [classes.FunctionalEndTime(0), classes.FunctionalMean(0)]
+    for i,functional in enumerate(functionals):
+        J_ap = method.compute_functional(t, u_ap, functional)
+        J = method.compute_functional(t, u_ex, functional)
+        z_ap = method.run_backward(t, u_ap, app, functional)
+        z_node, z_mid = method.interpolate_dual(t, z_ap)
+        est_d, estval_d = method.estimator_dual(t, u_ap, z_ap, app, functional)
+        # print(f"{est_d=}")
+        val = method.compute_functional_dual(t, z_ap, app)
+        est = estval_p['sum']*estval_d['sum']
+        print(f"{J_ap=:10.4e}  err_val={np.fabs(val-J_ap):10.4e} errJ={np.fabs(J_ap-J):10.4e} {est=:8.2e} {estval_p['sum']} {estval_d['sum']}")
+        ax = fig.add_subplot(int(f"51{i+2:1d}"))
+        ax.set_title(f"{functional.name}")
+        ax.plot(t, z_node, label=f"z (mid)")
+        ax.plot(tm, z_mid, label=f"z (nod")
+        ax.plot(np.repeat(t[-1],2), z_ap[2], 'X', label=f"z")
+        ax.plot(np.repeat(t[0],2), z_ap[0], 'X', label=f"z")
+        ax.legend()
+        ax = fig.add_subplot(int(f"51{i+4:1d}"))
+        ax.set_title(f"eta {functional.name}")
+        for k,est in est_d.items(): ax.plot(tm, est, '-x', label=f"{k} (dual)")
+        for k,est in est_p.items(): ax.plot(tm, est, '-x', label=f"{k} (primal)")
+        ax.legend(loc='right')
+    plt.show()
+#------------------------------------------------------------------
+if __name__ == "__main__":
+    cgp = CgP(k=1)
+    # test_alpha_wave(method=cgp)
+    test_dual_wave(method=cgp, nt=20)

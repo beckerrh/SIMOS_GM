@@ -54,4 +54,4 @@ def grad_test():
 
 if __name__ == "__main__":
     plot_surface()
-    # grad_test()
+    grad_test()

@@ -1,11 +1,12 @@
 import numpy as np
-import classes
+from SIMOS_GM.ode import classes
 
 #==================================================================
 class Cg1P(classes.Method):
 #==================================================================
-    def __init__(self, alpha=0.01):
+    def __init__(self, alpha=0):
         super().__init__(error_type = "H1")
+        self.k = 1
         self.alpha = alpha
 #------------------------------------------------------------------
     def run_forward(self, t, app):
@@ -39,6 +40,23 @@ class Cg1P(classes.Method):
             usol = np.linalg.solve(Aloc, bloc)
             u_ap[it + 1] = usol[:dim]
         return u_ap
+#------------------------------------------------------------------
+    def compute_functional(self, t, u_ap, func):
+        if not isinstance(u_ap, np.ndarray):
+           u_ap = np.array(u_ap(t)).T
+        funchasl = hasattr(func, 'l')
+        funchaslT = hasattr(func, 'lT')
+        assert int(funchasl) + int(funchaslT) == 1
+        if funchaslT:
+            return func.lT(u_ap[-1])
+        fl_vec = np.vectorize(func.l, signature="(n),(k,n)->(n)", otypes=[float])
+        l1 = fl_vec(t, u_ap.T)
+        # print(f"{t.shape=} {u_ap.shape=} {l1.shape=}")
+        tm = 0.5 * (t[:-1] + t[1:])
+        um = 0.5 * (u_ap[:-1] + u_ap[1:])
+        lm = fl_vec(tm, um.T)
+        dt = t[1:]-t[:-1]
+        return  np.sum(dt*((1/6)*l1[:-1]+(1/6)*l1[1:] + (2/3)*lm))
 #------------------------------------------------------------------
     def run_backward(self, t, u_ap, app, func):
         nt, dim = u_ap.shape
@@ -88,21 +106,6 @@ class Cg1P(classes.Method):
             if funchasl:
                 b0[:] += dt * (l1[it]/3 + l1[it+1]/6 + dl[it]/12)
         return b0, z_ap, zT
-#------------------------------------------------------------------
-    def compute_functional(self, t, u_ap, func):
-        funchasl = hasattr(func, 'l')
-        funchaslT = hasattr(func, 'lT')
-        assert int(funchasl) + int(funchaslT) == 1
-        if funchaslT:
-            return func.lT(u_ap[-1])
-        fl_vec = np.vectorize(func.l, signature="(n),(k,n)->(n)", otypes=[float])
-        l1 = fl_vec(t, u_ap.T)
-        # print(f"{t.shape=} {u_ap.shape=} {l1.shape=}")
-        tm = 0.5 * (t[:-1] + t[1:])
-        um = 0.5 * (u_ap[:-1] + u_ap[1:])
-        lm = fl_vec(tm, um.T)
-        dt = t[1:]-t[:-1]
-        return  np.sum(dt*((1/6)*l1[:-1]+(1/6)*l1[1:] + (2/3)*lm))
 #------------------------------------------------------------------
     def compute_functional_dual(self, t, z_sol, app):
         z0, z_ap, zT = z_sol
@@ -390,80 +393,8 @@ class Cg1D(classes.Method):
         u_node[1:-1] = 0.5*(u_ap[1:] + u_ap[:-1])
         return u_node, u_ap
 #------------------------------------------------------------------
-def test_alpha_wave():
-    import matplotlib.pyplot as plt
-    import analytical_solutions
-    app = analytical_solutions.Oscillator()
-    t = np.linspace(0,app.T,20)
-    cg1D = Cg1D(alpha=0.1)
-    sol_apD = cg1D.run_forward(t, app)
-    tm = 0.5*(t[1:]+t[:-1])
-    plt.plot(t, np.asarray(app.sol_ex(t)).T, 'k--', label='exact')
-    plt.plot(tm, sol_apD[1], label='cg1D')
-    plt.plot(t[-1], sol_apD[2][0], 'X', label="uT")
-    plt.plot(t[-1], sol_apD[2][1], 'X', label="uT")
-    cg1P = Cg1P(alpha=0.1)
-    sol_apP = cg1P.run_forward(t, app)
-    plt.plot(t, sol_apP, label='cg1P')
-    plt.legend()
-    plt.show()
-#------------------------------------------------------------------
-def test_dual_wave():
-    import matplotlib.pyplot as plt
-    import analytical_solutions
-    app = analytical_solutions.Oscillator()
-    t = np.linspace(0,app.T,20)
-    cg1D = Cg1D(alpha=0.1)
-    sol_apD = cg1D.run_forward(t, app)
-    tm = 0.5*(t[1:]+t[:-1])
-    plt.plot(t, np.asarray(app.sol_ex(t)).T, 'k--', label='exact')
-    plt.plot(tm, sol_apD[1], label='cg1D')
-    plt.plot(t[-1], sol_apD[2][0], 'X', label="uT")
-    plt.plot(t[-1], sol_apD[2][1], 'X', label="uT")
-    cg1P = Cg1P(alpha=0.1)
-    sol_apP = cg1P.run_forward(t, app)
-
-    plt.plot(t, sol_apP, label='cg1P')
-    plt.legend()
-    plt.show()
-    import matplotlib.pyplot as plt
-    import analytical_solutions
-    app = analytical_solutions.Oscillator()
-    t = np.linspace(0,app.T,20)
-    tm = 0.5*(t[1:]+t[:-1])
-    u_ex = np.asarray(app.sol_ex(t)).T
-    fig, axs = plt.subplots(nrows=3, ncols=1)
-    axs[0].plot(t, u_ex, 'k--', label='exact')
-    cg1P = Cg1P(alpha=0.)
-    u_ap = cg1P.run_forward(t, app)
-    est_p, estval_p = cg1P.estimator(t, u_ap, app)
-    axs[0].plot(t, u_ap, label='cg1P')
-    for k in range(2):
-        F = classes.FunctionalEndTime(k)
-        uT_ap = cg1P.compute_functional(t, u_ap, F)
-        z_ap = cg1P.run_backward(t, u_ap, app, F)
-        est_d, estval_d = cg1P.estimator_dual(t, u_ap, z_ap, app, F)
-        print(f"{estval_d=}")
-        axs[1].plot(tm, z_ap[1], label=f"z_{k} EP")
-        axs[1].plot(np.repeat(t[-1],2), z_ap[2], 'X', label=f"z_{k} EP")
-        val = cg1P.compute_functional_dual(t, z_ap, app)
-        est = estval_p['sum']*estval_d['sum']
-        print(f"{uT_ap=:9.2e}  err_val={np.fabs(val-uT_ap):8.2e} err={np.fabs(uT_ap-u_ex[-1,k]):8.2e} {est=:8.2e}")
-        F = classes.FunctionalMean(k)
-        umean_ap = cg1P.compute_functional(t, u_ap, F)
-        umean_ex = cg1P.compute_functional(t, u_ex, F)
-        z_ap = cg1P.run_backward(t, u_ap, app, F)
-        est_d, estval_d = cg1P.estimator_dual(t, u_ap, z_ap, app, F)
-        print(f"{estval_d=}")
-        axs[2].plot(tm, z_ap[1], label=f"z_{k} mean")
-        axs[2].plot(np.repeat(t[-1],2), z_ap[2], 'X', label=f"z_{k} mean")
-        val = cg1P.compute_functional_dual(t, z_ap, app)
-        est = estval_p['sum']*estval_d['sum']
-        print(f"{umean_ap=:9.2e}  err_val={np.fabs(val-umean_ap):8.2e} err={np.fabs(umean_ap-umean_ex):8.2e} {est=:8.2e}")
-    for ax in axs:
-        ax.legend()
-    plt.show()
-#------------------------------------------------------------------
 if __name__ == "__main__":
+    import cgp
+    method = Cg1P()
     # test_alpha_wave()
-    test_dual_wave()
+    cgp.test_dual_wave(method=method)

@@ -1,1 +1,1 @@
-from . import analytical_solutions, cg1, cg2, cgp, classes, utils
+from . import analytical_solutions, applications, cg1, cg2, cgp, classes, utils

@@ -1,5 +1,5 @@
 import numpy as np
-import classes
+from SIMOS_GM.ode import classes
 
 #------------------------------------------------------------------
 class Cg2P(classes.Method):

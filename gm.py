@@ -1,5 +1,5 @@
 import numpy as np
-from utility import algodata
+from SIMOS_GM.utility import algodata
 
 #------------------------------------------------------------------
 def _gm_fix(x, f, gradf, eps, t, maxiter, history, verbose):

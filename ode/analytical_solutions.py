@@ -1,22 +1,54 @@
 import numpy as np
-from classes import Application
+from SIMOS_GM.ode.classes import Application
 
 #------------------------------------------------------------------
 class Exponential(Application):
-    def __init__(self, rate=0.2, T=15):
-        super().__init__(u0=1, T=15)
-        self.f = lambda u: [rate*u]
-        self.df = lambda u: [rate]
-        self.sol_ex = lambda t: [np.exp(rate*t)]
-        self.dsol_ex = lambda t: [rate*np.exp(rate*t)]
+    def __init__(self, rate=0.2, T=5, u0=1):
+        super().__init__(u0=u0, T=T)
+        self.rate = rate
+        self.f = lambda u: [self.rate*u]
+        # self.df = lambda u: [self.rate]
+        self.sol_ex = lambda t: [self.u0*np.exp(self.rate*t)]
+        self.dsol_ex = lambda t: [self.u0*self.rate*np.exp(self.rate*t)]
+        self.f_p0 = lambda u: [u]
+        self.l_p0 = lambda t: np.array([0 * t])
+        self.u_zero_p0 = lambda : [0]
+        self.f_p1 = lambda u: [0*u]
+        self.l_p1 = lambda t: np.array([0 * t])
+        self.u_zero_p1 = lambda : [1]
+        self.nparam = 2
+    def df(self, u):
+        # print(f"{u=} {self.rate=}")
+        return [self.rate]
+    def setParameter(self, p):
+        assert p.ndim ==1
+        self.rate = p[0]
+        self.u0 = p[1]
+
+
 #------------------------------------------------------------------
 class Oscillator(Application):
-    def __init__(self):
+    def __init__(self, freq=1):
+        self.freq = freq
+        self.nparam = 1
         super().__init__(u0=[1, 0], T=4*np.pi)
-        self.f = lambda u: [u[1], -u[0]]
-        self.df = lambda u: [[0, 1], [-1, 0]]
-        self.sol_ex = lambda t: [np.cos(t), -np.sin(t)]
-        self.dsol_ex = lambda t: [-np.sin(t), -np.cos(t)]
+        self.f = lambda u: [u[1], -self.freq*u[0]]
+        self.df = lambda u: [[0, 1], [-self.freq, 0]]
+        self.sol_ex = lambda t: [np.cos(self.freq*t), -np.sin(self.freq*t)]
+        self.dsol_ex = lambda t: [-self.freq*np.sin(self.freq*t), -self.freq*np.cos(self.freq*t)]
+        self.f_p0 = lambda u: [0*u[0], -u[0]]
+        self.l_p0 = lambda t: [0 * t, 0 * t]
+        self.u_zero_p0 = lambda : [0,0]
+    # def f(self, u):
+    #     # print(f"in f {u.shape=} {u=} {self.freq=}")
+    #     return [u[1], -self.freq*u[0]]
+    # def f_p0(self, u):
+    #     # print(f"{u.shape=} {u=}")
+    #     return [0*u[0], -u[0]]
+
+    def setParameter(self, p): self.freq = float(p)
+
+
 #------------------------------------------------------------------
 class Linear(Application):
     def __init__(self, u0=1, slope=0.2):
@@ -38,18 +70,16 @@ class Quadratic(Application):
         self.dsol_ex = lambda t: [u0**2/(1-u0*t)**2]
 #------------------------------------------------------------------
 class SinusIntegration(Application):
-    # u'=f(u)      2t = f(u0+t**2) 2*sqrt(w-u0) = f(w)
-    def __init__(self, u0=1):
-        super().__init__(u0=u0, T=2)
-        self.f = lambda u: [0]
-        self.df = lambda u: [0]
-        self.sol_ex = lambda t: [self.u0+np.sin(t)]
-        self.dsol_ex = lambda t: [np.cos(t)]
+    def __init__(self, u0=[1,1]):
+        super().__init__(u0=u0, T=10)
+        self.f = lambda u: [0,0]
+        self.df = lambda u: [[0,0],[0,0]]
+        self.sol_ex = lambda t: [self.u0+np.sin(t), np.cos(t)]
+        self.dsol_ex = lambda t: np.array([np.cos(t), -np.sin(t)])
     def l(self, t):
         return self.dsol_ex(t)
 #------------------------------------------------------------------
 class QuadraticIntegration(Application):
-    # u'=f(u)      2t = f(u0+t**2) 2*sqrt(w-u0) = f(w)
     def __init__(self, u0=1):
         super().__init__(u0=u0, T=2)
         self.f = lambda u: [0]
@@ -60,15 +90,23 @@ class QuadraticIntegration(Application):
         return self.dsol_ex(t)
 #------------------------------------------------------------------
 class LinearIntegration(Application):
-    # u'=f(u)      2t = f(u0+t**2) 2*sqrt(w-u0) = f(w)
-    def __init__(self, u0=1):
+    def __init__(self, u0=1, slope=0.5):
         super().__init__(u0=u0, T=2)
+        self.slope = slope
+        self.nparam = 1
         self.f = lambda u: np.zeros_like(u)
         self.df = lambda u: np.zeros_like(u)
-        self.sol_ex = lambda t: [1+t]
-        self.dsol_ex = lambda t: [1+0*t]
+        self.sol_ex = lambda t: [self.u0+self.slope*t]
+        self.dsol_ex = lambda t: [self.slope+0*t]
+        self.u_zero_p0 = lambda: [0]
     def l(self, t):
         return self.dsol_ex(t)
     # def f(self, u):
     #     return np.zeros_like(u)
+    def f_p0(self, u):
+        # print(f"{u=} {self.rate=} {j=}")
+        return [0*u]
+    def l_p0(self, t):
+        return [1+0*t]
+    def setParameter(self, p): self.slope = p
 
