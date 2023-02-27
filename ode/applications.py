@@ -22,21 +22,52 @@ class BockTest(classes.Application):
         self.sol_ex = lambda t: [np.sin(self.p*t), self.p*np.cos(self.p*t)]
         self.dsol_ex = lambda t: np.array([self.p*np.cos(self.p*t), -self.p**2*np.sin(self.p*t)])
         self.f_p0 = lambda u: [0*u[0],0*u[0]]
-        self.l_p0 = lambda t: np.array([0*t, -2*self.p*np.sin(self.p*t)- (self.mu2+self.p**2)*t*np.cos(self.p*t)])
+        # self.l_p0 = lambda t: np.array([0*t, -2*self.p*np.sin(self.p*t)- (self.mu2+self.p**2)*t*np.cos(self.p*t)])
+        self.l_p0 = lambda t: [0*t, -2*self.p*np.sin(self.p*t)- (self.mu2+self.p**2)*t*np.cos(self.p*t)]
         self.u_zero_p0 = lambda : [0,0]
+
     def setParameter(self, p): self.p = p
 
 #------------------------------------------------------------------
 class Lorenz(classes.Application):
-    def __init__(self, T=30, sigma=10, rho=28, beta=8/3):
+    def __init__(self, T=30, sigma=10, rho=28, beta=8/3, param=None):
         # super().__init__(u0=[-10, -4.45, 35.1], T=20)
-        self.sigma, self.rho, self.beta = sigma, rho, beta
         super().__init__(u0=[1,0,0], T=T)
-        self.f = lambda u: [sigma*(u[1]-u[0]), rho*u[0]-u[1]-u[0]*u[2],u[0]*u[1]-beta*u[2]]
-        # self.df = lambda u: np.array([[-sigma,sigma,0], [rho-u[2],-1,-u[0]], [u[1],u[0],-beta]])
-    def df(self, u):
-        return np.array([[-self.sigma, self.sigma, 0], [self.rho - u[2], -1, -u[0]], [u[1], u[0], -self.beta]])
-
+        print(f"{param=}")
+        if param is not None:
+            self.nparam = len(param)
+            self.param = param
+        self.sigma, self.rho, self.beta = sigma, rho, beta
+        self.f = lambda u: [self.sigma*(u[1]-u[0]), self.rho*u[0]-u[1]-u[0]*u[2], u[0]*u[1]-self.beta*u[2]]
+        # self.df = lambda u: np.array([[-self.sigma, self.sigma,0], [rho-u[2],-1,-u[0]], [u[1],u[0],-self.beta]])
+        self.df = lambda u: [[-self.sigma, self.sigma,0], [self.rho-u[2],-1,-u[0]], [u[1],u[0],-self.beta]]
+        self.f_p0 = lambda u: [0 * u[0], 0 * u[1], 0 * u[2]]
+        self.f_p1 = lambda u: [0 * u[0], 0 * u[1], 0 * u[2]]
+        self.f_p2 = lambda u: [0 * u[0], 0 * u[1], 0 * u[2]]
+        self.l_p0 = lambda t: [0*t,0*t,0*t]
+        self.l_p1 = lambda t: [0*t,0*t,0*t]
+        self.l_p2 = lambda t: [0*t,0*t,0*t]
+        if param is not None:
+            for i in range(len(param)):
+                if self.param[i]==0:
+                    exec(f"self.f_p{i:1d} = lambda u: [u[1]-u[0], 0*u[1], 0*u[2]]")
+                if self.param[i]==1:
+                    exec(f"self.f_p{i:1d} = lambda u: [0*u[0], u[0], 0*u[2]]")
+                if self.param[i]==2:
+                    exec(f"self.f_p{i:1d} = lambda u: [0*u[0], 0*u[1], -u[2]]")
+        self.u_zero_p0 = lambda: [0, 0, 0]
+        self.u_zero_p1 = lambda: [0, 0, 0]
+        self.u_zero_p2 = lambda: [0, 0, 0]
+    def setParameter(self, p):
+        # self.sigma, self.rho, self.beta = p[0], p[1], p[2]
+        p = np.atleast_1d(p)
+        if not len(p)==len(self.param):
+            raise ValueError(f"{p=} {self.param=}")
+        for i in range(len(p)):
+            if self.param[i]==0: self.sigma=p[i]
+            if self.param[i]==1: self.rho=p[i]
+            if self.param[i]==2: self.beta=p[i]
+        # print(f"{p=} {self.sigma=}  {self.rho=} {self.beta=}")
     def plot(self, fig, t, u, axkey=(1,1,1), label_u=r'$u_{\delta}$', label_ad=''):
         import matplotlib.pyplot as plt
         from matplotlib import cm

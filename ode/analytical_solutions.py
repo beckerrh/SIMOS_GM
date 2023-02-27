@@ -7,7 +7,7 @@ class Exponential(Application):
         super().__init__(u0=u0, T=T)
         self.rate = rate
         self.f = lambda u: [self.rate*u]
-        # self.df = lambda u: [self.rate]
+        self.df = lambda u: [self.rate]
         self.sol_ex = lambda t: [self.u0*np.exp(self.rate*t)]
         self.dsol_ex = lambda t: [self.u0*self.rate*np.exp(self.rate*t)]
         self.f_p0 = lambda u: [u]
@@ -17,15 +17,10 @@ class Exponential(Application):
         self.l_p1 = lambda t: np.array([0 * t])
         self.u_zero_p1 = lambda : [1]
         self.nparam = 2
-    def df(self, u):
-        # print(f"{u=} {self.rate=}")
-        return [self.rate]
     def setParameter(self, p):
         assert p.ndim ==1
         self.rate = p[0]
         self.u0 = p[1]
-
-
 #------------------------------------------------------------------
 class Oscillator(Application):
     def __init__(self, freq=1):
@@ -39,16 +34,7 @@ class Oscillator(Application):
         self.f_p0 = lambda u: [0*u[0], -u[0]]
         self.l_p0 = lambda t: [0 * t, 0 * t]
         self.u_zero_p0 = lambda : [0,0]
-    # def f(self, u):
-    #     # print(f"in f {u.shape=} {u=} {self.freq=}")
-    #     return [u[1], -self.freq*u[0]]
-    # def f_p0(self, u):
-    #     # print(f"{u.shape=} {u=}")
-    #     return [0*u[0], -u[0]]
-
     def setParameter(self, p): self.freq = float(p)
-
-
 #------------------------------------------------------------------
 class Linear(Application):
     def __init__(self, u0=1, slope=0.2):
@@ -58,8 +44,6 @@ class Linear(Application):
         self.df = lambda u: [0]
         self.sol_ex = lambda t: [u0+slope*t]
         self.dsol_ex = lambda t: [slope+0*t]
-
-
 #------------------------------------------------------------------
 class Quadratic(Application):
     def __init__(self, u0=1):
@@ -70,14 +54,26 @@ class Quadratic(Application):
         self.dsol_ex = lambda t: [u0**2/(1-u0*t)**2]
 #------------------------------------------------------------------
 class SinusIntegration(Application):
-    def __init__(self, u0=[1,1]):
-        super().__init__(u0=u0, T=10)
+    def __init__(self, freq=[1,2], T=10):
+        super().__init__(u0=[0,1], T=T)
+        self.nparam = 2
+        self.freq0, self.freq1 = freq[0], freq[1]
         self.f = lambda u: [0,0]
         self.df = lambda u: [[0,0],[0,0]]
-        self.sol_ex = lambda t: [self.u0+np.sin(t), np.cos(t)]
-        self.dsol_ex = lambda t: np.array([np.cos(t), -np.sin(t)])
-    def l(self, t):
-        return self.dsol_ex(t)
+        self.sol_ex = lambda t: [np.sin(self.freq0*t), np.cos(self.freq1*t)]
+        self.dsol_ex = lambda t: [self.freq0*np.cos(self.freq0*t), -self.freq1*np.sin(self.freq1*t)]
+        self.l = lambda t: self.dsol_ex(t)
+        self.u_zero_p0 = lambda : [0,0]
+        self.u_zero_p1 = lambda : [0,0]
+        self.f_p0 = lambda u: [0*u[0], 0*u[0]]
+        self.f_p1 = lambda u: [0*u[0], 0*u[0]]
+        self.l_p0 = lambda t: [np.cos(self.freq0*t)-self.freq0*t*np.sin(self.freq0*t),0*t]
+        self.l_p1 = lambda t: [0*t, -np.sin(self.freq1*t) -self.freq1*t*np.cos(self.freq1*t)]
+    def setParameter(self, p):
+        self.freq0 = p[0]
+        self.freq1 = p[1]
+
+
 #------------------------------------------------------------------
 class QuadraticIntegration(Application):
     def __init__(self, u0=1):
@@ -101,8 +97,6 @@ class LinearIntegration(Application):
         self.u_zero_p0 = lambda: [0]
     def l(self, t):
         return self.dsol_ex(t)
-    # def f(self, u):
-    #     return np.zeros_like(u)
     def f_p0(self, u):
         # print(f"{u=} {self.rate=} {j=}")
         return [0*u]

@@ -7,7 +7,7 @@ class CgP(classes.Method):
     """
     cgp on [-1,1]
     """
-    def __init__(self, k=1, plotbasis=False):
+    def __init__(self, k=1, plotbasis=True):
         super().__init__(error_type = "H1")
         self.name = self.name + f"_{k}"
         assert k>=1
@@ -136,6 +136,7 @@ class CgP(classes.Method):
         M = np.eye(dim, dtype=u_node.dtype)
         b0 = np.zeros(shape=(dim), dtype=u_node.dtype)
         b1 = np.zeros_like(b0)
+        b2 = np.zeros_like(b0)
         if funchaslT:
             zT = np.asarray(func.lT_prime(u_node[-1]), dtype=u_node.dtype)
         else:
@@ -143,19 +144,15 @@ class CgP(classes.Method):
         for it in range(nt-2,-1,-1):
             dt = t[it+1]-t[it]
             #matrix
-            A0 = np.asarray(app.df(0.5*(u_node[it]+u_node[it+1])), dtype=u_node.dtype).reshape(dim, dim)
-            # A0 = 0.5*np.asarray(app.df(u_node[it]), dtype=u_node.dtype).reshape(dim, dim)
-            # A0 += 0.5*np.asarray(app.df(u_node[it+1]), dtype=u_node.dtype).reshape(dim, dim)
-            Aloc[0, 0] = 2*M - dt*A0
+            A0 = np.asarray(app.df(0.5*(u_node[it]+u_node[it+1])), dtype=u_node.dtype).reshape(dim, dim).T
+            # A0 = np.asarray(app.df(u_node[it]), dtype=u_node.dtype).reshape(dim, dim).T
             for ik in range(1,self.k):
                 Aloc[ik, ik] = self.diagT[ik - 1] * M
-                Aloc[ik - 1, ik] = 0.5 * dt * self.coefM[ik - 1] * A0
-                Aloc[ik, ik - 1] = -0.5 * dt * self.coefM[ik - 1] * A0
-            #correction for continuity of test-fct, we build the transposed!
-            Aloc[0, 0] *= 0.5
-            # if self.k>1: Aloc[0, 1] *= 0.25
-            if self.k>1: Aloc[1, 0] *= 0.25
-            #rhs
+                Aloc[ik, ik - 1] = 0.5 * dt * self.coefM[ik - 1] * A0
+                Aloc[ik - 1, ik] = -0.5 * dt * self.coefM[ik - 1] * A0
+            if self.k>1: Aloc[0, 1] *= 0.5
+            Aloc[0, 0] = M - 0.5 * dt * A0
+        #rhs
             bloc.fill(0)
             if funchasl:
                 bloc = 0.5 * dt * np.einsum('jk,lj,j->lk', lint[it], self.int_phi, self.int_w)
@@ -168,9 +165,10 @@ class CgP(classes.Method):
                 bloc[0] += zT
             else:
                 bloc[0] += b0
-            z_coef[it] = np.linalg.solve(Aloc.swapaxes(1,2).reshape(self.k*dim,self.k*dim).T, bloc.flat).reshape((self.k,dim))
-            b0 = b1+ (M + 0.5* dt * A0.T) @ z_coef[it,0]
-            # if self.k > 1: b0 += 0.5* dt * A0.T @ z_coef[it,1]
+                if self.k > 1: bloc[0] += b2
+            z_coef[it] = np.linalg.solve(Aloc.swapaxes(1,2).reshape(self.k*dim,self.k*dim), bloc.flat).reshape((self.k,dim))
+            b0 = b1+ (M + 0.5* dt * A0) @ z_coef[it,0]
+            if self.k > 1: b2 = -0.25*self.coefM[0]* dt * A0 @ z_coef[it,1]
         return b0, z_coef, zT
 # ------------------------------------------------------------------
     def interpolate(self, t, u_ap):

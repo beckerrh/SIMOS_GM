@@ -15,5 +15,10 @@ def test_grad(f, gradf, xs, eps=1e-6):
             xr = np.copy(x)
             xr[i] += eps
             r = abs(f(xr)-f(xl) - 2*eps*g[i])
+            # print(f"{x=} {r=} {f(xr)=} {g[i]=} {(f(xr)-f(xl))/(2*eps)=}")
+            if r>rmax:
+                rmax = r
+                imax = i
+                xmax =x
             rmax = max(r,rmax)
-    return rmax
+    return rmax, xmax, i

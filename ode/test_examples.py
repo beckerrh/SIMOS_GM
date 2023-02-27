@@ -42,6 +42,7 @@ def run_adaptive(app, method, n0, itermax, nplots=5, eps=1e-4, theta=0.8, F=None
             if F is not None:
                 eta_d = est_d['nl'] + est_d['ap']
                 eta = (np.sum(eta_p)*eta_d + np.sum(eta_d)*eta_p)/(np.sum(eta_d)+np.sum(eta_p))
+                eta += eta_p
             else:
                 eta = eta_p
             t, refinfo = utils.adapt_mesh(t, eta, theta=theta)
@@ -76,6 +77,7 @@ def run_adaptive(app, method, n0, itermax, nplots=5, eps=1e-4, theta=0.8, F=None
                 est_d = None
                 z_node = None
         u_node, u_mid = method.interpolate(t, u_ap)
+        print(f"{u_node[-1]=}")
         estvals_p.append(estval_p['sum'])
         ns.append(len(t))
         if kiter in kplots:
@@ -160,5 +162,5 @@ if __name__ == "__main__":
 
     # X1(30) ≃ −3.892637
     F = classes.FunctionalEndTime(0)
-    # F = classes.FunctionalMean(0)
-    run_adaptive(applications.Lorenz(T=25), cgp.CgP(k=2), n0=1000, itermax=60, F=F, theta=0.9, nplots=20, eps=1e-8)
+    F = classes.FunctionalMean(0)
+    run_adaptive(applications.Lorenz(T=15), cgp.CgP(k=2), n0=1000, itermax=60, F=F, theta=0.9, nplots=20, eps=1e-8)
