@@ -52,7 +52,7 @@ class ParameterTest():
             J_ap = method.compute_functional(t, u_ap, functional)
             self.R[i] = J_ap - observation
         return self.R
-    def dresiduals(self, p, stopatfuncerror=True, plotiteration=True, theta=0.8, lambda_ref=0.1):
+    def dresiduals(self, p, stopatfuncerror=True, plotiteration=True, theta=0.8, lambda_ref=0.025):
         method, app, functionals, observations, t = self.method, self.app, self.functionals, self.observations, self.t
         R = self.residuals(p)
         assert len(R)==self.n_obs
@@ -102,6 +102,7 @@ class ParameterTest():
         if etaval > lambda_ref*G:
             msg += "  *"
             self.t, refinfo = utils.adapt_mesh(t, eta, theta=theta)
+            # self.dresiduals(p)
         if self.iter==1:
             print(f"{'it':3s} {'J':^11s} {'G':^10s} {'eta':10s} {'ref':3s}")
             print(41*"=")
@@ -156,16 +157,6 @@ class ParameterTest():
             ax3.plot(tm, eta, '-g', label=r'$\eta$')
             ax3.legend()
             ax3.grid
-
-            # ax4.yaxis.tick_right()
-            # axt = ax4.twinx()
-            # axt.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.1e}"))
-            # p0, = ax4.plot(tm, dt, '-b', label=r'$\delta$')
-            # p1, = axt.plot(tm, np.sqrt(eta), '-g', label=r"$\eta$")
-            # ax4.tick_params(axis='y', labelcolor ='b')
-            # axt.tick_params(axis='y', labelcolor ='g')
-            # plt.legend(handles=[p0, p1])
-            # plt.grid()
             plt.show()
         return dR
     def f(self, p):
@@ -182,7 +173,7 @@ def optimize(x0, method, app, functionals, observations, n0, plot=False):
     from SIMOS_GM import gm, utility
     # method = 'minimize'
     method = 'leastsq'
-    method = 'least_squares'
+    # method = 'least_squares'
     # method = 'gm'
     if plot:
         fig = plt.figure(figsize=plt.figaspect(0.5))
@@ -199,7 +190,7 @@ def optimize(x0, method, app, functionals, observations, n0, plot=False):
         xs = res["x"]
         print(res)
     elif method == 'leastsq':
-        res = leastsq(pt.residuals, x0=x0, Dfun=pt.dresiduals, ftol=1e-10, xtol=1e-10, full_output=True)
+        res = leastsq(pt.residuals, x0=x0, Dfun=pt.dresiduals, ftol=1e-10, xtol=1e-14, gtol=0, full_output=True)
         xs = res[0]
         info = res[2]
         success = res[4]
@@ -214,8 +205,10 @@ def optimize(x0, method, app, functionals, observations, n0, plot=False):
         us = pt.solve(xs)
         fig = plt.figure(figsize=plt.figaspect(0.5))
         figshape = (1, 2)
-        app.plot(fig, pt.t, u0, axkey=(*figshape, 1), label_ad="u0")
-        app.plot(fig, pt.t, us, axkey=(*figshape, 2), label_ad="us")
+        ax = app.plot(fig, pt.t, u0, axkey=(*figshape, 1), label_ad="u0")
+        ax.legend()
+        ax =app.plot(fig, pt.t, us, axkey=(*figshape, 2), label_ad="us")
+        ax.legend()
         plt.show()
 
 #------------------------------------------------------------------
@@ -286,16 +279,17 @@ if __name__ == "__main__":
         n0 = 10
     elif example == 'lorenz':
         F = [classes.FunctionalEndTime(0), classes.FunctionalEndTime(1), classes.FunctionalEndTime(2)]
-        app = applications.Lorenz(T=15, param=[0,1])
+        app = applications.Lorenz(T=15, param=[0,1,2])
         #sigma=10, rho=28, beta=8/3
         #u_node[-1]=array([-10.30698237,  -4.45105613,  35.09463786]) Fmean(0) = -1.13983673e+02
         x0 = np.array([10, 28, 8/3])
-        x0 = np.array([10, 28])
+        # x0 = np.array([10, 28])
+        # x0 = np.array([28])
         x = np.linspace(8, 12, 10)
         C = np.array([-10.30698237,  -4.45105613,  35.09463786, -100])
         #tough
         C = np.array([10.,  -10.,  30.])
-        C = np.array([10.,  10.,  30.])
+        C = np.array([20.,  10.,  30.])
         # C = np.array([10.,  30.,  10.])
         #rho
         x = np.linspace(20, 30, 40)
@@ -306,4 +300,4 @@ if __name__ == "__main__":
     else:
         raise ValueError(f"{example=} unknown")
     # test_gradient(method=cgp.CgP(k=3), app=app, functionals=F, observations=C, x=x, n0=n0, plot=True)
-    optimize(x0=x0, method=cgp.CgP(k=2), app=app, functionals=F, observations=C, n0=n0, plot=True)
+    optimize(x0=x0, method=cgp.CgP(k=20), app=app, functionals=F, observations=C, n0=n0, plot=True)
