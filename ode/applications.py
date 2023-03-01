@@ -33,7 +33,7 @@ class Lorenz(classes.Application):
     def __init__(self, T=30, sigma=10, rho=28, beta=8/3, param=None):
         # super().__init__(u0=[-10, -4.45, 35.1], T=20)
         super().__init__(u0=[1,0,0], T=T)
-        print(f"{param=}")
+        # print(f"{param=}")
         if param is not None:
             self.nparam = len(param)
             self.param = param
@@ -68,19 +68,25 @@ class Lorenz(classes.Application):
             if self.param[i]==1: self.rho=p[i]
             if self.param[i]==2: self.beta=p[i]
         # print(f"{p=} {self.sigma=}  {self.rho=} {self.beta=}")
+    def plotax(self, t, u, ax, label=""):
+        import matplotlib.pyplot as plt
+        x,y,z = u[:,0], u[:,1], u[:,2]
+        ax.plot(x, y, z, label=label)
+        ax.plot(x[-1], y[-1], z[-1], 'Xr', label=label+"(T)")
+        ax.plot(x[0], y[0], z[0], 'Xy', label=label+"(0)")
+        # ax.legend()
+        # ax.plot_surface(x, y, z, cmap=cm.gnuplot_r, alpha=0.7)
+        # ax.contour(x, y, z, np.linspace(0,20,10), offset=-1, linewidths=2, cmap=cm.gray)
+        ax.view_init(26, 130)
+        plt.draw()
+        return ax
+
     def plot(self, fig, t, u, axkey=(1,1,1), label_u=r'$u_{\delta}$', label_ad=''):
         import matplotlib.pyplot as plt
         from matplotlib import cm
         from mpl_toolkits.mplot3d import Axes3D
         # print(f"{axkey=}")
         ax = fig.add_subplot(*axkey, projection='3d')
-        x,y,z = u[:,0], u[:,1], u[:,2]
-        ax.plot(x, y, z, label=label_ad)
-        ax.plot(x[-1], y[-1], z[-1], 'Xr', label=label_ad+"(T)")
-        ax.plot(x[0], y[0], z[0], 'Xy', label=label_ad+"(0)")
-        ax.legend()
-        # ax.plot_surface(x, y, z, cmap=cm.gnuplot_r, alpha=0.7)
-        # ax.contour(x, y, z, np.linspace(0,20,10), offset=-1, linewidths=2, cmap=cm.gray)
-        ax.view_init(26, 130)
-        plt.draw()
+        return self.plotax(t, u, ax, label_u+label_ad)
+
 

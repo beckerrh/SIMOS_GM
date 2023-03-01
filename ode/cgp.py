@@ -7,7 +7,7 @@ class CgP(classes.Method):
     """
     cgp on [-1,1]
     """
-    def __init__(self, k=1, plotbasis=True):
+    def __init__(self, k=1, plotbasis=False):
         super().__init__(error_type = "H1")
         self.name = self.name + f"_{k}"
         assert k>=1

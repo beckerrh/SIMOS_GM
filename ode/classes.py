@@ -27,14 +27,19 @@ class Application():
         if T: self.T = T
         self.name = type(self).__name__
     def u_zero(self): return self.u0
+    def plotax(self, t, u, ax, label=""):
+        dim = u.shape[1]
+        for j in range(dim):
+            ax.plot(t, u[:, j], '-', label=label)
+        # ax.legend()
+        ax.grid()
+
+
     def plot(self, fig, t, u, axkey=(1,1,1), label_u=r'$u_{\delta}$', label_ad='', title=''):
         ax = fig.add_subplot(*axkey)
         ax.set_title(title)
-        dim = u.shape[1]
-        for j in range(dim):
-            ax.plot(t, u[:, j], '-', label=f'{label_u}({j:1d}) {label_ad}')
-        ax.legend()
-        ax.grid()
+        self.plotax(t, u, ax, label=label_u+label_ad)
+        return ax
     def setParameter(self, p): self.p = p
 
 #==================================================================

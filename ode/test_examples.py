@@ -163,4 +163,6 @@ if __name__ == "__main__":
     # X1(30) ≃ −3.892637
     F = classes.FunctionalEndTime(0)
     F = classes.FunctionalMean(0)
-    run_adaptive(applications.Lorenz(T=15), cgp.CgP(k=2), n0=1000, itermax=60, F=F, theta=0.9, nplots=20, eps=1e-8)
+    sigma, rho, beta = 41.13548392, 21.54881541,  0.22705707
+    app = applications.Lorenz(T=15, sigma=sigma, rho=rho, beta=beta)
+    run_adaptive(app, cgp.CgP(k=2), n0=1000, itermax=60, F=F, theta=0.9, nplots=20, eps=1e-8)
