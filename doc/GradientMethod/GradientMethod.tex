@@ -1,0 +1,159 @@
+% !TEX encoding = UTF-8 Unicode
+%----------------------------------------
+\documentclass[english,12pt,a4paper]{article}
+%----------------------------------------
+%
+%----------------------------------------
+\input{../packages}
+\input{../macros.tex}
+%====================================================
+
+\title{Gradient methods}
+\author{Roland Becker}
+\date{\today}
+\usepackage{environ}
+
+
+
+%====================================================
+\begin{document}
+%====================================================
+\maketitle
+\setcounter{tocdepth}{2}
+\tableofcontents
+%
+%
+%==========================================
+\section{Class of methods}\label{sec:}
+%==========================================
+%
+%---------------------------------------
+\begin{lemma}\label{lemma:}
+Let $q_i(x) = q_i^* + \frac{\mu}{2}\norm{x- v_i}^2$. Then for $\lambda\in[0,1]$ we have for $q_{\lambda} := (1-\lambda)q_0+ \lambda q_1$ the expression
+%
+\begin{equation}\label{eq:toto1}
+%
+(1-\lambda)q_0(x) + \lambda q_1(x) = q_{\lambda}^* + \frac{\mu}{2}\norm{x- v_{\lambda}}^2
+\end{equation}
+%
+with
+%
+\begin{equation}\label{eq:toto2}
+v_{\lambda} = (1-\lambda)v_0 + \lambda v_1,\quad q_{\lambda}^* = (1-\lambda)q_0^* + \lambda q_1^* + \frac{\lambda(1-\lambda)\mu}{2}\norm{v_1-v_0}^2.
+\end{equation}
+%
+Furthermore
+%
+\begin{equation}\label{eq:}
+\argmin\SetDef{q^*_{\lambda}}{0\le \lambda\le1} = P_{[0,1]}\left(\frac12 + \frac{q_1^*-q_0^*}{\mu\norm{v_1-v_0}^2}\right).
+\end{equation}
+%
+\end{lemma}
+%
+%---------------------------------------
+\begin{proof}
+The two functions in (\ref{eq:toto1}) are quadratic un $x$ and $\lambda$. Since they coincide for $\lambda=0$ and $\lambda=1$, it is sufficient to check that the second derivative with respect to $\lambda$ of the right-hand side vanishes:
+%
+\begin{align*}
+\frac{\partial^2}{\partial \lambda^2}\norm{x-v_\lambda}^2 = 2\norm{v_1-v_0}^2 = -\frac{\partial^2\lambda(1-\lambda)}{\partial \lambda^2} \norm{v_1-v_0}^2
+\end{align*}
+%
+\end{proof}
+%
+
+For $f\in\mathcal F_{\mu,L}(X)$ we  have
+%
+\begin{align*}
+f(x) \ge f(y) + \scp{\nabla f(y)}{x-y} + \frac{\mu}{2}\norm{x-y}^2 = f(y) - \frac{1}{2\mu}\norm{\nabla f(y)}^2 + \frac{\mu}{2}\norm{x-y+\frac{1}{\mu}\nabla f(y)}^2
+\end{align*}
+%
+
+%
+\begin{yellow}
+\begin{algorithm}[H]
+\caption{GM fixed step size} 
+\label{algorithm:AGMfixed} 
+%
+Input: $x_0\in X$, $\eps>0$.\\ Set $v_{0}=x_0$, $q_0=-\infty$ and $k=0$.
+%
+\begin{itemize}
+\item[(1)] If $f(x_k)-q_k \le \eps$: STOP
+\item[(5)] $x_{k+1} = x_k  - \frac{1}{L}\nabla f(x_k)$
+\item[(3)] $w_k=x_k - \frac{1}{\mu}\nabla f(x_k)$,  $p_k=f(x_k) - \frac{\norm{\nabla f(x_k)}^2}{2\mu}$
+\item[] $Q_{k} = \frac{\mu}{2}\norm{v_k -w_k}^2$, $\lambda_{k} = P_{[0,1]}\left(\frac12 + \frac{p_k-q_k}{2Q_k}\right)$
+\item[] $q_{k+1} = (1-\lambda_k) q_k + \lambda_k p_k + \lambda_k(1-\lambda_k)Q_{k}$
+\item[(4)] $v_{k+1} = (1-\lambda_k) v_{k} + \lambda_k w_k$
+\item[(6)] Increment $k$ and go to (1)
+\end{itemize}
+%
+\end{algorithm}
+\end{yellow}
+%
+
+%
+\begin{yellow}
+\begin{algorithm}[H]
+\caption{AGM fixed step size} 
+\label{algorithm:AGMfixed} 
+%
+Input: $x_0\in X$, $\eps>0$.\\ Set $v_{0}=x_0- \frac{1}{\mu}\nabla f(x_0)$, $q_0=f(x_0) - \frac{\norm{\nabla f(x_0)}^2}{2\mu}$ and $k=0$.
+%
+\begin{itemize}
+\item[(1)] If $f(x_k)-q_k \le \eps$: STOP
+\item[(2)] $y_{k} = (1-\theta_k)v_k + \theta_k x_{k}$
+\item[(3)] $Q_{k} = \frac{\mu}{2}\norm{v_k -y_k + \frac{1}{\mu}\nabla f(y_k)}^2$
+\item[] $q_{k+1} = (1-\lambda_k) q_k + \lambda_k\left(  f(y_k) - \frac{\norm{\nabla f(y_k)}^2}{2\mu}\right) + \lambda_k(1-\lambda_k)Q_{k}$
+\item[(4)] $v_{k+1} = (1-\lambda_k) v_{k} + \lambda_k \left( y_k - \frac{1}{\mu}\nabla f(y_k)\right)$
+\item[(5)] $x_{k+1} = y_{k}  - \frac{1}{L}\nabla f(y_k)$
+\item[(6)] Increment $k$ and go to (1)
+\end{itemize}
+%
+\end{algorithm}
+\end{yellow}
+%
+
+For $\theta_k<1$ we have 
+%
+\begin{align*}
+v_k -y_k = \frac{\theta_k}{1-\theta_k}(y_k-x_k)
+\end{align*}
+%
+such that
+%
+\begin{align*}
+Q_{k} = \frac{\theta_k^2\mu}{2(1-\theta_k)^2}\norm{x_k -y_k}^2 + \frac{1}{2\mu}\norm{\nabla f(y_k)}^2+ \frac{\theta_k}{1-\theta_k}\scp{\nabla f(y_k)}{y_k -x_k}.
+\end{align*}
+
+Let $e_k:=f(x_k) -q_k$ Then we have
+
+\begin{align*}
+e_{k+1}\le& f(y_k) - \frac{1}{2L} \norm{\nabla f(y_k)}^2 - q_{k+1} & (5)\\
+=&  (1-\lambda_k)(f(y_k) -q_k)  - \frac{1}{2L} \norm{\nabla f(y_k)}^2 + \lambda_k\frac{\norm{\nabla f(y_k)}^2}{2\mu} - \lambda_k(1-\lambda_k)Q_{k}\\
+=&  (1-\lambda_k)e_k + \underbrace{(1-\lambda_k)\scp{\nabla f(y_k)}{y_k-x_k}  +\left(\frac{\lambda_k}{2\mu}- \frac{1}{2L}\right) \norm{\nabla f(y_k)}^2 - \lambda_k(1-\lambda_k)Q_{k}}_{=:X}
+\end{align*}
+
+%
+\begin{align*}
+X =& (1-\lambda_k)\left(1-\frac{\lambda_k\theta_k}{1-\theta_k}\right)\scp{\nabla f(y_k)}{y_k-x_k} + \left(\frac{\lambda_k}{2\mu}- \frac{1}{2L} - \frac{\lambda_k(1-\lambda_k)}{2\mu}\right) \norm{\nabla f(y_k)}^2 \\&- \frac{\lambda_k(1-\lambda_k)\theta_k^2\mu}{2(1-\theta_k)^2}\norm{x_k -y_k}^2\\
+=& \frac{(1-\lambda_k)(1-(1+\lambda_k)\theta_k)}{1-\theta_k}\scp{\nabla f(y_k)}{y_k-x_k} + \left(\frac{\lambda_k^2}{2\mu}- \frac{1}{2L}\right) \norm{\nabla f(y_k)}^2 \\&- \frac{\lambda_k(1-\lambda_k)\theta_k^2\mu}{2(1-\theta_k)^2}\norm{x_k -y_k}^2
+\end{align*}
+%
+Under the condition $(1+\lambda_k)\theta_k<1$ we get
+%
+\begin{align*}
+X \le \left(\frac{2(1-\theta_k)^2}{4\lambda_k(1-\lambda_k)\theta_k^2\mu}\frac{(1-\theta_k)^2}{(1-\lambda_k)^2(1-(1+\lambda_k)\theta_k)^2} + \frac{\lambda_k^2}{2\mu}- \frac{1}{2L}\right) \norm{\nabla f(y_k)}^2
+\end{align*}
+%
+
+
+
+
+
+
+
+
+
+%====================================================
+%====================================================
+\end{document}
+%===================================================w

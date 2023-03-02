@@ -1,0 +1,434 @@
+%----------------------------------------
+\documentclass[12pt,english]{article}
+%----------------------------------------
+%
+\usepackage{amsmath,amssymb,amsthm,latexsym}
+\usepackage[a4paper,margin=1.8cm]{geometry}
+%\usepackage{stmaryrd}
+%\usepackage{pifont}
+\usepackage{mathtools}
+%\usepackage{refcheck}
+\usepackage{hyperref}
+%%----------------------------------------
+%\usepackage[utf8]{inputenc}
+\usepackage{palatino,eulervm}
+\usepackage[backend=bibtex,sorting=none,giveninits=true, style=numeric, doi=false,isbn=false,url=false,maxbibnames=9]{biblatex}
+\bibliography{../../../../Latex/Bibliotheque/bibliotheque.bib}
+%---------------------------------------------------------
+\usepackage{url}
+\usepackage[english,algoruled,lined]{algorithm2e}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[many]{tcolorbox}
+\tcbuselibrary{breakable}
+%\usepackage[toc,page]{appendix}
+
+
+%\frenchbsetup{StandardLists=true}
+\renewcommand{\thefigure}{\thesection.\arabic{figure}}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+  \node[shape=circle,draw,inner sep=1pt] (char) {#1};}}
+\newenvironment{rappel}{\begin{tcolorbox}[boxrule=1pt, colback=gray!10!white]}{\end{tcolorbox}}
+
+%---------------------------------------------------------
+\input{../macros.tex}
+%---------------------------------------------------------
+
+
+\newcommand{\mcM}{\mathcal M}
+
+%-------------------------------------------
+\begin{document}
+%-------------------------------------------
+
+\title{Convex functions}
+\author{}
+\maketitle
+\tableofcontents
+
+%
+%==========================================
+\section{Convex functions}\label{sec:}
+%==========================================
+%
+%---------------------------------------
+\begin{lemma}\label{lemma:}
+%
+For $f\in \mathcal F^{1,1}_{L}(X)$
+%
+\begin{equation}\label{eq:conv_lip}
+%
+\left\{
+\begin{aligned}
+\frac{t(1-t)}{2L}\norm{\nabla f(x_1)-\nabla f(x_2)}^2\le&(1-t) f(x_1) + t f(x_2) - f( (1-t)x_1 + t x_2) &\le& \frac{t(1-t)L}{2}\norm{x_1-x_2}^2\\
+\frac{1}{2L} \norm{\nabla f(x)-\nabla f(x_0)}^2 \le& f(x) - f(x_0) - \scp{\nabla f(x_0)}{x-x_0} &\le& \frac{L}{2} \norm{x-x_0}^2\\
+\frac1L \norm{\nabla f(x) -\nabla f(x_0)}^2\le& \scp{\nabla f(x) -\nabla f(x_0)}{x-x_0} &\le&  L \norm{x-x_0}^2
+\end{aligned}
+\right.
+\end{equation}
+%
+\end{lemma}
+%
+%
+%---------------------------------------
+\begin{proof}
+%
+\begin{align*}
+f(x) - f(x_0) - \scp{\nabla f(x_0)}{x-x_0} = \int_0^1 \scp{\nabla f(x_0+t(x-x_0))-\nabla f(x_0)}{x-x_0}
+\le L \int_0^1t\,dt \norm{x-x_0}^2
+\end{align*}
+%
+Let
+%
+\begin{align*}
+g(y) = f(y) - \scp{\nabla f(x_0)}{y}
+\end{align*}
+%
+Then $g\in \mathcal F^{1,1}_{L}(X)$ and $x_0$ is a minimizer of $g$, so with  $x=x_0+ \frac{1}{L}\nabla g(x)$
+%
+%
+\begin{align*}
+f(x_0) - f(x) -\scp{\nabla f(x_0)}{x_0-x} \le g(x_0) - g(x) \le  \scp{\nabla g(x)}{x_0-x}+\frac{L}{2} \norm{x-x_0}^2
+= -\frac{L}{2} \norm{\nabla g(x)}^2
+\end{align*}
+%
+
+
+
+\end{proof}
+%
+\begin{lemma}\label{lemma:}
+%
+For $f\in\mathcal S^{1,1}_{\mu,L}(X) := \SetDef{f\in \mathcal F^{1,1}_{L}(X)}{f(x) - f(x_0) - \scp{\nabla f(x_0)}{x-x_0}\ge \frac{\mu}{2} \norm{x-x_0}^2}$
+%
+%
+\begin{equation}\label{eq:conv_lip_smooth}
+%
+\left\{
+\begin{aligned}
+\frac{1}{\mu+L} \norm{\nabla f(x) -\nabla f(x_0)}^2 + \frac{\mu L}{\mu+L}\norm{x-x_0}^2\le& \scp{\nabla f(x) -\nabla f(x_0)}{x-x_0}
+\end{aligned}
+\right.
+\end{equation}
+%
+Let $g(x) := f(x) - \frac{\mu}{2}\norm{x}^2$. Then $\scp{\nabla g(x_1)-\nabla g(x_2)}{x_1-x_2} = \scp{\nabla f(x_1)-\nabla f(x_2)}{x_1-x_2} - \mu\scp{x_1-x_2}{x_1-x_2} \le (L-\mu)\norm{x_1-x_2}^2$, so $g\in \mathcal F^{1,1}_{L-\mu}(X)$. Then for $\mu<L$
+%
+\begin{align*}
+&\scp{\nabla f(x_1)-\nabla f(x_2)}{x_1-x_2} - \mu\norm{x_1-x_2}^2 = \scp{\nabla g(x_1)-\nabla g(x_2)}{x_1-x_2}\ge \frac{1}{L-\mu}\norm{\nabla g(x_1)-\nabla g(x_2)}^2\\
+\quad&= \frac{1}{L-\mu}\left(\norm{\nabla f(x_1)-\nabla f(x_2)}^2 -2\mu\scp{\nabla f(x_1)-\nabla f(x_2)}{x_1-x_2} + \mu^2\norm{x_1-x_2}^2\right)\\
+\quad\Rightarrow\quad \\
+&(L+\mu)\scp{\nabla f(x_1)-\nabla f(x_2)}{x_1-x_2} \ge \norm{\nabla f(x_1)-\nabla f(x_2)}^2 + (\mu^2+(L-\mu)\mu)\norm{x_1-x_2}^2.
+\end{align*}
+\end{lemma}
+%
+%
+%==========================================
+\section{FISTA smooth \cite{BeckTeboulle09}}\label{sec:}
+%==========================================
+%
+Let
+%
+\begin{align*}
+Q_{\alpha}(x,y) := f(y) + f'(y)(x-y) + \frac{\alpha}{2}\norm{x-y}^2
+\end{align*}
+%
+We have by (\ref{eq:conv_lip})
+%
+\begin{equation}\label{eq:QLoverestimate}
+f(x) \le Q_L(y,x)\quad \forall x,y\in X.
+\end{equation}
+%
+and
+%
+\begin{equation}\label{eq:}
+Q_{\alpha}(x,y) = f(y) - \frac{1}{2\alpha}\norm{\nabla f(y)}^2 + \frac{\alpha}{2}\norm{x-y+\frac{1}{\alpha} \nabla f(y)}^2
+\end{equation}
+%
+Let
+%
+\begin{equation}\label{eq:}
+p_{\alpha}(y) = \argmin\SetDef{Q_{\alpha}(x,y)}{x\in X}
+\end{equation}
+%
+Then
+%
+\begin{equation}\label{eq:Qmin}
+p_{\alpha}(y) = y - \frac{1}{\alpha} \nabla f(y),\quad Q_{\alpha}(p_{\alpha}(y),y) = f(y) - \frac{1}{2\alpha}\norm{\nabla f(y)}^2 = f(y)-\frac{\alpha}{2}\norm{p_{\alpha}(y)-y}^2.
+\end{equation}
+%
+%
+\begin{yellow}
+\begin{algorithm}[H]
+\caption{FISTA smooth} 
+\label{algorithm:FISTAsmooth} 
+%
+Choose $x_0\in X$, $y_0=x_0$, $t_0=1$. Set $k=0$.
+%
+\begin{itemize}
+\item[(1)] $x_{k+1} = p_L(y_k)$.
+\item[(2)] $s_{k+1} = \frac{1+\sqrt{1+4s_{k}^2}}{2}$
+\item[(3)] $y_{k+1} = x_{k+1} + \frac{s_{k}-1}{s_{k+1}}(x_{k+1}-x_{k})$
+\item[(4)] Increment $k$ and go to (1).
+\end{itemize}
+%
+\end{algorithm}
+\end{yellow}
+%
+We have
+%
+\begin{equation}\label{eq:FITAtk}
+s_{k}\ge 1,\quad s_{k+1}\ge s_{k}, \quad s_{k+1}^2 - s_{k+1} = s_{k}^2, \quad s_{k} \ge (k+1)/2.
+\end{equation}
+
+%
+\begin{align*}
+\left(\frac{s_{k}-1}{s_{k+1}}\right)^2 = \frac{s_{k+1}^2-s_{k+1}-2s_{k}+1}{s_{k+1}^2}\le1
+\end{align*}
+%
+%
+\begin{align*}
+\beta_k = \frac{s_{k}-1}{s_{k+1}} = \frac{2s_{k}-2}{1+\sqrt{1+4s_{k}^2}}
+= \frac{(s_{k}-1)(1-\sqrt{1+4s_{k}^2})}{-2s_{k}^2}
+\end{align*}
+%
+
+%
+%---------------------------------------
+\begin{lemma}\label{lemma:FISTAdecrease}
+%
+\begin{equation}\label{eq:FISTAdecrease}
+f(p_L(y))-f(x) \le   \scp{\nabla f(y)}{y-x} -\frac{1}{2L}\norm{\nabla f(y)}^2 \quad\forall x\in X.
+\end{equation}
+%
+\end{lemma}
+%
+%---------------------------------------
+\begin{proof}
+%
+Since by (\ref{eq:QLoverestimate}) $Q_L$ is an overestimate of $f$, we have 
+%
+\begin{align*}
+f(p_L(y))\le Q_L(p_L(y), y)
+\end{align*}
+%
+Then we have, together with (\ref{eq:Qmin}) and convexity
+%
+%
+\begin{align*}
+f(p_L(y))-f(x) \le& Q_L(p_L(y), y) -f(y) - \scp{\nabla f(y)}{x-y}
+= \scp{\nabla f(y)}{y-x} -\frac{1}{2L}\norm{\nabla f(y)}^2 .
+\end{align*}
+%
+\end{proof}
+%
+%
+For $y=y_k$ and $x=x_k$, $x=x^*$ in (\ref{eq:FISTAdecrease}), and with $\Delta f_k := f(x_k)- f(x^*)$
+%
+\begin{align*}
+\Delta f_{k+1} - \Delta f_{k}\le  \scp{\nabla f(y_k)}{y_k-x_k} - \frac{1}{2L}\norm{\nabla f(y_k)}^2 \\
+\Delta f_{k+1} \le \scp{\nabla f(y_k)}{y_k-x^*} - \frac{1}{2L}\norm{\nabla f(y_k)}^2  
+\end{align*}
+%
+so multiplying the first inequality with $s_{k}^2$ and the second with $s_{k+1}^2-s_{k}^2$
+%
+\begin{align*}
+ s_{k+1}^2\Delta f_{k+1}-s_{k}^2 \Delta f_{k} \le 
+  \scp{\nabla f(y_k)}{s_{k+1}^2y_k-s_{k}^2 x_k -(s_{k+1}^2-s_{k}^2) x^*}-\frac{s_{k+1}^2}{2L}\norm{\nabla f(y_k)}^2
+\end{align*}
+%
+%
+Now the condition
+%
+\begin{equation}\label{eq:}
+s_{k+1}^2-s_{k}^2 =s_{k+1}
+\end{equation}
+%
+implies
+%
+\begin{align*}
+s_{k+1}^2 \Delta f_{k+1}-s_{k}^2 \Delta f_{k} \le& 
+  \scp{s_{k+1}\nabla f(y_k)}{s_{k+1}y_k+(1-s_{k+1}) x_k - x^*}-\frac{L}{2}\norm{\frac{s_{k+1}}{L}\nabla f(y_k)}^2\\
+=& \frac{L}{2}\left(2\scp{a_k}{b_k}-\norm{a_k}^2 \right) =
+\frac{L}{2}\left(\norm{b_k}^2-\norm{b_k-a_k}^2 \right)\\
+a_k:=& \frac{s_{k+1}}{L}\nabla f(y_k) = s_{k+1}(y_k-x_{k+1}),\quad
+b_k :=  s_{k+1}y_k + (1-s_{k+1}) x_k -x^*
+\end{align*}
+
+
+Since
+%
+\begin{align*}
+b_k-a_k =  s_{k+1}x_{k+1}+ (1-s_{k+1}) x_k - x^*
+\end{align*}
+%
+%
+\begin{align*}
+b_k-a_k = b_{k+1} \quad\Leftrightarrow\quad s_{k+1}x_{k+1}+ (1-s_{k+1}) x_k  =  t_{k+2}y_{k+1}+(1-t_{k+2}) x_{k+1},
+\end{align*}
+%
+or
+%
+\begin{align*}
+y_{k+1} = x_{k+1} + \frac{(s_{k+1}-1)}{t_{k+2}}(x_{k+1}- x_k).
+\end{align*}
+%
+Now from 
+%
+\begin{equation}\label{eq:}
+\frac{2s_{k+1}^2}{L} \Delta f_{k+1} - \frac{2s_{k}^2}{L} \Delta f_k \le  \norm{b_{k}}^2 - \norm{b_{k+1}}^2
+\end{equation}
+%
+it follows that for any $k\ge1$
+%
+\begin{align*}
+\frac{2s_{k+1}^2}{L} \Delta f_{k+1} \le \frac{2s_{k+1}^2}{L} \Delta f_{k+1} + \norm{b_{k+1}}^2 \le \frac{2s_{k}^2}{L} \Delta f_{k} + \norm{b_{k}}^2
+\le \frac{2t_{0}^2}{L} \Delta f_{0} + \norm{b_{0}}^2
+\end{align*}
+%
+and with (\ref{eq:FITAtk})
+%
+\begin{equation}\label{eq:}
+f(x_k) - f^* \le \frac{1}{s_{k}^2}\left( f(x_0) - f^*  + \frac{L}{2}\norm{b_{0}}^2\right).
+\end{equation}
+%
+%
+%
+%==========================================
+\section{FISTA with backtracking ???}\label{sec:}
+%==========================================
+%
+%
+%
+%
+%==========================================
+\section{Nesterov acceleration}\label{sec:}
+%==========================================
+%
+%
+\begin{yellow}
+\begin{algorithm}[H]
+\caption{AGD fixed} 
+\label{algorithm:AGDfixed} 
+%
+Choose $x_0\in X$, $\alpha=\sqrt{\kappa_f}$, $\beta=\frac{\alpha-1}{\alpha+1}$. Set $k=0$.
+%
+\begin{itemize}
+\item[(1)] $x_{k+1} = y_k- \frac1L \nabla f(y_k)$.
+\item[(3)] $y_{k+1} = x_{k+1} + \beta(x_{k+1}-x_{k})$
+\item[(4)] Increment $k$ and go to (1).
+\end{itemize}
+%
+\end{algorithm}
+\end{yellow}
+%
+
+
+
+Let us start with, for any $x\in X$,
+%
+%
+\begin{align*}
+%
+\left\{
+\begin{aligned}
+f(x_{k+1}) \le&   f(y_k)  -\frac{1}{2L}\norm{\nabla f(y_k)}^2\\
+f(x) \ge& f(y_k) + \scp{\nabla f(y_k)}{x-y_k} + \frac{\mu}{2}\norm{x-y_k}^2
+\end{aligned}
+\right.\\
+\quad\Rightarrow\quad 
+f(x_{k+1})-f(x)\le \scp{\nabla f(y_k)}{y_k-x} -\frac{1}{2L}\norm{\nabla f(y_k)}^2  -\frac{\mu}{2}\norm{x-y_k}^2
+%
+\end{align*}
+%
+Setting $\Delta f_k:= f(x_k)-f^*$ we then have with $0<\theta<1$ and using $2ab -a^2 = b^2-(a-b)^2$
+%
+\begin{align*}
+\Delta f_{k+1} -(1-\theta)\Delta f_k \le& \scp{\nabla f(y_k)}{y_k-(1-\theta)x_k -\theta x^*} -\frac{1}{2L}\norm{\nabla f(y_k)}^2  -\frac{\theta\mu}{2}\norm{x^*-y_k}^2\\
+=& \frac{L}{2}\left( \norm{y_k-(1-\theta)x_k -\theta x^*}^2 - \norm{x_{k+1}-(1-\theta)x_k -\theta x^*}^2\right) -\frac{\theta\mu}{2}\norm{x^*-y_k}^2
+\end{align*}
+%
+With $\theta=\frac{1-\beta}{1+\beta}$, such that $\beta=\frac{1-\theta}{1+\theta}$ and 
+$\frac{1-\theta}{\theta\beta}-1  = \frac{1+\theta}{\theta}-1 = \frac{1}{\theta}$
+%
+\begin{align*}
+z_k :=& \frac{1}{\theta}x_k - \frac{1-\theta}{\theta} x_{k-1} = x_k  + \frac{1-\theta}{\theta} (x_k-x_{k-1})
+= y_k + \left(  \frac{1-\theta}{\theta}-\beta\right) (x_k-x_{k-1})\\ 
+=& y_k + \left(\frac{1-\theta}{\beta\theta}-1\right)(y_k-x_k)
+= y_k + \frac{1}{\theta}(y_k-x_k)
+\end{align*}
+%
+and
+%
+\begin{align*}
+\frac{1}{\theta}y_k - \frac{1-\theta}{\theta} x_{k} = x_k +\frac{1}{\theta}(y_k-x_k)=  z_k + x_k-y_k
+\end{align*}
+%
+Putting these together, we find
+%
+\begin{align*}
+\Delta f_{k+1} -(1-\theta)\Delta f_k \le& \frac{L}{2}\theta^2\left( \norm{z_k- x^* + x_k-y_k}^2 - \norm{z_{k+1} - x^*}^2\right) -\frac{\theta\mu}{2}\norm{x^*-y_k}^2
+\end{align*}
+%
+Now we have 
+%
+\begin{align*}
+2\scp{z_k- x^*}{ x_k-y_k} =& 2\theta\scp{z_k- x^*}{ y_k-z_k} = \theta\left( \norm{y_k- x^*}^2 - \norm{z_k-x^*}^2 - \norm{y_k- z_k}^2 \right)\\
+=&\theta\left( \norm{y_k- x^*}^2 - \norm{z_k-x^*}^2 - \frac{1}{\theta^2}\norm{y_k- x_k}^2 \right)
+\end{align*}
+%
+such that
+%
+\begin{align*}
+ \norm{z_k- x^* + x_k-y_k}^2 =&  \norm{z_k- x^* }^2 + 2\scp{z_k- x^*}{x_k-y_k} + \norm{x_k-y_k}^2\\
+ =&  \norm{z_k- x^* }^2 - \theta\left(\norm{z_k- x^*}^2-\norm{y_k- x^*}^2\right) - \frac{1}{\theta}\norm{y_k-x_k}^2 + \norm{x_k-y_k}^2\\
+ =&  (1-\theta)\norm{z_k- x^* }^2 + \theta\norm{y_k- x^*}^2 - \frac{1-\theta}{\theta}\norm{y_k-x_k}^2 
+\end{align*}
+%
+and we get
+%
+\begin{align*}
+\theta\left(\Delta f_{k+1} + \frac{L}{2}\theta^2\norm{z_{k+1} - x^*}^2\right) \le& (1-\theta)\left(\Delta f_k-\Delta f_{k+1}\right)  + \frac{L}{2}\theta^2(1-\theta)\left( \norm{z_k- x^* }^2 - \norm{z_{k+1} - x^*}^2\right)\\
+&+ \frac{L}{2}\theta^3\norm{y_k- x^*}^2 - 2L\theta^2\frac{1-\theta}{\theta}\norm{y_k-x_k}^2  -\frac{\theta\mu}{2}\norm{x^*-y_k}^2
+\end{align*}
+%
+For 
+%
+\begin{align*}
+\frac{L}{2}\theta^2 \le \frac{\mu}{2} \quad\Leftrightarrow\quad \theta\le \frac{1}{\sqrt{\kappa}}
+\end{align*}
+%
+we have with $a_k:=\Delta f_{k} + 2L\theta^2\norm{z_{k} - x^*}^2$
+%
+\begin{align*}
+\sum_{k=n+1}^{\infty} a_k \le \frac{1-\theta}{\theta} a_n,
+\end{align*}
+%
+so with $S_n:= \sum_{k=n}^{\infty} a_k$
+%
+\begin{align*}
+S_{n+1} \le \frac{1-\theta}{\theta} \left(S_n-S_{n+1}\right) \quad\Rightarrow\quad S_{n+1} \le (1-\theta )S_n
+\quad\Rightarrow\quad  S_{n+k} \le (1-\theta )^k S_n
+\end{align*}
+%
+or
+%
+\begin{equation}\label{eq:}
+a_{n+k} \le S_{n+k} \le (1-\theta )^{k-1} S_{n+1}\le \frac{(1-\theta )^{k}}{\theta} a_{n}
+\end{equation}
+%
+
+
+
+
+
+
+
+
+
+%-----------------------------------------------
+\printbibliography
+%-----------------------------------------------
+%
+%-------------------------------------------
+\end{document}      
+%-------------------------------------------Wi\

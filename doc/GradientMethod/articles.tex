@@ -1,0 +1,707 @@
+%----------------------------------------
+\documentclass[12pt,english]{article}
+%----------------------------------------
+%
+%---------------------------------------------------------
+\usepackage[a4paper,margin=1.8cm]{geometry}
+\input{../packages.tex}
+%---------------------------------------------------------
+
+%---------------------------------------------------------
+\input{../macros.tex}
+%---------------------------------------------------------
+
+%-------------------------------------------
+\begin{document}
+%-------------------------------------------
+
+\title{Articles on Gradient methods}
+\author{}
+\maketitle
+\tableofcontents
+
+%
+%==========================================
+\section{OC15}\label{sec:}
+%==========================================
+%
+From \cite{ODonoghueCandes15}.
+
+They use AGM in the form: $\theta_0=1$ and  $\theta_k$ solves
+
+\begin{align*}
+\theta_{k+1}^2 = (1-\theta_{k+1})\theta_k^2+ q\theta_{k+1}\\
+\beta_k = \theta_k(1-\theta_k)/(\theta_k^2+\theta_{k+1}) \\
+y_{k+1} = x_{k+1} + \beta_k(x_{k+1}-x_{k})
+\end{align*}
+%
+For $q=1$ we have the GM.
+
+
+%
+\begin{align*}
+\theta_{k+1}^2 + (\theta_k^2- q)\theta_{k+1}= \theta_k^2
+\quad\Leftrightarrow\quad 
+\left( \theta_{k+1} + \frac{\theta_k^2- q}{2}\right)^2 = \theta_k^2 + \frac{(\theta_k^2- q)^2}{4}\\
+\quad\Leftrightarrow\quad 
+\theta_{k+1} = \sqrt{\theta_k^2 + \frac{(\theta_k^2- q)^2}{4}}-\frac{\theta_k^2- q}{2}
+\end{align*}
+%
+
+%
+%-------------------------------------------------------------------------
+\subsection{Observation: dependence on $q$}\label{subsec:}
+%-------------------------------------------------------------------------
+%
+... is impressive.
+%
+%-------------------------------------------------------------------------
+\subsection{Restart}\label{subsec:}
+%-------------------------------------------------------------------------
+%
+Restart rules:
+%
+\begin{align*}
+f(x_{k+1}) > f(x_k)\\
+\scp{\nabla f(y_k)}{x_{k+1}-x_{k}} >0
+\end{align*}
+%
+%
+%-------------------------------------------------------------------------
+\subsection{Linear convergence analysis}\label{subsec:}
+%-------------------------------------------------------------------------
+%
+For $f(x) = \frac12 \transpose{x} A x$. And even $n=1$, $A=\lambda$.
+
+Suppose
+%
+\begin{align*}
+%
+\left\{
+\begin{aligned}
+x_{k+1} = y_k - \frac{1}{L}\nabla f(y_k)\\
+y_{k+1} = x_{k+1} + \beta(x_{k+1}-x_{k})
+\end{aligned}
+\right.
+\quad\Rightarrow\quad 
+x_{k+1} =  (1-\frac{\lambda}{L}) \left( (1+\beta)x_{k} - \beta(x_{k-1})\right)
+\end{align*}
+%
+The iteration is governed by the characteristic polynomial
+%
+\begin{align*}
+r^2 - (1-\frac{\lambda}{L}) \left( (1+\beta)r - \beta\right)
+\end{align*}
+%
+Minimizing the module of the roots $\abs{r^*}$ gives
+%
+\begin{align*}
+\beta^* = \frac{1-\sqrt{\lambda/L}}{1+\sqrt{\lambda/L}}\quad\Rightarrow\quad 
+\abs{r^*} = 1 -\sqrt{\lambda/L}.
+\end{align*}
+%
+For $\beta<\beta^*$ we are in the low momentum regime, and we say the system is over- damped. The convergence rate is dominated by the larger root, i.e., the system exhibits slow monotone convergence.
+If  $\beta>\beta^*$ then the roots of the polynomial (7) are complex and we are in the high momentum regime. The system is under-damped and exhibits periodicity.
+
+%
+%==========================================
+\section{AZO14}\label{sec:}
+%==========================================
+%
+From \cite{Allen-ZhuOrecchia14}. They use a strongly convex distance generating function (DGF) $\psi$ and corresponding Bregman divergence $\Delta_{\psi}(x,y) := \psi(x)-\psi(y)-\nabla\psi(y)(x-y)$.
+
+We only consider the Euclidian norm. Then in our notation the considered alogorithm reads
+%
+\begin{align*}
+y_0=&z_0=x_0\\
+y_{k} =& (1-\tau_k) x_k + \tau_k z_k\\
+x_{k+1} =& y_k - t_k \nabla f(y_k)\\
+z_{k+1} =& z_k - \alpha_k  \nabla f(y_k)\\
+\tau_k =& t_k/\alpha_k\\
+t_k =& 1/L,\quad \alpha_k=(k+2)/(2L) 
+\end{align*}
+%
+We then have
+%
+\begin{align*}
+z_{k+1} = z_k + \frac{\alpha_k}{t_k}  (x_{k+1} - y_k)
+= z_k + \frac{\alpha_k}{t_k}  (x_{k+1} - ((1-\tau_k) x_k + \tau_k z_k))
+= x_{k+1} + \frac{1-\tau_k}{\tau_k}(x_{k+1}-x_k)
+\end{align*}
+%
+and
+%
+\begin{align*}
+y_{k} =& (1-\tau_k) x_k + \tau_k (x_{k} + \frac{1-\tau_{k-1}}{\tau_{k-1}}(x_{k}-x_{k-1}))
+=  x_k  + \frac{\tau_k(1-\tau_{k-1})}{\tau_{k-1}}(x_{k}-x_{k-1})
+\end{align*}
+%
+%
+%==========================================
+\section{DFR18}\label{sec:}
+%==========================================
+%
+From \cite{DrusvyatskiyFazelRoy18a}, inspired by \cite{BubeckLeeSingh15}.
+
+%---------------------------------------
+\begin{lemma}(Quadratic Averaging)\label{lemma:quadav}
+Let $Q_i(x) = Q_i^* + \frac{\alpha}{2}\norm{x-c_i}^2$ and $Q(\lambda, x) = (1-\lambda)Q_1(x)+\lambda Q_2(x)$. Then
+%
+\begin{equation}\label{eq:qa_sol}
+%
+\left\{
+\begin{aligned}
+\max_{0\le\lambda\le1} Q^*(\lambda) =& (1-\lambda^*)Q_1^*+\lambda^* Q_2^* + \frac{\lambda^*(1-\lambda^*)\alpha}{2}\norm{c_1-c_2}^2,\\ 
+\argmax_{0\le\lambda\le1} Q^*(\lambda) =& (1-\lambda^*)c_1+\lambda^* c_2,\\
+\lambda^* =& P_{[0;1]}\left(\frac12 + \frac{(Q_2^*-Q_1^*)}{\alpha\norm{c_1-c_2}^2}\right).
+\end{aligned}
+\right.
+%
+\end{equation}
+%
+If 
+%
+\begin{equation}\label{eq:qa_cond}
+\frac{\abs{Q_2^*-Q_1^*}}{\alpha\norm{c_1-c_2}^2}\le \frac12
+\end{equation}
+%
+we have
+%
+\begin{equation}\label{eq:qa_sol}
+Q^*(\lambda^*) =\frac{Q_1^*+Q_2^*}{2}+ \frac{\alpha}{8}\norm{c_1-c_2}^2+\frac{(Q_2^*-Q_1^*)^2}{2\alpha\norm{c_1-c_2}^2}
+\end{equation}
+%
+and the function $Q^*(\lambda^*)$ is nondecreasing in $Q_i^*$.
+\end{lemma}
+%
+%---------------------------------------
+\begin{proof}
+We have with $a^2-2ab = (a-b)^2 -b^2$
+%
+\begin{align*}
+(1-\lambda)\norm{x-c_1}^2 + \lambda\norm{x-c_2}^2 
+=&\norm{x}^2 - 2\scp{x}{(1-\lambda)c_1+\lambda c_2}+(1-\lambda)\norm{c_1}^2 + \lambda\norm{c_2}^2 \\
+=& \norm{x - (1-\lambda)c_1+\lambda c_2}^2 - \norm{(1-\lambda)c_1+\lambda c_2}^2 +(1-\lambda)\norm{c_1}^2 + \lambda\norm{c_2}^2\\
+=& \norm{x - (1-\lambda)c_1+\lambda c_2}^2 +\lambda(1-\lambda)\norm{c_1-c_2}^2,
+\end{align*}
+%
+so
+%
+\begin{align*}
+Q(\lambda, x) =& (1-\lambda)Q_1^*+\lambda Q_2^* + \frac{(1-\lambda)\alpha}{2}\norm{x-c_1}^2 + \frac{\lambda\alpha}{2}\norm{x-c_2}^2 \\
+=& (1-\lambda)Q_1^*+\lambda Q_2^* + \frac{\lambda(1-\lambda)\alpha}{2}\norm{c_1-c_2}^2
++\frac{\alpha}{2}\norm{x - (1-\lambda)c_1+\lambda c_2}^2,
+\end{align*}
+%
+which gives
+%
+\begin{align*}
+Q^*(\lambda) = (1-\lambda)Q_1^*+\lambda Q_2^* + \frac{\lambda(1-\lambda)\alpha}{2}\norm{c_1-c_2}^2,\quad \argmin_{x} Q(\lambda,x)=(1-\lambda)c_1+\lambda c_2
+\end{align*}
+%
+since 
+%
+\begin{align*}
+\frac{d Q^*(\lambda)}{d\lambda} = Q_2^*-Q_1^* + \frac{\alpha}{2}\norm{c_1-c_2}^2 -\lambda\alpha\norm{c_1-c_2}^2
+\end{align*}
+%
+we find
+%
+\begin{align*}
+\lambda^* = P_{[0;1]}\left(\frac12 + \frac{(Q_2^*-Q_1^*)}{\alpha\norm{c_1-c_2}^2}\right).
+\end{align*}
+%
+If (\ref{eq:qa_cond})
+%
+\begin{align*}
+\lambda^*=&\frac12 + \frac{Q_2^*-Q_1^*}{\alpha\norm{c_1-c_2}^2}\\
+Q^*(\lambda^*) =& \frac{Q_1^*+Q_2^*}{2}+\frac{(Q_2^*-Q_1^*)}{\alpha\norm{c_1-c_2}^2}(Q_2^*-Q_1^*) + \frac{\alpha\left(\frac14-\frac{\abs{Q_2^*-Q_1^*}^2}{\alpha^2\norm{c_1-c_2}^4}\right)}{2}\norm{c_1-c_2}^2\\
+=& \frac{Q_1^*+Q_2^*}{2}+ \frac{\alpha}{8}\norm{c_1-c_2}^2+\frac{(Q_2^*-Q_1^*)^2}{2\alpha\norm{c_1-c_2}^2}\\
+=& Q_2^* + \frac{Q_1^*-Q_2^*}{2} + \frac{\alpha}{8}\norm{c_1-c_2}^2+\frac{(Q_2^*-Q_1^*)^2}{2\alpha\norm{c_1-c_2}^2}\\
+=& Q_2^* +\frac{\left( (Q_2^*-Q_1^*)+\frac{\alpha}{2}\norm{c_1-c_2}^2\right)^2}{2\alpha\norm{c_1-c_2}^2}
+\end{align*}
+%
+Finally we have
+%
+\begin{align*}
+\frac{\partial Q^*(\lambda^*)}{\partial Q_1^*} = \frac12 -\frac{Q_2^*-Q_1^*}{\alpha\norm{c_1-c_2}^2}\ge0.
+\end{align*}
+%
+\end{proof}
+%
+Let
+%
+\begin{align*}
+x^+ := x - \frac{1}{L}\nabla f(x),\quad x^{++} := x - \frac{1}{\mu}\nabla f(x).
+\end{align*}
+%
+%
+%---------------------------------------
+\begin{yellow}
+\begin{algorithm}[H]
+\caption{Quadratic averaging} 
+\label{algorithm:QA} 
+%
+Inputs: $x_0\in X$. Set $k=0$, $v_0:= f(x_0)-\frac{\norm{\nabla f(x_0)}^2}{2\mu}$, $c_0:=x_0^{++}$, $Q_0(x) = v_0 + \frac{\mu}{2}\norm{x-c_0}^2$
+%
+\begin{itemize}
+\item[(1)] $x_{k+1} := \min_{0\le t\le 1} (c_k + t(x_k^{+}-c_k))$.
+\item[(2)] 
+$\widetilde{v}:= f(x_{k+1}) - \frac{\norm{\nabla f(x_{k+1})}^2}{2\mu}$,\quad 
+$\lambda_{k}:=P_{[0;1]}\left(\frac12 + \frac{v_k-\widetilde{v}}{\mu\norm{c_k-x_{k+1}^{++}}^2}\right)$,\quad $c_{k+1} := (1-\lambda_k)x_{k+1}^{++} + \lambda_k c_k$,\quad $v_{k+1} = (1-\lambda_k)\widetilde{v}+\lambda_k v_k + \frac{\lambda_k(1-\lambda_k)\mu}{2}\norm{x_{k+1}^{++}-c_k}^2$
+\item[(3)] Increment $k$ and go to (1).
+\end{itemize}
+%
+\end{algorithm}
+\end{yellow}
+%---------------------------------------
+
+%---------------------------------------
+\begin{theorem}(2.3)\label{thm:}
+We have
+%
+\begin{equation}\label{eq:}
+v_k \le f^* \le f(x_k^+),\quad f(x_k^+)-v_k \le \rho^k \left(f(x_0^+)-v_0\right), \quad \rho:=1-1/\sqrt{\kappa}.
+\end{equation}
+%
+\end{theorem}
+%
+%---------------------------------------
+\begin{proof}
+Let $r_k := \rho^k \left(f(x_0^+)-v_0\right)$. By induction we show $ f(x_k^+)\le v_k+r_k$. For $k=0$ this evident. Let the induction hypothesis be true. We want to show
+%
+\begin{align*}
+f(x_{k+1}^+) \le v_{k+1} + r_{k+1}.
+\end{align*}
+%
+
+%
+%---------------GRAYGREEN------------
+\begin{grayenv}
+%
+We have
+%
+\begin{align*}
+f(x_{k+1}^+) \le& f(x_{k+1}) - \frac{1}{2L}\norm{\nabla f(x_{k+1})}^2&& \mbox{(Lipschitz)}\\
+\le& f(x_{k}^+) - \frac{1}{2L}\norm{\nabla f(x_{k+1})}^2&& \mbox{(Line-search)}\\
+\le& v_k + r_k - \frac{1}{2L}\norm{\nabla f(x_{k+1})}^2&& \mbox{(Induction)}\\
+\end{align*}
+%
+Now suppose that
+%
+\begin{equation}\label{eq:qa_proof_hyp}
+\norm{\nabla f(x_{k+1})}^2 \ge 2 \sqrt{L\mu}r_k.
+\end{equation}
+%
+Then
+%
+\begin{align*}
+f(x_{k+1}^+) \le& v_k + \left(1-\frac{\sqrt{\mu}}{\sqrt{L}}\right)r_k&& \mbox{(\ref{eq:qa_proof_hyp})}\\
+\le& v_{k+1} + r_{k+1}&& \mbox{($v_k$ increasing)}
+\end{align*}
+%
+
+%
+\end{grayenv}
+%---------------GRAYGREEN------------
+%
+Let
+%
+\begin{equation}\label{eq:qa_proof_case1}
+\frac{\norm{\nabla f(x_{k+1})}^2}{\mu} \le  2\frac{\sqrt{\kappa}}{\sqrt{\kappa}+1}r_k
+\end{equation}
+%
+%
+We then have
+%
+\begin{align*}
+f(x_{k+1}^+) \le& f(x_{k+1}) - \frac{1}{2L}\norm{\nabla f(x_{k+1})}^2&& \mbox{(Lipschitz)}\\
+\le& f(x_{k+1}) - \frac{1}{2\mu}\norm{\nabla f(x_{k+1})}^2 + \frac{1}{2\mu}\left(1-\frac{1}{\kappa}\right)\norm{\nabla f(x_{k+1})}^2 && \mbox{}\\
+=& \widetilde{v}  + \frac{1}{2\mu}\left(1-\frac{1}{\kappa}\right)\norm{\nabla f(x_{k+1})}^2&& \mbox{}\\
+\le& v_{k+1}  + \left(1-\frac{1}{\kappa}\right)\frac{\norm{\nabla f(x_{k+1})}^2}{2\mu}&& \mbox{(QA)}\\
+\le& v_{k+1}  + \frac{\kappa-1}{\kappa}\frac{\sqrt{\kappa}}{\sqrt{\kappa}+1}r_k&& \mbox{(\ref{eq:qa_proof_case1})}\\
+\le& v_{k+1}  + \frac{\sqrt{\kappa}-1}{\sqrt{\kappa}}r_k= v_{k+1}  + r_{k+1}&&
+\end{align*}
+%
+%
+
+Now we suppose that (\ref{eq:qa_proof_case1}) is false, so
+%
+\begin{equation}\label{eq:qa_proof_case2}
+\frac{\norm{\nabla f(x_{k+1})}^2}{\mu} \ge  2\frac{\sqrt{\kappa}}{\sqrt{\kappa}+1}r_k
+\end{equation}
+%
+
+From the previous computation we have
+%
+\begin{align*}
+\widetilde{v}  \ge  f(x_{k+1}^+) - \frac{1}{2\mu}\left(1-\frac{1}{\kappa}\right)\norm{\nabla f(x_{k+1})}^2=: \widetilde{v}_A
+\end{align*}
+%
+We also have
+%
+\begin{align*}
+f(x_{k+1}^+) \le& f(x_{k+1}) - \frac{1}{2L}\norm{\nabla f(x_{k+1})}^2 && \mbox{(Lipschitz)}\\
+\le& f(x_{k}^+) - \frac{1}{2L}\norm{\nabla f(x_{k+1})}^2 && \mbox{(Line-search)}\\
+\le&  v_{k} + r_{k} - \frac{1}{2L}\norm{\nabla f(x_{k+1})}^2&& \mbox{(Induction)}
+\end{align*}
+such that
+\begin{align*}
+v_k \ge  f(x_{k+1}^+) -r_k + \frac{1}{2\mu\kappa}\norm{\nabla f(x_{k+1})}^2=:\widehat{v}_B.
+\end{align*}
+%
+By the line-search we have (!)
+%
+\begin{align*}
+\scp{\nabla f(x_{k+1})}{x_{k+1}-c_k}\le 0,
+\end{align*}
+%
+such that 
+%
+\begin{align*}
+\norm{x_{k+1}^{++}-c_k}^2 = \norm{x_{k+1}-c_k -\frac{1}{\mu}\nabla f(x_{k+1})}^2 \ge \norm{x_{k+1}-c_k}^2 + \frac{1}{\mu^2}\norm{\nabla f(x_{k+1})}^2
+\ge \frac{1}{\mu^2}\norm{\nabla f(x_{k+1})}^2
+\end{align*}
+%
+We have
+%
+\begin{align*}
+\abs{\widehat{v}_A-\widehat{v}_B} = \abs{r_k - \frac{1}{2\mu}\norm{\nabla f(x_{k+1})}^2},
+\end{align*}
+%
+such that
+%
+\begin{align*}
+\frac{\abs{\widehat{v}_A-\widehat{v}_B}}{\mu\norm{x_{k+1}^{++}-c_k}^2}\le \mu\frac{\abs{r_k - \frac{1}{2\mu}\norm{\nabla f(x_{k+1})}^2}}{\norm{\nabla f(x_{k+1})}^2} = \abs{\frac{\mu r_k}{\norm{\nabla f(x_{k+1})}^2}-\frac12}\le \frac12
+\end{align*}
+%
+since by (\ref{eq:qa_proof_case2}) we have $0\le\frac{\mu r_k}{\norm{\nabla f(x_{k+1})}^2}\le \frac{\sqrt{\kappa}+1}{2\sqrt{\kappa}}\le1$ (and $\kappa\ge1$).
+
+Then we have by Lemma~\ref{lemma:quadav} and $d^2:=\norm{x_{k+1}^{++}-c_k}^2$ and $h^2:=\frac{\norm{\nabla f(x_{k+1})}^2}{\mu}$
+%
+\begin{align*}
+v_{k+1} \ge& \frac{\widehat{v}_A+\widehat{v}_B}{2}+ \frac{\mu}{8}\norm{x_{k+1}^{++}-c_k}^2+\frac{(\widehat{v}_B-\widehat{v}_A)^2}{2\mu\norm{x_{k+1}^{++}-c_k}^2}\\
+v=& f(x_{k+1}^+) + \frac12\left(  \frac{h^2}{\kappa}- \frac{h^2}{2}   -r_k  \right) 
++ \frac{\mu}{8}d^2+\frac{\left( r_k - \frac{h^2}{2}\right)^2}{2\mu d^2}\\
+=& f(x_{k+1}^+) -r_k  + \frac{h^2}{2\kappa}  
++\frac{\left( \frac{\mu}{2}d^2 +(r_k - \frac{h^2}{2}) \right)^2}{2\mu d^2}\\ 
+=& f(x_{k+1}^+) -r_k  + \frac{h^2}{2\kappa}  
++\frac{\mu}{8}\left(d + \frac{2}{\mu}(r_k - \frac{h^2}{2})/d \right)^2 
+\end{align*}
+%
+
+%
+\begin{align*}
+f(x_{k+1}^+) -r_k  + X \ge& f(x_{k+1}^+) -r_{k+1} = f(x_{k+1}^+) - (1-1\sqrt{\kappa})r_k\\
+\quad\Leftrightarrow\quad 
+\sqrt{\kappa} X \ge& r_k
+\end{align*}
+%
+
+
+
+
+Let $\phi(s) = s + a/s$ on $[b;+\infty[$. 
+Then $\phi'(s) = 1- a/s^2$, $\phi''(s) = 2a/s^3$. If $a\le 0$, $\phi$ is strictly increasing and $\phi(s)\ge \phi(b)=b+a/b$. Otherwise, $\phi$ is strictly convex with global minimum $s = \sqrt{a}$, so $\phi(s) \ge 2\sqrt{a}$ if $\sqrt{a}\ge b$. This gives with $a=\frac{2}{\mu}(r_k - \frac{h^2}{2})$ and $b=h^2/\mu$.
+
+If $a\le 0$ we have $2\frac{\sqrt{\kappa}}{\sqrt{\kappa}+1} r \le h^2\le 2r$
+
+
+If $a\le 0$ we have $h^2\ge 2r$ and $b+a/b = h^2/\mu + 2r_k/h^2 - 1$
+
+
+\begin{align*}
+v_{k+1} \ge&  
+f(x_{k+1}^+) -r_k  + \frac{h^2}{2\kappa}  +\frac{\mu}{8}\left(h^2/\mu + 2r_k/h^2 - 1\right)^2\\
+=& f(x_{k+1}^+) -r_k  +
+\end{align*}
+%
+
+\blue{
+%
+\begin{align*}
+ -r_k  + \frac{h^2}{2\kappa}  
++\frac{\mu}{4}\sqrt{\frac{2}{\mu}(r_k - \frac{h^2}{2})} \ge -r_{k+1} = -r_k(1-1/\sqrt{\kappa})\\
+\quad\Leftrightarrow\quad 
+\frac{h^2}{2}\frac{\mu}{L}  
++\frac{\mu}{4}\sqrt{\frac{2}{\mu}(r_k - \frac{h^2}{2})} \ge  r_k/\sqrt{\kappa} = r_k \frac{\sqrt{\mu}}{\sqrt{L}}\\
+\quad\Leftrightarrow\quad 
+\frac{h^2}{2}\frac{\sqrt{\mu}}{\sqrt{L}}  
++\frac{\sqrt{2L}}{4}\sqrt{(r_k - \frac{h^2}{2})} \ge  r_k\\
+\end{align*}
+%
+}
+Let $\phi(s) = as + b\sqrt{c-s}$ on $[0;c]$. Then $\phi'(s) = a - b(c-s)^{-1/2}$, $s^* = c - b^2/a^2$, 
+$\phi(s^*) = ac - b^2/a + b^2+a = ac$, so
+%
+\begin{align*}
+\frac{h^2}{2}\frac{\sqrt{\mu}}{\sqrt{L}}  
++\frac{\sqrt{2L}}{4}\sqrt{(r_k - \frac{h^2}{2})} \ge \frac{\sqrt{\mu}}{\sqrt{L}} r_k
+\end{align*}
+%
+\end{proof}
+%
+
+
+
+%
+%==========================================
+\section{JGMTRT21}\label{sec:}
+%==========================================
+%
+From \cite{JahaniGudapatiMa21}, inspired by \cite{DrusvyatskiyFazelRoy18a}.
+
+%
+%---------------------------------------
+\begin{yellow}
+\begin{algorithm}[H]
+\caption{Accelerated Smooth Underestimate Sequence Algorithm (ASUESA)} 
+\label{algorithm:QA} 
+%
+Inputs: $x_0\in X$, $\eps>0$. Set $k=0$, $v_0:=x_0^{++}$, $\phi^*_0:=f(x_0^+)+\left(1-\frac{1}{\kappa}\right)\frac{\norm{\nabla f(x_0)}^2}{2\mu}$, $\alpha_k = 1/\sqrt{\kappa}$, $\beta_k=1/(1+\alpha_k)=\sqrt{\kappa}/(\sqrt{\kappa}+1)$
+%
+\begin{itemize}
+\item[(1)] $y_{k} := \beta_k x_k + (1-\beta_k)v_k$.
+\item[(2)] $x_{k+1} = y_k - \frac{1}{L}\nabla f(y_k)$
+\item[(3)] $v_{k+1} = (1-\alpha_k) v_k + \alpha_k y_k^{++}$,\\ 
+$\phi^*_{k+1}=(1-\alpha_k)\left(\phi^*_k+\frac{\alpha_k\mu}{2}\norm{y_k^{++}-v_k}^2\right) + \alpha_k\left(f(y_k) -\frac{\norm{\nabla f(y_k)}^2}{2\mu} \right)$
+\item[(4)] If $f(x_{k+1})-\phi^*_{k+1} \le \eps$: quit.
+\item[(5)] Increment $k$ and go to (1).
+\end{itemize}
+%
+\end{algorithm}
+\end{yellow}
+%---------------------------------------
+
+%---------------------------------------
+\begin{theorem}(Corollary 4 in \cite{JahaniGudapatiMa21})\label{thm:}
+We have
+%
+\begin{equation}\label{eq:}
+\phi^*_k \le f^* \le f(x_k^+),\quad f(x_k)-\phi^*_k \le \rho^k \left(f(x_0)-\phi^*_0\right), \quad \rho:=1-1/\sqrt{\kappa}.
+\end{equation}
+%
+\end{theorem}
+%
+The idea (underestimate sequence) is to show that
+%
+\begin{equation}\label{eq:UES}
+\phi^*_k \le f(x^*),\quad f(x_{k+1})-\phi^*_{k+1} \le (1-\alpha_k)\left(f(x_{k})-\phi^*_{k}\right) 
+\end{equation}
+%
+which implies $f(x_{k+1})-\phi^*_{k} \le \prod_{m=0}^k(1-\alpha_k)\left(f(x_{0})-\phi^*_{0}\right)$.
+
+The sequence is constructed recursively by
+%
+\begin{equation}\label{eq:UESDef}
+%
+\left\{
+\begin{aligned}
+\phi_0(x) = \phi^*_0 + \frac{\mu}{2}\norm{v_0}^2,\quad \phi_{k+1} = (1-\alpha_k)\phi_k + \alpha_k \psi(x, y_k)\\
+\psi(x, y) := f(y) + \scp{\nabla f(y)}{x-y}+\frac{\mu}{2}\norm{x-y}^2
+\end{aligned}
+\right.
+\end{equation}
+%
+%---------------------------------------
+\begin{lemma}\label{lemma:}
+We have
+%
+\begin{equation}\label{eq:uas_help22}
+\psi(x, y) \le f(x),\quad \psi(x, y) = f(y)  + \frac{\mu}{2}\norm{x-y^{++}}^2 - \frac{\norm{\nabla f(y)}^2}{2\mu}
+\end{equation}
+%
+\end{lemma}
+%
+%---------------------------------------
+\begin{remark}\label{rmk:}
+For composite function, the authors use instead
+%
+\begin{align*}
+\psi(x, y) := f(y^+) + \scp{\nabla f(y)}{x-y}+\frac{\mu}{2}\norm{x-y}^2+\frac{1}{2L}\norm{\nabla f(y)}^2,
+\end{align*}
+%
+giving
+%
+\begin{align*}
+\psi(x, y) = f(y^+) - \left(1-\frac{1}{\kappa}\right)\frac{\norm{\nabla f(y)}^2}{2\mu} + \frac{\mu}{2}\norm{x-y^{++}}^2
+\end{align*}
+%
+
+
+\end{remark}
+%
+%---------------------------------------
+\begin{proof}
+%
+\begin{align*}
+f(y)  \le f(x) - \scp{\nabla f(y)}{x-y} - \frac{\mu}{2}\norm{x-y}^2
+\end{align*}
+%
+which gives the first assertion. With $ab+b^2/2 = (a+b)^2/2 - a^2/2$ it follows also that
+%
+%
+\begin{align*}
+\psi(x, y) =& f(y) + \scp{\nabla f(y)}{x-y}+\frac{\mu}{2}\norm{x-y}^2\\
+=& f(y) + \frac{\mu}{2}\norm{x-y+\frac{1}{2\mu}\nabla f(y)}^2-\frac{1}{2\mu}\norm{\nabla f(y)}^2\\
+=& f(y) + \frac{\mu}{2}\norm{x-y^{++}}^2-\frac{\norm{\nabla f(y)}^2}{2\mu}
+\end{align*}
+%
+%
+\end{proof}
+%
+%---------------------------------------
+\begin{lemma}\label{lemma:}
+We have for $(\phi_k)_{k\in\N}$ defined by (\ref{eq:UESDef})
+%
+\begin{equation}\label{eq:ues_recphi}
+%
+\left\{
+\begin{aligned}
+\phi_{k+1}(x) =& \phi_{k+1}^* + \frac{\mu}{2}\norm{x-v_{k+1}}^2,\quad 
+v_{k+1} = (1-\alpha_k)v_k + \alpha_k  y_k^{++}\\
+\phi_{k+1}^* =& (1-\alpha_k)\left(\phi_{k}^* + \frac{\alpha_k\mu}{2}\norm{v_k-y_k^{++}}^2\right) + \alpha_k\left(f(y_k) -\frac{\norm{\nabla f(y_k)}^2}{2\mu} \right).
+\end{aligned}
+\right.
+\end{equation}
+%
+\end{lemma}
+%
+%---------------------------------------
+\begin{proof}
+By induction. $k=0$ is trivial.
+%
+\begin{align*}
+\phi_{k+1}(x) =& (1-\alpha_k)\phi_k(x) + \alpha_k \psi(x, y_k) &\quad&\left(\mbox{Definition of $(\phi_k)$}\right)\\
+=& (1-\alpha_k)\left(\phi_{k}^* + \frac{\mu}{2}\norm{x-v_{k}}^2\right) + \alpha_k \psi(x, y_k) &\quad&\left(\mbox{Induction}\right)\\
+=& (1-\alpha_k)\left(\phi_{k}^* + \frac{\mu}{2}\norm{x-v_{k}}^2\right) + \alpha_k \left( f(y_k) - \frac{\norm{\nabla f(y_k)}^2}{2\mu} + \frac{\mu}{2}\norm{x-y_k^{++}}^2\right) &\quad&(\ref{eq:uas_help22})
+\end{align*}
+%
+Now we have
+%
+%
+\begin{equation}\label{eq:uas_help}
+(1-\alpha)\norm{a-b}^2 + \alpha\norm{a-c}^2 = \norm{a - (1-\alpha)b-\alpha c}^2 + \alpha(1-\alpha)\norm{c-b}^2
+\end{equation}
+%
+This is true for $\alpha=0$.
+Since the right hand side is equal to
+%
+\begin{align*}
+\norm{a - b + \alpha(b-c)}^2 + \alpha(1-\alpha)\norm{c-b}^2 
+= \norm{a - b}^2 + 2\alpha\scp{a-b}{b-c}+\alpha\norm{c-b}^2 
+\end{align*}
+%
+its derivative with respect to $\alpha$ is
+%
+\begin{align*}
+2\scp{a-b}{b-c}+\norm{c-b}^2  = \norm{a-b}^2 - \norm{a-c}^2,
+\end{align*}
+%
+which equals the derivative of the left hand side of (\ref{eq:uas_help}).
+%
+\end{proof}
+%
+It remains to check (\ref{eq:UES}).
+%
+%
+We have
+%
+%
+\begin{equation}\label{eq:ues_help33}
+f(x_{k+1}) \le f(y_{k}) -  \frac{1}{2L}\norm{\nabla f(y_k)}^2 \le f(x_k) + \scp{\nabla f(y_k)}{y_k - x_k} -  \frac{1}{2L}\norm{\nabla f(y_k)}^2
+\end{equation}
+%
+such that
+%
+\begin{align*}
+f(x_{k+1})-\phi^*_{k+1}=& f(x_{k+1}) -(1-\alpha_k)\left(\phi_{k}^* + \frac{\alpha_k\mu}{2}\norm{v_k-y_k^{++}}^2\right) -\alpha_k\left(f(y_k) - \frac{\norm{\nabla f(y_k)}^2}{2\mu}\right)&\quad&\mbox{(\ref{eq:ues_recphi})}\\
+%
+=& (1-\alpha_k)\left(f(x_{k+1}) -\phi^*_k-\frac{\alpha_k\mu}{2}\norm{v_k-y_k^{++}}^2\right) + \alpha_k\left( \frac{\norm{\nabla f(y_k)}^2}{2\mu}-\frac{\norm{\nabla f(y_k)}^2}{2L}\right)&\quad&(\ref{eq:ues_help33})\\
+%
+\le& (1-\alpha_k)(f(x_k)-\phi_{k}^*)+ \alpha_k\left( \frac{\norm{\nabla f(y_k)}^2}{2\mu}-\frac{\norm{\nabla f(y_k)}^2}{2L}\right)-(1-\alpha_k)\frac{\norm{\nabla f(y_k)}^2}{2L}\\
+&+ (1-\alpha_k)\left(\scp{\nabla f(y_k)}{y_k - x_k} -  \frac{\alpha_k\mu}{2}\norm{v_k-y_k^{++}}^2\right)
+\end{align*}
+By the scheme we have
+%
+\begin{align*}
+v_k = y_k + \frac{\beta_k}{1-\beta_k}(y_k - x_k),
+\end{align*}
+%
+so with $\frac{\beta_k}{1-\beta_k}= \frac{1}{1+\alpha_k}\frac{1+\alpha_k}{\alpha_k}=1/\alpha_k$
+%
+\begin{align*}
+\norm{v_{k}-y_k^{++}}^2 =& \norm{\frac{\beta_k}{1-\beta_k}(y_k - x_k) + \frac{1}{\mu}\nabla f(y_k)}^2\\
+= &\frac{1}{\alpha_k^2}\norm{y_k - x_k}^2 +  \frac{2}{\mu\alpha_k}\scp{y_k - x_k}{\nabla f(y_k)}
++\frac{1}{\mu^2}\norm{\nabla f(y_k)}^2
+\end{align*}
+%
+and 
+%
+\begin{align*}
+\scp{\nabla f(y_k)}{y_k - x_k} -  \frac{\alpha_k\mu}{2}\norm{v_k-y_k^{++}}^2 =& -\frac{\mu}{2\alpha_k}\norm{y_k - x_k}^2 -\frac{\alpha_k}{2\mu}\norm{\nabla f(y_k)}^2,
+\end{align*}
+%
+so
+%
+\begin{align*}
+f(x_{k+1})-\phi^*_{k+1}\le& (1-\alpha_k)(f(x_k)-\phi_{k}^*)+ \alpha_k\frac{\norm{\nabla f(y_k)}^2}{2\mu}-\frac{\norm{\nabla f(y_k)}^2}{2L}\\
+&- (1-\alpha_k)\left(\frac{\mu}{2\alpha_k}\norm{y_k - x_k}^2 +\frac{\alpha_k}{2\mu}\norm{\nabla f(y_k)}^2\right)\\
+=& (1-\alpha_k)(f(x_k)-\phi_{k}^*) - (1-\alpha_k)\left(\frac{\mu}{2\alpha_k}\norm{y_k - x_k}^2\right)\\
+&+ \left(\frac{\alpha_k}{2\mu}-\frac{(1-\alpha_k)}{2L}- \frac{\alpha_k(1-\alpha_k)}{2\mu}\right)\norm{\nabla f(y_k)}^2
+\end{align*}
+%
+But
+%
+\begin{align*}
+\frac{\alpha_k}{2\mu}-\frac{1}{2L}- \frac{\alpha_k(1-\alpha_k)}{2\mu} = \frac{\alpha_k^2}{2\mu}-\frac{1}{2L}=0.
+\end{align*}
+%
+
+
+%
+%==========================================
+\section{PSW21}\label{sec:}
+%==========================================
+%
+From \cite{ParkSalgadoWise21}.
+
+%
+%---------------------------------------
+\begin{yellow}
+\begin{algorithm}[H]
+\caption{Accelerated GM} 
+\label{algorithm:PSW21AGM} 
+%
+Inputs: $x_0\in X$, $\eta>0$. Set $k=0$, $x_{-1}:=x_0$, $\beta= \frac{1-\eta\sqrt{s}}{1+\eta\sqrt{s}}$
+%
+\begin{itemize}
+\item[(1)] $y_{k} :=  x_k + \beta(x_k-x_{k-1})$.
+\item[(2)] $x_{k+1} = y_k - t\nabla f(y_k)$
+\item[(5)] Increment $k$ and go to (1).
+\end{itemize}
+%
+\end{algorithm}
+\end{yellow}
+%---------------------------------------
+
+%---------------------------------------
+\begin{lemma}\label{lemma:}
+Let $\theta= \eta\sqrt{s}$ and 
+%
+\begin{align*}
+v_{k+1} = x_k - \frac{1}{\theta} (x_{k+1} -x_{k})
+\end{align*}
+%
+
+\end{lemma}
+%
+
+
+%-----------------------------------------------
+\printbibliography
+%-----------------------------------------------
+%
+%-------------------------------------------
+\end{document}      
+%-----------------------------------------{f(y^+)f(y^+)

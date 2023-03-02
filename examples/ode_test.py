@@ -114,7 +114,7 @@ class ParameterTest():
             dt = t[1:] - t[:-1]
             plt.show()
             fig = plt.figure(figsize=1.5*plt.figaspect(1))
-            figshape = (3, self.n_obs)
+            figshape = (self.n_obs,3)
             # fig, axs = plt.subplots(nrows=2, ncols=2, sharex=True)
             fig.suptitle(f"iter={self.iter} n={len(t)}")
             # ax1, ax2, ax3, ax4 = axs[0,0], axs[0,1], axs[1,0], axs[1,1]
@@ -138,7 +138,7 @@ class ParameterTest():
             # ax3 = fig.add_subplot(*figshape, 3, sharex = ax1)
             for j in range(self.dim):
                 du_node = method.interpolate(t, du_aps[j])[0]
-                ax3 = app.plot(fig=fig, t=t, u=du_node, axkey=(*figshape, 7+j))
+                ax3 = app.plot(fig=fig, t=t, u=du_node, axkey=(*figshape, 4+self.n_obs+j))
                 # for k in range(du_node.shape[1]):
                 #     ax3.plot(t, du_node[:, k], label=f"du_{j}({k})")
             # ax3.legend()
@@ -170,20 +170,27 @@ class ParameterTest():
 def optimize(x0, method, app, functionals, observations, n0, plot=False):
     pt = ParameterTest(method=method, app=app, functionals=functionals, observations=observations, n0=n0, printinfo=True)
     from scipy.optimize import minimize, leastsq, least_squares
-    from SIMOS_GM import gm, utility
+    from SIMOS_GM import gm, utility, minres
     # method = 'minimize'
     method = 'leastsq'
     # method = 'least_squares'
     # method = 'gm'
+    method = 'minres'
     if plot:
         fig = plt.figure(figsize=plt.figaspect(0.5))
         plt.show()
     if method=='gm':
         datain = utility.algodata.AlgoInput(history=False)
-        datain.t = 0.000001
+        datain.t = 0.001
+        datain.mu = 0.9
+        datain.maxiter = 10000
+        xs = gm.gm(x0, pt.f, pt.grad, datain=datain)
+    elif method == 'minres':
+        datain = utility.algodata.AlgoInput(history=False)
+        datain.t = 0.1
         datain.mu = 0.1
         datain.maxiter = 10000
-        xs = gm.gm(np.zeros(pt.dim), pt.f, pt.grad, datain=datain)
+        xs = minres.minres(x0, pt.residuals, pt.dresiduals, datain=datain)
     elif method == 'minimize':
         res = minimize(fun= pt.f, x0=x0, jac=pt.grad, tol=1e-12)
         # res = minimize(fun= pt.f, x0=x0)
@@ -254,7 +261,7 @@ if __name__ == "__main__":
         C = np.array([0,2/np.pi])
         x = np.linspace(-np.pi,3*np.pi, 50)
         app = applications.BockTest(mu2=0)
-        n0 = 3
+        n0 = 6
         x0 = 1
     elif example == 'exp':
         F = [classes.FunctionalEndTime(), classes.FunctionalMean()]
@@ -300,4 +307,4 @@ if __name__ == "__main__":
     else:
         raise ValueError(f"{example=} unknown")
     # test_gradient(method=cgp.CgP(k=3), app=app, functionals=F, observations=C, x=x, n0=n0, plot=True)
-    optimize(x0=x0, method=cgp.CgP(k=20), app=app, functionals=F, observations=C, n0=n0, plot=True)
+    optimize(x0=x0, method=cgp.CgP(k=2), app=app, functionals=F, observations=C, n0=n0, plot=True)

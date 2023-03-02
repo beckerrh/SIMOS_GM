@@ -1,0 +1,392 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated as
+% required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+\datalist[entry]{none/global//global/global}
+  \entry{Nesterov18}{book}{}
+    \name{author}{1}{}{%
+      {{hash=NY}{%
+         family={Nesterov},
+         familyi={N\bibinitperiod},
+         given={Yurii},
+         giveni={Y\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Springer, Cham}%
+    }
+    \keyw{OptAlgo}
+    \strng{namehash}{NY1}
+    \strng{fullhash}{NY1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{doi}
+    \verb 10.1007/978-3-319-91578-4
+    \endverb
+    \field{isbn}{978-3-319-91577-7; 978-3-319-91578-4}
+    \field{note}{Second edition of [ MR2142598]}
+    \field{pages}{xxiii+589}
+    \field{series}{Springer Optimization and Its Applications}
+    \field{title}{Lectures on convex optimization}
+    \verb{url}
+    \verb https://doi.org/10.1007/978-3-319-91578-4
+    \endverb
+    \field{volume}{137}
+    \field{year}{2018}
+  \endentry
+
+  \entry{ErnVohralik13a}{article}{}
+    \name{author}{2}{}{%
+      {{hash=EA}{%
+         family={Ern},
+         familyi={E\bibinitperiod},
+         given={Alexandre},
+         giveni={A\bibinitperiod},
+      }}%
+      {{hash=VM}{%
+         family={Vohral{\'{\i}}k},
+         familyi={V\bibinitperiod},
+         given={Martin},
+         giveni={M\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{EAVM1}
+    \strng{fullhash}{EAVM1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{doi}
+    \verb 10.1137/120896918
+    \endverb
+    \field{issn}{1064-8275}
+    \field{number}{4}
+    \field{pages}{A1761\bibrangedash A1791}
+    \field{title}{Adaptive inexact {N}ewton methods with a posteriori stopping
+  criteria for nonlinear diffusion {PDE}s}
+    \verb{url}
+    \verb http://dx.doi.org/10.1137/120896918
+    \endverb
+    \field{volume}{35}
+    \field{journaltitle}{SIAM J. Sci. Comput.}
+    \field{year}{2013}
+  \endentry
+
+  \entry{HeidWihler20}{article}{}
+    \name{author}{2}{}{%
+      {{hash=HP}{%
+         family={Heid},
+         familyi={H\bibinitperiod},
+         given={Pascal},
+         giveni={P\bibinitperiod},
+      }}%
+      {{hash=WTP}{%
+         family={Wihler},
+         familyi={W\bibinitperiod},
+         given={Thomas\bibnamedelima P.},
+         giveni={T\bibinitperiod\bibinitdelim P\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{HPWTP1}
+    \strng{fullhash}{HPWTP1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{doi}
+    \verb 10.1090/mcom/3545
+    \endverb
+    \field{issn}{0025-5718}
+    \field{number}{326}
+    \field{pages}{2707\bibrangedash 2734}
+    \field{title}{Adaptive iterative linearization {G}alerkin methods for
+  nonlinear problems}
+    \verb{url}
+    \verb https://doi.org/10.1090/mcom/3545
+    \endverb
+    \field{volume}{89}
+    \field{journaltitle}{Math. Comp.}
+    \field{year}{2020}
+  \endentry
+
+  \entry{HeidPraetoriusWihler21}{article}{}
+    \name{author}{3}{}{%
+      {{hash=HP}{%
+         family={Heid},
+         familyi={H\bibinitperiod},
+         given={Pascal},
+         giveni={P\bibinitperiod},
+      }}%
+      {{hash=PD}{%
+         family={Praetorius},
+         familyi={P\bibinitperiod},
+         given={Dirk},
+         giveni={D\bibinitperiod},
+      }}%
+      {{hash=WTP}{%
+         family={Wihler},
+         familyi={W\bibinitperiod},
+         given={Thomas\bibnamedelima P.},
+         giveni={T\bibinitperiod\bibinitdelim P\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{HPPDWTP1}
+    \strng{fullhash}{HPPDWTP1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{doi}
+    \verb 10.1515/cmam-2021-0025
+    \endverb
+    \field{issn}{1609-4840}
+    \field{number}{2}
+    \field{pages}{407\bibrangedash 422}
+    \field{title}{Energy contraction and optimal convergence of adaptive
+  iterative linearized finite element methods}
+    \verb{url}
+    \verb https://doi.org/10.1515/cmam-2021-0025
+    \endverb
+    \field{volume}{21}
+    \field{journaltitle}{Comput. Methods Appl. Math.}
+    \field{year}{2021}
+  \endentry
+
+  \entry{HaberlPraetoriusSchimanko21}{article}{}
+    \name{author}{4}{}{%
+      {{hash=HA}{%
+         family={Haberl},
+         familyi={H\bibinitperiod},
+         given={Alexander},
+         giveni={A\bibinitperiod},
+      }}%
+      {{hash=PD}{%
+         family={Praetorius},
+         familyi={P\bibinitperiod},
+         given={Dirk},
+         giveni={D\bibinitperiod},
+      }}%
+      {{hash=SS}{%
+         family={Schimanko},
+         familyi={S\bibinitperiod},
+         given={Stefan},
+         giveni={S\bibinitperiod},
+      }}%
+      {{hash=VM}{%
+         family={Vohral\'{\i}k},
+         familyi={V\bibinitperiod},
+         given={Martin},
+         giveni={M\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{HA+1}
+    \strng{fullhash}{HAPDSSVM1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{doi}
+    \verb 10.1007/s00211-021-01176-w
+    \endverb
+    \field{issn}{0029-599X}
+    \field{number}{3}
+    \field{pages}{679\bibrangedash 725}
+    \field{title}{Convergence and quasi-optimal cost of adaptive algorithms for
+  nonlinear operators including iterative linearization and algebraic solver}
+    \verb{url}
+    \verb https://doi.org/10.1007/s00211-021-01176-w
+    \endverb
+    \field{volume}{147}
+    \field{journaltitle}{Numer. Math.}
+    \field{year}{2021}
+  \endentry
+
+  \entry{GantnerHaberlPraetorius21}{article}{}
+    \name{author}{4}{}{%
+      {{hash=GG}{%
+         family={Gantner},
+         familyi={G\bibinitperiod},
+         given={Gregor},
+         giveni={G\bibinitperiod},
+      }}%
+      {{hash=HA}{%
+         family={Haberl},
+         familyi={H\bibinitperiod},
+         given={Alexander},
+         giveni={A\bibinitperiod},
+      }}%
+      {{hash=PD}{%
+         family={Praetorius},
+         familyi={P\bibinitperiod},
+         given={Dirk},
+         giveni={D\bibinitperiod},
+      }}%
+      {{hash=SS}{%
+         family={Schimanko},
+         familyi={S\bibinitperiod},
+         given={Stefan},
+         giveni={S\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{GG+1}
+    \strng{fullhash}{GGHAPDSS1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{doi}
+    \verb 10.1090/mcom/3654
+    \endverb
+    \field{issn}{0025-5718}
+    \field{number}{331}
+    \field{pages}{2011\bibrangedash 2040}
+    \field{title}{Rate optimality of adaptive finite element methods with
+  respect to overall computational costs}
+    \verb{url}
+    \verb https://doi.org/10.1090/mcom/3654
+    \endverb
+    \field{volume}{90}
+    \field{journaltitle}{Math. Comp.}
+    \field{year}{2021}
+  \endentry
+
+  \entry{HeidWihler21}{article}{}
+    \name{author}{2}{}{%
+      {{hash=HP}{%
+         family={Heid},
+         familyi={H\bibinitperiod},
+         given={Pascal},
+         giveni={P\bibinitperiod},
+      }}%
+      {{hash=WTP}{%
+         family={Wihler},
+         familyi={W\bibinitperiod},
+         given={Thomas\bibnamedelima P.},
+         giveni={T\bibinitperiod\bibinitdelim P\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{HPWTP1}
+    \strng{fullhash}{HPWTP1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{doi}
+    \verb 10.1137/20M1319863
+    \endverb
+    \field{issn}{1064-8275}
+    \field{number}{2}
+    \field{pages}{A1108\bibrangedash A1133}
+    \field{title}{Adaptive local minimax {G}alerkin methods for variational
+  problems}
+    \verb{url}
+    \verb https://doi.org/10.1137/20M1319863
+    \endverb
+    \field{volume}{43}
+    \field{journaltitle}{SIAM J. Sci. Comput.}
+    \field{year}{2021}
+  \endentry
+
+  \entry{HeidStammWihler21}{article}{}
+    \name{author}{3}{}{%
+      {{hash=HP}{%
+         family={Heid},
+         familyi={H\bibinitperiod},
+         given={Pascal},
+         giveni={P\bibinitperiod},
+      }}%
+      {{hash=SB}{%
+         family={Stamm},
+         familyi={S\bibinitperiod},
+         given={Benjamin},
+         giveni={B\bibinitperiod},
+      }}%
+      {{hash=WTP}{%
+         family={Wihler},
+         familyi={W\bibinitperiod},
+         given={Thomas\bibnamedelima P.},
+         giveni={T\bibinitperiod\bibinitdelim P\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{HPSBWTP1}
+    \strng{fullhash}{HPSBWTP1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{doi}
+    \verb 10.1016/j.jcp.2021.110165
+    \endverb
+    \field{issn}{0021-9991}
+    \field{pages}{Paper No. 110165, 15}
+    \field{title}{Gradient flow finite element discretizations with
+  energy-based adaptivity for the {G}ross-{P}itaevskii equation}
+    \verb{url}
+    \verb https://doi.org/10.1016/j.jcp.2021.110165
+    \endverb
+    \field{volume}{436}
+    \field{journaltitle}{J. Comput. Phys.}
+    \field{year}{2021}
+  \endentry
+
+  \entry{HeidWihler22}{article}{}
+    \name{author}{2}{}{%
+      {{hash=HP}{%
+         family={Heid},
+         familyi={H\bibinitperiod},
+         given={Pascal},
+         giveni={P\bibinitperiod},
+      }}%
+      {{hash=WTP}{%
+         family={Wihler},
+         familyi={W\bibinitperiod},
+         given={Thomas\bibnamedelima P.},
+         giveni={T\bibinitperiod\bibinitdelim P\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{HPWTP1}
+    \strng{fullhash}{HPWTP1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{doi}
+    \verb 10.1051/m2an/2022008
+    \endverb
+    \field{issn}{0764-583X}
+    \field{number}{2}
+    \field{pages}{433\bibrangedash 450}
+    \field{title}{A modified {K}a\v{c}anov iteration scheme with application to
+  quasilinear diffusion models}
+    \verb{url}
+    \verb https://doi.org/10.1051/m2an/2022008
+    \endverb
+    \field{volume}{56}
+    \field{journaltitle}{ESAIM Math. Model. Numer. Anal.}
+    \field{year}{2022}
+  \endentry
+
+  \entry{Stevenson05b}{article}{}
+    \name{author}{1}{}{%
+      {{hash=SR}{%
+         family={Stevenson},
+         familyi={S\bibinitperiod},
+         given={R.},
+         giveni={R\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Springer}%
+    }
+    \keyw{AFEM;}
+    \strng{namehash}{SR1}
+    \strng{fullhash}{SR1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{number}{2}
+    \field{pages}{245\bibrangedash 269}
+    \field{title}{Optimality of a standard adaptive finite element method}
+    \field{volume}{7}
+    \field{journaltitle}{Found. Comput. Math.}
+    \field{year}{2007}
+  \endentry
+\enddatalist
+\endinput

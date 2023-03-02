@@ -1,0 +1,21 @@
+\contentsline {section}{\numberline {1}Introduction}{2}{section.1}%
+\contentsline {section}{\numberline {2}FEM discretization}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Dual scheme}{3}{subsection.2.1}%
+\contentsline {section}{\numberline {3}Abstract setting}{3}{section.3}%
+\contentsline {subsubsection}{\numberline {3.0.1}A priori}{4}{subsubsection.3.0.1}%
+\contentsline {subsubsection}{\numberline {3.0.2}A posteriori}{4}{subsubsection.3.0.2}%
+\contentsline {section}{\numberline {4}A posterior error estimator}{4}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Primal scheme}{4}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Dual scheme}{6}{subsection.4.2}%
+\contentsline {section}{\numberline {5}Analysis in the linear case $f(u)=-Au$ with SPD $A$}{6}{section.5}%
+\contentsline {section}{\numberline {6}Linearization (semi-implicit scheme)}{8}{section.6}%
+\contentsline {section}{\numberline {7}Definition of the method}{8}{section.7}%
+\contentsline {section}{\numberline {8}CG2 variants with linearization}{9}{section.8}%
+\contentsline {subsection}{\numberline {8.1}CG2-DG1}{10}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}CG2-2DG0}{10}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}2CG1-DG1}{10}{subsection.8.3}%
+\contentsline {subsection}{\numberline {8.4}2CG1-2DG0}{11}{subsection.8.4}%
+\contentsline {subsection}{\numberline {8.5}CG2$^+$-DG0}{11}{subsection.8.5}%
+\contentsline {section}{\numberline {9}General analysis}{12}{section.9}%
+\contentsline {subsection}{\numberline {9.1}A priori}{12}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}A posteriori}{12}{subsection.9.2}%

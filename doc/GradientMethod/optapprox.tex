@@ -1,0 +1,826 @@
+%----------------------------------------
+\documentclass[12pt,english]{article}
+%----------------------------------------
+%
+\usepackage{amsmath,amssymb,amsthm,latexsym}
+\usepackage[a4paper,margin=1.8cm]{geometry}
+%\usepackage{stmaryrd}
+%\usepackage{pifont}
+\usepackage{mathtools}
+%\usepackage{refcheck}
+\usepackage{hyperref}
+%%----------------------------------------
+%\usepackage[utf8]{inputenc}
+\usepackage{palatino,eulervm}
+\usepackage[backend=bibtex,sorting=none,giveninits=true, style=numeric, doi=false,isbn=false,url=false,maxbibnames=9]{biblatex}
+\bibliography{../../../../Latex/Bibliotheque/bibliotheque.bib}
+%---------------------------------------------------------
+\usepackage{url}
+\usepackage[english,algoruled,lined]{algorithm2e}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[many]{tcolorbox}
+\tcbuselibrary{breakable}
+%\usepackage[toc,page]{appendix}
+
+
+%\frenchbsetup{StandardLists=true}
+\renewcommand{\thefigure}{\thesection.\arabic{figure}}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+  \node[shape=circle,draw,inner sep=1pt] (char) {#1};}}
+\newenvironment{rappel}{\begin{tcolorbox}[boxrule=1pt, colback=gray!10!white]}{\end{tcolorbox}}
+
+%---------------------------------------------------------
+\input{../macros.tex}
+%---------------------------------------------------------
+
+
+\newcommand{\mcM}{\mathcal M}
+
+%-------------------------------------------
+\begin{document}
+%-------------------------------------------
+
+\title{Optimization algorithms with approximation}
+\author{}
+\maketitle
+\tableofcontents
+
+%\begin{abstract}
+%\end{abstract}
+%\linenumbers
+%
+%==========================================
+\section{Introduction}\label{sec:}
+%==========================================
+%
+%
+We consider a Hilbert space $(X,\scp{\cdot}{\cdot})$ with induced norm $\norm{\cdot}$ and the minimization of a smooth strictly convex function $f:X\to\R$:
+%
+\begin{align*}
+\inf_{x\in X} f(x) = \inf\SetDef{f(x)}{x\in X}.
+\end{align*}
+%
+We suppose that a unique minimizer $x^*$ exists.
+%
+As a motivation we consider the solution of a scalar elliptic semi-linear PDE, where $X$ is a Sobolev space and $f$ corresponds to the underlying energy functional of the PDE.
+
+Our purpose is to analyse gradient algorithms on a sequence of subspaces (finite element spaces for the PDE)
+%
+\begin{align*}
+X_0 \subset \cdots \subset X_k \subset X_{k+1}\subset \cdots \subset X,\quad P_k: X\to X_k,
+\end{align*}
+%
+such that a typical iteration reads: 
+%
+\begin{yellow}
+\begin{equation}\label{eq:pgm}
+x_{k+1} = x_k - t_k P_{k}\nabla f(x_k),
+\end{equation}
+\end{yellow}
+%
+where $P_k$ is the orthogonal projector on $X_k$ and $\nabla f(x)\in X$ is defined by the Riesz map. In order to generate the subspaces $X_k$, we suppose to have 
+an error estimators $\eta_k:X_k\to\R$ and a refinement algorithm satisfying typical hypothesis from the theory of AFEM.
+% 
+In the case $f\in \mathcal S^{1,1}_{\mu,L}(X)$, $X$ finite-dimensional, and $t_k=2/(\mu+L)$ for all $k$ we have the following {convergence estimate}  (Theorem 2.1.15 in \cite{Nesterov18}) for the gradient method (\textbf{GM}):
+%
+\begin{equation}\label{eq:gmlipsmoothest}
+\norm{x_n-x^*} \le \rho^n\norm{x_0-x^*},\quad \rho = 1-1/\kappa,
+\end{equation}
+%
+such that $\eps>0$ is achieved in $n(\eps) = O(\kappa)\ln(1/\eps)$ iterations.
+It is well-known that \textbf{GM} is not optimal for this class of functions. The accelerated gradient method (\textbf{AGM}) \cite{Nesterov18} yields an improved estimate  $n(\eps) = O(\sqrt{\kappa})\ln(1/\eps)$.
+
+Our aim is to establish a similar iteration count for the method on a sequence of subspaces.
+There is important progress of adaptive finite element methods (AFEM) for nonlinear elliptic equations, 
+see \cite{ErnVohralik13a,HeidWihler20,HeidPraetoriusWihler21,HaberlPraetoriusSchimanko21,GantnerHaberlPraetorius21,HeidWihler21,HeidStammWihler21,HeidWihler22}, and our development is based on these works. However, here, we wish to 
+work out the optimization point of view.
+%
+%\cite{}
+%==========================================
+\section{Notation}\label{sec:}
+%==========================================
+%
+We throughout suppose that $f:X\to\R$ is convex and $C^1$ and we use the the Fréchet-Riesz theorem to define
+%
+\begin{align*}
+\scp{\nabla f(y)}{x} = f'(y)(x)\quad \forall x,y\in X.
+\end{align*}
+%
+It is then easy to see, that $P_Y\nabla f(y) = \nabla \Rest{f}{y}$ for all $y$ in a closed subspace $Y\subset X$ and $P_Y:X\to Y$ its orthogonal projector.
+
+
+Let $X_0\subset X$ be a subspace. We suppose to have a lattice of admissible closed subspaces 
+%
+\begin{equation}\label{eq:}
+\mathcal X(X_0) = \Set{X_0\subset Y\subset X}.
+\end{equation}
+%
+The partial order on $\mathcal X(X_0)$ is given by $Y\ge Z$ if and only if $Y$ is a superspace of $Z$. We 
+then have the finest common coarsening $Y\land Z$ and the coarsest common refinement $Y\lor Z$, respectively.
+We let
+%
+\begin{align*}
+\mathcal X(Y) = \SetDef{Z\in \mathcal X(X_0)}{Y\land Z = Y},\quad Y\in \mathcal X(x_0).
+\end{align*}
+%
+
+
+
+We make the following assumptions 
+There exist constants $\Cstab,\Ceff,\Crel$ and $0\le\qred<1$ such that for all $Y\in \mathcal X(x_0)$: 
+%
+\begin{align}
+\label{hyp:estimator:reliability}\tag{H1}
+\Ceff^{-1} \eta(y,Y) \le& \norm{(I-P_Y)\nabla f(y)}\le \Crel \eta(y,Y)&\quad&\forall y\in Y, x\in X\\
+\label{hyp:estimator:reduction}\tag{H2}
+%
+\eta^2(y^+, Y^+)\le& \qred \eta^2(y,Y) + \Cstab^2\norm{y^+-y}^2&\quad&\forall y\in Y, y\in Y^+=\REF(Y, \eta(y,Y)),\\
+\label{hyp:estimator:stability}\tag{E3}
+\abs{\eta(y, Y)-\eta(z, Y)}\le& \Cstab \norm{y-z}&\quad&\forall y,z\in Y
+%
+\end{align}
+%
+%
+For the complexity estimate, we introduce  notion from nonlinear approximation. 
+Let for $Y\in\mathcal X(X_0)$ and $N\in\N$
+%
+\begin{align*}
+\eps(Y):=\inf_{y\in Y}\left(f(y)-f^*\right),\quad \eps(N) := \inf\SetDef{\eps(Y)}{Y\in \mathcal X(X_0),\; \dim Y \le N}.
+\end{align*}
+%
+For $s>0$, we suppose that
+%
+\begin{equation}\label{eq:property2}
+\alpha_f(s):= \sup\SetDef{\eps(N) N^s}{N\in\N} < +\infty.
+\end{equation}
+%
+Newt we suppose that $(X_k)_{k\in\N}\subset\mathcal X(X_0)$ and $x_k\in X_k$ are sequences such that with 
+$\rho<1$ we have quasi-geometrical convergence, for all $m,k\in \N$
+%
+\begin{equation}\label{eq:property3}
+e_{k+m} \le C \rho^{m}e_k,\quad e_k:= \left(f(x_k)-f^*\right) + \eta_k^2(x_k,X_k).
+\end{equation}
+%
+
+We wish to avoid the technical details of AFEM, and instead make the following hypothesis. 
+
+We formulate the following property: there exist $\gamma>0$ and $C>0$ such that for 
+all refinement steps $k$ and any $X_k^+\in \mathcal X(X_K)$ there holds
+%
+\begin{equation}\label{eq:property}
+\min_{x+\in X_k^+} f(x^+)-f^* \le \gamma e_k
+\;\Rightarrow\; \norm{(I-P_{X_k})\nabla f(x_k)}\le C \norm{(P_{X_k^+}-P_{X_k})\nabla f(x_k)}.
+\end{equation}
+%
+Then we make the hypothesis
+%
+\begin{align}
+\label{hyp:estimator:optimality}\tag{H3}
+\mbox{(\ref{eq:property}) \& (\ref{eq:property2}) \& (\ref{eq:property3})}
+\quad\Rightarrow\quad \sum_{k=0}^n \dim X_k \le C \eps_n^{-1/s}\quad \forall n\in\N.
+%\label{hyp:estimator:stability}\tag{E3}
+%\abs{\eta(y, Y)-\eta(z, Y)}\le& \Cstab^{\frac12} \norm{y-z}&\quad&\forall y,z\in Y
+%
+\end{align}
+%
+%---------------------------------------
+\begin{remark}\label{rmk:}
+(\ref{eq:property}) mimics the argument in AFEM for optimality of the Dörfler marking \cite{Stevenson05b} and 
+\cite{GantnerHaberlPraetorius21}. At each step, the assumption on approximation speed implies to existence of a refinement leading to better error with controlled complexity. 
+Then the implication of (\ref{eq:property}) shows that the overall estimator is dominated by the refined part only.
+\end{remark}
+%
+
+
+
+
+%\dotfill
+%
+%We suppose to have a lattice of admissible subspaces 
+%%
+%\begin{equation}\label{eq:}
+%\mathcal X(X_0) = \SetDef{Y\subset X}{ Y = \REF_{M_{\ell}}(X_{\ell}),\; X_k = \REF_{M_{k-1}}(X_{k-1}),\; 1\le k\le \ell}
+%\end{equation}
+%%
+%generated by an initial space $X_0$, a sequence of information $(M_k)_{0\le k\le \ell}$, $M_k$  available on $X_k$, and 
+%a refinement algorithm \REF. The partial order on $\mathcal X(X_0)$ is given by $Y\ge Z$ if and only if $Y$ is a refinement of $Z$. We 
+%then have the finest common coarsening $Y\land Z$ and the coarsest common refinement $Y\lor Z$, respectively.
+%We denote for information $M$ on $Y\in\mathcal X(X_0)$ by 
+%%
+%\begin{align*}
+%\mathcal X(Y, M):=\SetDef{\REF_{M_{\ell}} \circ \cdots \circ \REF_{M_{1}}\circ\REF_{M}(Y)}{M_{k}\cap M=\emptyset\; 1\le k\le\ell }
+%\end{align*}
+%%
+%
+%
+%
+%We make the following assumptions 
+%\begin{align}
+%\label{hyp:estimator:mesh1}\tag{R1}
+%\# M \le& \Cref \left(\dim Z - \dim Y\right)&\quad& \forall Z\in\mathcal X(Y, M)\\
+%\label{hyp:estimator:mesh2}\tag{R2}
+%\dim \left(Y\lor Z\right) \le& \dim Y + \dim Z - \dim X_0&\quad& \forall Y,Z\in\mathcal X(X_0)\\
+%\label{hyp:estimator:mesh3}\tag{R3}
+%\dim Y \le& \dim X_0 + \Cclose\sum_{k=0}^{\ell}\# M_k&\quad& Y = \REF_{M_{\ell}}(X_{\ell}) \circ \cdots \circ \REF_{M_0}(X_0)
+%\end{align}
+%
+%
+%There exist constants $\Cstab,\Ceff,\Crel$ and $0\le\qred<1$ such that for all finite-dimensional subspaces $Y\subset X$ 
+%and $x^* = \argmin\SetDef{f(x)}{x\in X}$:
+%%
+%\begin{align}
+%\label{hyp:estimator:reliability}\tag{E1g}
+%\scp{(I-P_k))\nabla f(y)}{x}\le& \Crel \eta(y,Y)\norm{x}&\quad&\forall y\in Y, x\in X\\
+%\label{hyp:estimator:reliabilityloc}\tag{E1l}
+%\scp{(I-P_k))\nabla f(y)}{x}\le& \Crel \eta(y,Y,M)\norm{x}&\quad&\forall y\in Y, x\in \mathcal X(Y, M)\\
+%\label{hyp:estimator:efficiency}\tag{E2}
+%\eta^2(y,Y)\le& \Ceff^2 \left( f(y) - f(x^*)\right)\quad&\quad&\forall y\in Y\\
+%\label{hyp:estimator:reduction}\tag{E3}
+%%
+%\eta^2(y^+, Y^+)\le& \qred \eta^2(y,Y) + \Cstab \norm{y^+-y}^2&\quad&\forall y^+\in Y^+=\REF(Y), y\in Y\\
+%\label{hyp:estimator:stability}\tag{E4}
+%\abs{\eta(y, Y)-\eta(z, Y)}\le& \Cstab^{\frac12} \norm{y-z}&\quad&\forall yz\in Y
+%%
+%\end{align}
+%%
+For $t>0$ and $Z\in \mathcal X(X_0)$  let
+%
+\begin{equation}\label{eq:DefQ}
+%
+\left\{
+\begin{aligned}
+Q(x ; y, t) :=& f(y) + \scp{\nabla f(y)}{x-y} + \frac{1}{2t}\norm{x-y}^2\quad x,y\in X,\\
+Q^*(y,t,Z) :=& \min_{x\in Z} Q(x ; y, t) = f(y) - \frac{t}{2}\norm{P_Z\nabla f(y)}^2,\quad y\in Z,\\ 
+\widetilde{x}(y,t,Z) :=& \argmin\limits_{x\in Z} Q(x ; y, t) = y - tP_Z\nabla f(y),\quad y\in Z.
+\end{aligned}
+\right.
+\end{equation}
+%
+%-----------------------------------------------
+\input{optapprox_gm.tex}
+\input{optapprox_agm.tex}
+%-----------------------------------------------
+%
+
+
+
+%-----------------------------------------------
+\printbibliography
+%-----------------------------------------------
+%
+%-------------------------------------------
+\end{document}      
+%-------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%==========================================
+\section{Gradient method for strongly convex Lipschitz function}\label{sec:}
+%==========================================
+%
+%---------------------------------------
+\begin{proposition}\label{prop:err_red}
+Let $f\in \mathcal S^{1,1}_{\mu,L}(X)$, $t=2/(L+\mu)$, $\kappa = \mu/L$,
+%
+\begin{align*}
+e_k := \norm{x^*-x_k},\quad d_k :=\inf\SetDef{\norm{x^*-y}}{y\in X_k}.
+\end{align*}
+%
+Then
+%
+\begin{equation}\label{eq:err_red}
+e_{k+1} \le q_Se_k + d_{k+1},\quad q_S := \frac{\kappa-1}{\kappa+1} = 1 - 2/(\kappa+1).
+\end{equation}
+%
+\end{proposition}
+%
+%---------------------------------------
+\begin{proof}
+%
+\begin{align*}
+e_{k+1}^2 =& \norm{x_k-x^* - t_kP_{k}\nabla f(x_k)}^2= e_k^2 - 2t_k\scp{P_{k}\nabla f(x_k)}{x_k-x^*} + t_k^2\norm{P_{k}\nabla f(x_k)}^2\\
+=&  e_k^2 - 2t_k\scp{\nabla f(x_k)}{x_k-x^*} + t_k^2\norm{\nabla f(x_k)}^2\\
+&+  2t_k \scp{\nabla f(x_k)-P_{k}\nabla f(x_k)}{x_k-x^*} - t_k^2 \norm{P_{k}\nabla f(x_k)-\nabla f(x_k)}^2
+\end{align*}
+%
+Since $f\in \mathcal S^{1,1}_{\mu,L}(X)$ we have for any $y_0,y\in X$
+%
+%
+\begin{equation}\label{eq:convstrong}
+\frac{1}{\mu+L} \norm{\nabla f(y_1) -\nabla f(y_2)}^2 + \frac{\mu L}{\mu+L}\norm{y_1-y_2}^2\le \scp{\nabla f(y_1) -\nabla f(y_2)}{y_1-y_2}
+\end{equation}
+%
+which gives with $y_1=x_k$ and $y_2=x^*$
+%
+\begin{align*}
+\scp{\nabla f(x_k)}{x_k-x^*}= \scp{\nabla f(x_k)-\nabla f(x^*)}{x_k-x^*} \ge \frac{1}{L+\mu} \norm{\nabla f(x_k)}^2 +\frac{\mu L}{L+\mu} \zeta_k
+\end{align*}
+%
+%
+and with the projection property and Cauchy-Schwarz for any $y\in X_{k+1}$
+%
+\begin{align*}
+&2t_k \scp{\nabla f(x_k)-P_{k}\nabla f(x_k)}{x_k-x^*} - t_k^2 \norm{P_{k}\nabla f(x_k)-\nabla f(x_k)}^2\\
+&=2t_k \scp{\nabla f(x_k)-P_{k}\nabla f(x_k)}{y-x^*} - t_k^2 \norm{P_{k}\nabla f(x_k)-\nabla f(x_k)}^2
+\le \norm{y-x^*}^2,
+\end{align*}
+%
+so
+%
+\begin{align*}
+e_{k+1}^2 \le& \left(1 - \frac{2t\mu L}{L+\mu}\right)e_k^2 - t(\frac{2}{L+\mu}-t)\norm{\nabla f(x_k)}^2 + d_k^2
+\end{align*}
+%
+With the choice of $t=2/(\mu+L)$ we get
+%
+\begin{align*}
+1 - \frac{2t\mu L}{L+\mu} = 1 - \frac{4\mu L}{(L+\mu)^2} = \left(\frac{L-\mu}{L+\mu}\right)^2
+= \left(\frac{1-\kappa}{1+\kappa}\right)^2
+\end{align*}
+%
+We conclude with $\sqrt{a^2+b^2}\le a+b$ for positive $a$ and $b$.
+\end{proof}
+%
+In order to estimate the space approximation error $E_k$, we suppose to have an estimator $\eta_k:X_k\to\R$ verifying the following assumptions:
+%
+\begin{align}
+\label{eq:est_rel}
+\norm{x_k^* - x^*} \le& \Crel \eta_k(x_k^*),\\
+\label{eq:est_stab}
+\eta_k(x_k^*) \le& \eta_k(x_k) + \Cstab\norm{x_k^*-x_k},\\
+\label{eq:est_red}
+\eta_{k+1}(x_{k+1}) \le& q_M \eta_{k}(x_{k}) + \Cstab\norm{x_{k+1}-x_k}.
+\end{align}
+%
+They are hopefully induced by the axioms of \cite{CarstensenFeischlPage14a}.
+
+%
+%---------------------------------------
+\begin{proposition}\label{prop:errit_red}
+Let $f\in \mathcal S^{1,1}_{\mu,L}(X)$, $t=2/(L+\mu)$, $\kappa = \mu/L$, $x_k^*\in \argmin\SetDef{f(x)}{x\in X_k}$
+%
+\begin{align*}
+\Delta_k :=\norm{x_{k}-x_{k-1}},\quad \widetilde{e}_k := \norm{x_k^*-x_k}.
+\end{align*}
+%
+Then
+%
+\begin{equation}\label{eq:errit_red}
+\Delta_{k+1} \le q_S \Delta_k \qquad \widetilde{e}_{k+1} \le q_S\widetilde{e}_k + q_S \norm{x_{k+1}^*-x_{k}^*}.
+\end{equation}
+%
+\end{proposition}
+%
+%---------------------------------------
+\begin{proof}
+%
+Using again (\ref{eq:convstrong}) we have
+%
+\begin{align*}
+\Delta_{k+1}^2=&\norm{x_{k+1}-x_{k}}^2 = \norm{x_k-x_{k-1} + tP_{k}\nabla f(x_{k-1}) - tP_{k}\nabla f(x_k)}^2\\
+=& 
+\Delta_k^2 - 2t\scp{x_k-x_{k-1}}{P_{k}\nabla f(x_k)-P_{k}\nabla f(x_{k-1})} + t^2 \norm{P_{k}\nabla f(x_k)-P_{k}\nabla f(x_{k-1})}^2\\
+\le& \Delta_k^2 - t\left(\frac{2}{\mu+L}-t\right) \norm{P_{k}\nabla f(x_k) -P_{k}\nabla f(x_{k-1})}^2 - \frac{2t\mu L}{\mu+L}\norm{x_k-x_{k-1}}^2\\
+\le& q_S^2 \Delta_k^2
+\end{align*}
+%
+and
+%
+\begin{align*}
+\widetilde{e}_{k+1}^2=&\norm{x_{k+1}-x_{k+1}^*}^2 = \norm{x_k-x^*_{k+1} - tP_{k}\nabla f(x_k)}^2
+= \norm{x_k-x^*_{k+1} - tP_{k}\left(\nabla f(x_k)-\nabla f(x_{k+1}^*)\right)}^2\\
+=& 
+\norm{x_k-x^*_{k+1}}^2 - 2t\scp{x_k-x^*_{k+1}}{P_{k}\left(\nabla f(x_k)-\nabla f(x_{k+1}^*)\right)} + t^2 \norm{P_{k}\left(\nabla f(x_k)-\nabla f(x_{k+1}^*)\right)}^2\\
+\le& q^2_s \norm{x_k-x^*_{k+1}}^2.
+\end{align*}
+%
+so
+%
+\begin{align*}
+\widetilde{e}_{k+1} \le q_s \norm{x_k-x^*_{k+1}} \le q_s \widetilde{e}_{k} + q_s \norm{x_{k+1}^*-x_{k}^*}.
+\end{align*}
+%
+\end{proof}
+%
+\blue{
+%--------------------------%
+\begin{align*}
+\eta_k(x_k^*) \le \eta_k(x_k) + \Cstab \left( f(x_k) - f(x_k^*)\right)^{1/2}
+\end{align*}
+%
+%
+\begin{align*}
+ f(x_{k+1}) - f(x_{k+1}^*) =& f(x_k) - f(x_k^*) + f(x_{k+1})-f(x_k) + f(x_k^*)-f(x_{k+1}^*)\\
+ \le&  f(x_k) - f(x_k^*) - \frac{1}{2t_k} \norm{x_{k+1}-x_k}^2 + f(x_k^*)-f(x_{k+1}^*)
+\end{align*}
+%
+%
+\begin{align*}
+f(x_k) - f(x_k^*) \le f(x_k) - f(x^*)
+\end{align*}
+%
+%--------------------------
+}
+
+
+%---------------------------------------
+\begin{theorem}\label{thm:}
+There exists $0<q<1$, such that with
+%
+%
+\begin{equation}\label{eq:totalerror}
+{E}_k := \Delta_k + \eta_k(x_k) + e_k + \widetilde{e}_k
+\end{equation}
+%
+%
+\begin{equation}\label{eq:}
+{E}_{k+n} \le C q^{n} {E}_{k}.
+\end{equation}
+%
+\end{theorem}
+%
+%---------------------------------------
+\begin{proof}
+We have by the assumptions on the estimator
+%
+\begin{align*}
+d_k \le \Crel \eta_k(x_k^*) \le  \Crel \eta_k(x_k) + \Crel\Cstab\norm{x_k-x_k^*},
+\end{align*}
+%
+so that with the preceeding
+%
+%
+\begin{equation}\label{eq:reductionifrefinement}
+%
+\left\{
+\begin{aligned}
+\Delta_{k+1} \le& q_S \Delta_k,\\ 
+\eta_{k+1}(x_{k+1}) \le& q_M \eta_{k}(x_{k}) + \Cstab \Delta_{k+1},\\
+e_{k+1} \le& q_Se_k + \Crel\eta^2_{k+1}(x_{k+1}) + \Crel\Cstab\widetilde{e}_{k+1},\\
+\widetilde{e}_{k+1} \le& q_S\widetilde{e}_k + q_S \norm{x_{k+1}^*-x_{k}^*}.
+\end{aligned}
+\right.
+%
+\end{equation}
+%
+Then the existence of strictly positive constants $c_i$ is as usual such that, with $q=\min\Set{q_S,q_M}$
+%
+\begin{align*}
+\widetilde{E}_{k+1} \le  q \widetilde{E}_{k} + C \norm{x_{k+1}^*-x_{k}^*}\quad \widetilde{E}_{k}:=\Delta_k + c_1 \eta_k(x_k) + c_2 e_k + c_3 \widetilde{e}_k.
+\end{align*}
+%
+We can conclude by the magic lemma if
+%
+%
+\begin{equation}\label{eq:resteavoir}
+\sum_{k=n}^{\infty}\norm{x_{k+1}^*-x_{k}^*}^2 \le C E_n
+\end{equation}
+%
+By the definition of strong convexity  we have for all $y_0,y\in X$
+%
+\begin{align*}
+f(y) - f(y_0) - \scp{\nabla f(y_0)}{y-y_0}\ge \frac{\mu}{2} \norm{y-y_0}^2.
+\end{align*}
+%
+Applying this to $y_0=x^*_{k+1}$ and $y=x^*_{k}$ we get with $\scp{\nabla f(x^*_{k+1})}{x^*_{k+1}-x^*_{k}}=0$
+%
+\begin{align*}
+\norm{x^*_{k+1}-x^*_{k}}^2 \le \frac{2}{\mu} \left( f(x^*_k) - f(x^*_{k+1})\right)
+\end{align*}
+%
+Using the inequalities for $y,y_0\in X$
+%
+\begin{equation}\label{eq:convexlipschitz}
+\frac{\mu}{2} \norm{y-y_0}^2\le f(y) - f(y_0) - \scp{\nabla f(y_0)}{y-y_0} \le \frac{L}{2} \norm{y-y_0}^2
+\end{equation}
+and telescopic series, we get
+%
+\begin{align*}
+\sum_{k=n}^{n+m}\norm{x_{k+1}^*-x_{k}^*}^2 \le&  \frac{2}{\mu}\sum_{k=n}^{n+m}\left( f(x_{k}^*)-f(x_{k+1}^*)\right) = \frac{2}{\mu} \left( f(x^*_n) - f(x^*_{n+m+1})\right)\\
+\le& \frac{2}{\mu} \left( f(x_n^*) - f(x^*)\right) \le \frac{2}{\mu} \left( f(x_n) - f(x^*)\right) \le \frac{L}{\mu}\norm{x^*-x_n}^2
+\end{align*}
+%
+%
+so we get (\ref{eq:resteavoir}) and we are done.
+\end{proof}
+%
+Augmenting the space in each step is  not satisfactory, since
+\begin{enumerate}
+\item The error contributions from  gradient descent and space approximation are completely unrelated (and should instead be balanced).
+\item  There is no hope to show quasi-optimality in the following sense. Suppose there exists $s>0$ such that for 
+$\eps>0$, we have a space $X_{\eps}$ with $\norm{x^*- x^*_{\eps}}\le \eps$ and $N_{\eps} = \dim X_{\eps} = O(\eps^{-1/s})$. Then we wish to ensure that the algorithm constructs $x_k\in X_k$ such that 
+%
+\begin{align*}
+\sum_{i=0}^kN_i \le C \eps_k^{-1/s},\quad \eps_k:= \norm{x^*-x_k}.
+\end{align*}
+%
+Such results exist, \cite{GantnerHaberlPraetorius21}.
+%
+\end{enumerate}
+
+The fixed step-length is of theoretical purpose. Including a line-search algorithm \textbf{LS}
+and a refinement criterion \textbf{RC} we have the following algorithm.
+%
+%---------------------------------------
+\begin{yellow}
+\begin{algorithm}[H]
+\caption{adaptive GD} 
+\label{algorithm:adaptiveGD} 
+%
+Choose $X_0$ and $x_0\in X_0$, $X_1=X_0$. Set $k=0$.
+%
+\begin{itemize}
+\item[(1)] Compute $d_k = -P_{k}\nabla f(x_k)$.
+\item[(2)] $t_k = \mbox{LS}(x_k,d_k)$.
+\item[(3)] $x_{k+1} = x_k + t_k d_k$
+\item[(4)] If $\mbox{RC}(x_{k+1}, x_k, \lambda)$:\quad $X_{k+2}=\mbox{REF}(X_{k+1})$\\
+ else:\quad $X_{k+2}=X_{k+1}$
+\item[(5)] Increment $k$ and go to (1).
+\end{itemize}
+%
+\end{algorithm}
+\end{yellow}
+%---------------------------------------
+% 
+Here $LS$ is a line-search algorithm
+%
+\begin{remark}\label{rmk:}
+The Armijo-Goldstein backtracking selects $t_k$, such that, with $0<\alpha<\beta<1$
+%
+\begin{equation}\label{eq:ArmijoGoldstein}
+\alpha \scp{P_{k}\nabla f(x_k)}{x_k-x_{k+1}} \le  f(x_k) - f(x_{k+1}) \le \beta \scp{P_{k}\nabla f(x_k)}{x_k-x_{k+1}}.
+\end{equation}
+%
+It seems that so far everything goes through. An advantage of (\ref{eq:ArmijoGoldstein}) is that we do not need the Lipschitz constant.
+\blue{For the complexity we need to show that the number of iterations to get (\ref{eq:ArmijoGoldstein}) is uniformly bounded. Probably with the Lipschitz constant.}
+%---------------------------------------
+An alternative is to control the reduction rate, i.e. check if 
+%
+\begin{equation}\label{eq:}
+\norm{x_{k+1}-x_k} \le \rho(L) \norm{x_{k}-x_{k-1}},\quad \rho(L)  = (L-\mu)/(L+\mu),
+\end{equation}
+%
+and iterate over a virtual $L$.
+\end{remark}
+%
+
+
+
+
+We consider the refinement criterion $\mbox{RC}(x_{k+1}, x_k, \lambda)$
+%
+\begin{equation}\label{eq:refcrit}
+\norm{x_{k+1}-x_k} \le \lambda \eta_{k+1}(x_{k+1})
+\end{equation}
+%
+
+Now the question is, if we still can guarantee quasi-geometric convergence. To this end, let us see what happens if no refinement occurs, i.e. (\ref{eq:refcrit}) does not hold. Then we have
+%
+\begin{equation}\label{eq:reductionifnorefinement}
+\left\{
+\begin{aligned}
+\Delta_{k+1} \le& q_S \Delta_k,\\ 
+\eta_{k+1}(x_{k+1}) \le& \lambda^{-1} \Delta_{k+1},\\
+e_{k+1} \le& q_Se_k + \Crel\eta^2_{k+1}(x_{k+1}) + \Crel\Cstab\widetilde{e}_{k+1},\\
+\widetilde{e}_{k+1} \le& q_S\widetilde{e}_k.
+\end{aligned}
+\right.
+\end{equation}
+%
+%
+%---------------------------------------
+\begin{theorem}\label{thm:}
+For any $\lambda>0$, there exists $0<q<1$, such that for the iterates $(x_k)_{k\in\N}$ of algorithm\ref{algorithm:adaptiveGD} with (\ref{eq:totalerror})
+%
+\begin{equation}\label{eq:}
+{E}_{k+n} \le C q^{n} {E}_{k}.
+\end{equation}
+%
+\end{theorem}
+%
+%
+%==========================================
+\section{Accelerated gradient method}\label{sec:}
+%==========================================
+%
+In order to improve on the estimates (\ref{eq:gmlipest}) and (\ref{eq:gmlipsmoothest}), \cite{Nesterov18}
+develops a framework for algorithms leading to the convergence estimates
+
+%
+\begin{equation}\label{eq:agmlipest}
+f(x_k)-f(x^*)  \le O(1/k^2),\quad f(x_k)-f(x^*) \le C (1-1/\sqrt{\kappa})^k.
+\end{equation}
+%
+We consider only the simplest scheme with constant steps and extrapolation.
+%
+%---------------------------------------
+\begin{yellow}
+\begin{algorithm}[H]
+\caption{adaptive AGD} 
+\label{algorithm:adaptiveAGD} 
+%
+Choose $X_0$ and $x_0\in X_0$, $X_1=X_0$, $\beta\in ]0,1[$, $y_0=x_0$. Set $k=0$.
+%
+\begin{itemize}
+\item[(1)] $x_{k+1} = y_k - \frac{1}{L} P_{k}\nabla f(y_k)$
+\item[(2)] $y_{k+1} = x_{k+1} + \beta(x_{k+1}-x_{k})$.
+\item[(3)] If $\mbox{RC}(x_{k+1}, x_k, \lambda)$:\quad $X_{k+2}=\mbox{REF}(X_{k+1})$\\
+ else:\quad $X_{k+2}=X_{k+1}$
+\item[(4)] Increment $k$ and go to (1).
+\end{itemize}
+%
+\end{algorithm}
+\end{yellow}
+%---------------------------------------
+% 
+Let 
+%
+\begin{align*}
+Q_L(x,y) := f(y) + \scp{\nabla f(y)}{x-y} + \frac{L}{2}\norm{x-y}^2\quad(\ge f(x))
+\end{align*}
+%
+Then 
+%
+\begin{align*}
+f(x_{k+1}) \le Q_L(x_{k+1},y_k) = \min\SetDef{Q_L(x,y_k) }{x\in X_{k+1}} = f(y_k)- \frac{1}{2L}\norm{P_{k}\nabla f(y_k)}^2
+\end{align*}
+%
+By convexity, for any $x\in X$,
+%
+\begin{align*}
+f(x) \ge f(y_k) + \scp{\nabla f(y_k)}{x-y_k} + \frac{1}{2L}\norm{\nabla f(y_k)-\nabla f(x)}^2,
+\end{align*}
+%
+so
+%
+\begin{align*}
+f(x_{k+1}) - f(x_k) \le& \scp{P_{k}\nabla f(y_k)}{y_k-x_{k}} - \frac{1}{2L}\norm{P_{k}\nabla f(y_k)}^2\\
+f(x_{k+1}) - f(x^*) \le& \scp{\nabla f(y_k)}{y_k-x^*} - \frac{1}{2L}\norm{\nabla f(y_k)}^2- \frac{1}{2L}\norm{P_{k}\nabla f(y_k)}^2\\
+=& \scp{P_{k}\nabla f(y_k)}{y_k-x^*} -\frac{1}{2L}\norm{P_{k}\nabla f(y_k)} + A\\
+A :=& \scp{(I-P_{k})\nabla f(y_k)}{y_k-x^*} - \frac{1}{2L}\norm{\nabla f(y_k)}^2
+\le \frac{L}{2}\inf\SetDef{\norm{x^*-y}^2}{y\in X_{k+1}} = \frac{L}{2}d_k^2
+\end{align*}
+%
+Let $\Delta f_k := f(x_k)-f(x^*)\;(\ge \frac{\mu}{2}\norm{x^*-x_k}^2)$ and $g_k:=P_{k}\nabla f(y_k)$. Then we have
+%
+\begin{align*}
+\Delta f_{k+1} \le& \scp{g_k}{y_k-x^*} - \frac{1}{2L}\norm{g_k}^2 + \frac{L}{2}d_k^2\\
+\Delta f_{k+1} - \Delta f_{k} \le& \scp{g_k}{y_k-x_k} - \frac{1}{2L}\norm{g_k}^2
+\end{align*}
+%
+Multiplying with $1-\beta$ and $\beta$ the first and second inequality, respectively, gives
+%
+\begin{align*}
+\Delta f_{k+1} -\beta \Delta f_{k}\le& \scp{g_k}{y_k-(1-\beta)x^*-\beta x_k}- \frac{1}{2L}\norm{g_k}^2 + (1-\beta)\frac{L}{2}d_k^2
+\end{align*}
+%
+Now with $\xi_k:= y_k-\beta x_k-(1-\beta)x^*$
+%
+\begin{align*}
+ \frac{1}{2L}\norm{g_k}^2 -\scp{g_k}{\xi_k}
+= \frac{L}{2} \left(  \norm{\frac{1}{L}g_k}^2 -2\scp{\frac{1}{L}g_k}{\xi_k}\right)
+= \frac{L}{2} \left(  \norm{\xi_k-\frac{1}{L}g_k}^2 -\norm{\xi_k}^2\right)
+\end{align*}
+%
+%
+\begin{align*}
+\xi_k -\frac{1}{L}g_k= (y_k-\beta x_k-(1-\beta)x^*) -(y_k - x_{k+1}) 
+= (1+\beta) x_{k+1} -\beta (x_k -x_{k+1})-(1-\beta)x^* = \xi_{k+1}.
+\end{align*}
+%
+It follows that
+%
+\begin{align*}
+\Delta f_{k+1} -\beta \Delta f_{k}\le& \frac{L}{2} \left(  \norm{\xi_k}^2 - \norm{\xi_{k+1}}^2\right)
+\end{align*}
+%
+%---------------------------------------
+\begin{lemma}\label{lemma:}
+Let $a_n$ and $b_n$ positive sequences with
+%
+\begin{equation}\label{eq:}
+a_{k+1} \le b_k - b_{k+1},\quad b_k \le C_1 a_k\quad \forall k\in\N.
+\end{equation}
+%
+Then
+%
+\begin{equation}\label{eq:}
+a_{k+n} \le C \rho^n a_k\quad C = (1+C_1),\quad \rho = \frac{C_1}{C_1+1}
+\end{equation}
+%
+\end{lemma}
+%%---------------------------------------
+\begin{proof}
+We have
+%
+\begin{align*}
+\sum_{k=n}^{n+m} a_k \le b_{n-1}-b_{n+m} \le C_1 a_{n-1}
+\quad\Rightarrow\quad \sum_{k=n}^{\infty} a_k \le C_1 a_{n-1}
+\end{align*}
+%
+\end{proof}
+%
+We take
+%
+\begin{align*}
+a_k = \Delta f_{k},\quad
+b_k = \frac{L}{2}\norm{\xi_k}^2 + \beta \Delta f_{k}
+\end{align*}
+%
+%
+We have
+%
+\begin{align*}
+\xi_k:=& y_k-\beta x_k-(1-\beta)x^* = x_k - \beta x_{k-1}-(1-\beta)x^*  = (1-\beta)(x_k-x^*) + \beta(x_k-x_{k-1})\\
+=& x_k-x^* - \beta(x_{k-1}-x^*)
+\end{align*}
+
+
+%
+%==========================================
+\section{Semi-linear equation}\label{sec:}
+%==========================================
+%
+Let $X=H^1_0(\Omega)$, $\Omega\subset\R^d$ a bounded domain. We write $u$ instead of $x$ and $E$ instead of $f$. We consider minimization of 
+%
+\begin{equation}\label{eq:}
+E(u) = \frac12\int_{\Omega} \abs{\nabla u}^2 - \int_{\Omega} F(u).
+\end{equation}
+%
+A stationary point $u$ is characterized by
+%
+\begin{align*}
+\int_{\Omega} \nabla u\cdot\nabla v = \int_{\Omega} f(u)v\quad\forall v\in X,\quad f = F'.
+\end{align*}
+%
+%---------------------------------------
+\begin{proposition}\label{prop:}
+$E$ is differentiable, if
+%
+\begin{equation}\label{eq:pde_f1}
+f(t) \le a + b t^{2^* -1},\quad 2^* = 2d/(d-2).
+\end{equation}
+%
+$E$ is strongly convex with $\mu=1$, if
+%
+\begin{equation}\label{eq:pde_f3}
+(f(t)-f(s)(t-s)\le 0.
+\end{equation}
+%
+If in addition 
+%
+\begin{equation}\label{eq:pde_f2}
+f(t)t\le 0
+\end{equation}
+%
+there exists a unique minimizer (direct method of variations).
+\end{proposition}
+%
+For the Lipschitz-bound
+%
+\begin{align*}
+\norm{\nabla E(u)-\nabla E(w)} = \sup\SetDef{E'(u)(v)-E'(w)(v)}{\norm{v}=1}
+\end{align*}
+%
+%
+\begin{align*}
+E'(u)(v)-E'(w)(v) =& \int_{\Omega} \nabla (u-w)\cdot\nabla v - \int_{\Omega} \left( f(u)-f(w)\right)v
+\end{align*}
+%
+
+
+%
+A gradient step reads with step $t$
+%
+\begin{equation}\label{eq:}
+\int_{\Omega} \nabla u_{n+1}\cdot\nabla v = (1-t)\int_{\Omega} \nabla u_{n}\cdot\nabla v + t\int_{\Omega} f(u_n)v\quad\forall v\in X.
+\end{equation}
+%
+
+
+
+
+\right)se.Q^*_{t_k}(x_k, X_WThen

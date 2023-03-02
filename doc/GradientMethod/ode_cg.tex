@@ -1,0 +1,763 @@
+% !TEX encoding = UTF-8 Unicode
+%----------------------------------------
+\documentclass[english,12pt,a4paper]{article}
+%----------------------------------------
+%
+%----------------------------------------
+\input{../packages}
+\input{../macros.tex}
+%====================================================
+
+\title{FEM for ODEs}
+\author{Roland Becker}
+\date{\today}
+\usepackage{environ}
+
+
+
+%====================================================
+\begin{document}
+%====================================================
+\maketitle
+\setcounter{tocdepth}{2}
+\tableofcontents
+%
+%==========================================
+\section{Introduction}\label{sec:}
+%==========================================
+%
+%
+We consider the smooth $n$-dimesniosnal ODE
+%
+\begin{equation}\label{eq:ode}
+u'(t) = f(u(t)) + l(t),\quad t\in I=]0,T[,\qquad u(0) = u_0.
+\end{equation}
+%
+With $U:= H^1(I,\R^n)$ and $V:=L^2(I,\R^n)$ a weak formulation is
+%
+\begin{equation}\label{eq:ode_weak_primal}
+u\in U:\; \int_0^T \scp{u' - f(u)}{v} + \scp{u(0)}{v_0} = \int_0^T \scp{l}{v} + \scp{u_0}{v_0} \quad\forall (v,v_0)\in V\times\R^n.
+\end{equation}
+%
+Using the relation $\int_{0}^T u'v = - \int_{0}^T uv' + uv\vert_0^T$
+An alternative formulation is given by: Find $u,u_T\in V\times\R^n$, such that
+%
+\begin{equation}\label{eq:ode_weak_dual}
+-\int_0^T \left(\scp{u}{v'}+ \scp{f(u)}{v}\right)+ \scp{u_T}{v(T)} = \int_0^T \scp{l}{v} + \scp{u_0}{v(0)} \quad\forall v\in U.
+\end{equation}
+%
+%
+%==========================================
+\section{FEM discretization}\label{sec:}
+%==========================================
+%
+%
+We let $\delta=(0=t_0<t_1<\cdots < t_N=T)$ be a partition, $I_{\ell}:=]t_{\ell-1},t_{\ell}[$, $1\le \ell\le N$, $\delta_{\ell}:=\abs{I_{\ell}}$. 
+
+
+We let $U_{\delta}\subset U$ and $V_{\delta}\subset V$ be two conforming piecewise polynomial spaces and consider the semi-implicit discretization: Find $u_{\delta}\in U_{\delta}$ such that 
+for all $(v,v_0)\in V_{\delta}\times\R^n$
+%
+\begin{equation}\label{eq:ode_weak_delta}
+\int_0^T \scp{u_{\delta}' - \left( f(\tilde u) + f'_u(\tilde u)(u_{\delta}-\tilde u)\right)}{v} + \scp{u_{\delta}(0)}{v_0} = \int_0^T \scp{l}{v} + \scp{u_0}{v_0}.
+\end{equation}
+%
+where
+%
+\begin{equation}\label{eq:}
+\Rest{\tilde u}{I_{\ell}} := u_{\ell-1},\qquad u_{\ell-1} := u(t_{\ell-1}).
+\end{equation}
+%
+This gives on each time interval the linear system of equations
+%
+\begin{align*}
+\int_{I_{\ell}} \scp{u_{\delta}' - A u_{\delta})}{v}  = \int_{I_{\ell}} \scp{l+f(u_{\ell-1})-A u_{\ell-1}}{v} \quad \forall v\in P^{k-1}(I_{\ell}).
+\end{align*}
+%
+with $A:=f'_u(u_{\ell-1})$.  Now we suppose that 
+%
+\begin{equation}\label{eq:ode_weak_u_in_basis}
+\Rest{u}{I_{\ell}} = u_{\ell-1} + \sum_{j=1}^k c_j \phi_j(t),\quad \phi_j(0)= 0,\quad \deg\phi_j = j,\; 1\le j\le k-1. 
+\end{equation}
+%
+Then on each time interval we have to solve
+%
+\begin{align*}
+\int_{I_{\ell}} \scp{\phi_j' -  A\phi_j}{v}c_j  = \int_{I_{\ell}} \scp{l+ f(u_0)}{v} \quad \forall v\in P^{k-1}(I_{\ell}).
+\end{align*}
+%
+Let $l_i$  be the Legendre functions normalized by $\int_0^1 l_il_j=\delta_{ij}$, $0\le i,j$. 
+
+Taking as basis for $P^{k-1}(I)$  $\psi_i = l_{i-1}$, $1\le i\le k$ and 
+$\phi_j(t) = \int_0^t l_{j-1}(s)\,ds$ for $1\le j\le k-1$ we have for $j\le k-1$
+%
+\begin{align*}
+M_{ij} = \int_0^1 \phi_j'l_i = \int_0^1 l_j l_i
+\end{align*}
+%
+%
+%-------------------------------------------------------------------------
+\subsection{Dual scheme}\label{subsec:}
+%-------------------------------------------------------------------------
+%
+In the same way, the weak formulation (\ref{eq:ode_weak_dua}) leads to the dual scheme: Find $u_{\delta},u_T\in V_{\delta}\times\R^n$, such that
+%
+\begin{equation}\label{eq:ode_weak_dual_delta}
+-\int_0^T \left(\scp{u_{\delta}}{v'}+ \scp{f(u_{\delta})}{v}\right)+ \scp{u_T}{v(T)} = \int_0^T \scp{l}{v} + \scp{u_0}{v(0)} \quad\forall v\in U_{\delta}.
+\end{equation}
+%
+If we use linearization, we have
+%
+\begin{equation}\label{eq:ode_weak_dual_delta_lin}
+-\int_0^T \left(\scp{u_{\delta}}{v'}+ \scp{A u_{\delta}}{v}\right)+ \scp{u_T}{v(T)} = \int_0^T \scp{l+f(\tilde u) - A \tilde u}{v} + \scp{u_0}{v(0)} \quad\forall v\in U_{\delta}.
+\end{equation}
+%
+
+%
+%==========================================
+\section{Abstract setting}\label{sec:}
+%==========================================
+%
+In order to put (\ref{eq:weak_form}) and (\ref{eq:weak_form_ap}) in conforming the Babuska-framework   \cite{XuZikatanov03}
+%
+\begin{equation}\label{eq:}
+%
+\left\{
+\begin{aligned}
+X_{\delta}\times Y_{\delta} \subset& X\times Y\\
+x\in X:\; a(x)(y) =& b(y)\quad\forall y\in Y,\\ 
+x_{\delta}\in X_{\delta}:\; a_{\delta}(x_{\delta})(y) =& b(y)\quad\forall y\in Y_{\delta}.
+\end{aligned}
+\right.
+%
+\end{equation}
+%
+We  let
+%
+\begin{equation}\label{eq:}
+\left\{
+\begin{aligned}
+X := H^1(I,\R^n),\quad \norm{x}_X := \left(\norm{x'}_{L^2(I,\R^n)}^2 + \norm{x(0)}^2\right)^{\frac12}\\
+Y := L^2(I,\R^n) \times \R^n,\quad \norm{(y_1,y_0)}_Y := \left( \norm{y_1}_{L^2(I,\R^n)}^2 + \norm{y_0}^2 \right)^{\frac12}
+\end{aligned}
+\right.
+\end{equation}
+%
+%
+Let us suppose the continuous inf-sup uniform condition
+%
+\begin{equation}\label{eq:abstract_infsup}
+\gamma := \inf_{x\in X\setminus\Set{0}}\sup_{y\in Y\setminus\Set{0}} \frac{a'(x_0)(x,y)}{\norm{x}_X\norm{y}_Y}  > 0,\quad \forall x_0\in X.
+\end{equation}
+%
+and its discrete version
+%
+\begin{equation}\label{eq:abstract_infsup_delta}
+\gamma_{\delta} := \inf_{x\in X_{\delta}\setminus\Set{0}}\sup_{y\in Y_{\delta}\setminus\Set{0}} \frac{a_{\delta}'(x_0)(x,y)}{\norm{x}_X\norm{y}_Y}  > 0,\quad \forall x_0\in X_{\delta}.
+\end{equation}
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsubsection{A priori}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+Let $\widetilde{x}_{\delta} \in X_{\delta}$
+%
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsubsection{A posteriori}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+%---------------------------------------
+\begin{theorem}\label{thm:}
+We have
+%
+\begin{equation}\label{eq:}
+%
+\left\{
+\begin{aligned}
+\gamma \norm{x-x_{\delta}}_X \le& R_1 + R_2,\\
+ R_1 :=& \sup_{y\in Y\setminus\Set{0}}\inf_{y_{\delta}\in Y_{\delta}\setminus\Set{0}}\frac{b(y-y_{\delta}) - a_{\delta}(x_{\delta})(y-y_{\delta})}{\norm{y}_Y} ,\\ 
+ R_2 :=&  \sup_{y\in Y\setminus\Set{0}}\frac{a(x_{\delta})(y)-a_{\delta}(x_{\delta})(y)}{\norm{y}_Y}.
+\end{aligned}
+\right.
+%
+\end{equation}
+%
+\end{theorem}
+%
+%---------------------------------------
+\begin{proof}
+We have for any $y\in Y$ and $y_{\delta}\in Y_{\delta}$
+%
+\begin{align*}
+&\int_0^1a'(x_{\delta}+t(x-x_{\delta}))(x-x_{\delta},y)\,dt = a(x)(y) - a(x_{\delta})(y)
+= b(y) - a(x_{\delta})(y)\\ 
+&= b(y) - a_{\delta}(x_{\delta})(y) + a(x_{\delta})(y)-a_{\delta}(x_{\delta})(y)\\
+&= b(y-y_{\delta}) - a_{\delta}(x_{\delta})(y-y_{\delta}) + a(x_{\delta})(y)-a_{\delta}(x_{\delta})(y) \le \left(R_1+R_2\right)\norm{y}_{Y}
+\end{align*}
+%
+%
+Then
+%
+\begin{align*}
+\gamma \norm{x-x_{\delta}} \le& \int_0^1\sup_{y\in Y\setminus\Set{0}}\frac{a'(x_{\delta}+t(x-x_{\delta}))(x-x_{\delta},y)}{\norm{y}_Y}\,dt\\ =& 
+\sup_{y\in Y\setminus\Set{0}}\frac{a(x)(y) - a(x_{\delta})(y)}{\norm{y}_Y} \le R_1 + R_2.
+\end{align*}
+%
+\end{proof}
+%
+%
+%==========================================
+\section{A posterior error estimator}\label{sec:}
+%==========================================
+%
+%
+%-------------------------------------------------------------------------
+\subsection{Primal scheme}\label{subsec:}
+%-------------------------------------------------------------------------
+%
+%
+We have for $y=(v,v_0)\in L^2(I,\R^n) \times \R^n$ and $y_{\delta}=(v_{\delta},v_0)$ with $v_{\delta} = \pi_{\delta}v$. Since $u_{\delta}'\in V_{\delta}$ and $f(\widetilde{u_{\delta}}) + f'(\widetilde{u_{\delta}})(\widetilde{u_{\delta}})\in V_{\delta}$ we have
+%
+\begin{align*}
+b(y-y_{\delta}) - a_{\delta}(u_{\delta})(y-y_{\delta}) =  \int_{0}^T\scp{l  + f'(\widetilde{u_{\delta}})(u_{\delta})}{v-v_{\delta}}
+\end{align*}
+%
+so
+%
+\begin{align*}
+R_1 \le \sum_{\ell=1}^N \eta^1_{\ell}(u_{\delta})\norm{v}_{L^2(I_{\ell})} \le \left(\sum_{\ell=1}^N \eta^1_{\ell}(u_{\delta})^2\right)^{\frac12}\norm{v}_{L^2(I)} 
+\end{align*}
+%
+With
+%
+\begin{align*}
+ \eta^1_{\ell}(u_{\delta}) := \norm{(I-\pi_{\delta})\left( l + f'(u_{\ell-1})u_{\delta}\right)}_{L^2(I_{\ell})}
+\end{align*}
+%
+%---------------------------------------
+\begin{lemma}\label{lemma:}
+Let $u$ have the development as in (\ref{eq:ode_weak_u_in_basis}). Then
+%
+\begin{equation}\label{eq:}
+\norm{(I-\pi_{\delta})f'(u_{\ell-1})u_{\delta}}_{I_{\ell}} = \norm{f'(u_{\ell-1})c_k}^2 \norm{\phi_{k}}_{L^2(I_{\ell})}
+\end{equation}
+% 
+\end{lemma}
+%
+%---------------------------------------
+\begin{proof}
+%
+\end{proof}
+%
+%
+Similarly we have for $R_2$
+%
+\begin{align*}
+a(x_{\delta})(y)-a_{\delta}(x_{\delta})(y) = \sum_{k=1}^{N}\int_{I_{\ell}}\scp{f(u_{\delta}) - f(\widetilde{u_{\delta}})}{v}
+\end{align*}
+%
+%
+\begin{align*}
+f(u_{\delta}) - f(\widetilde{u_{\delta}}) =& f(u_{\delta}) - f(u_{\ell-1}) - f'(u_{\ell-1})(u_{\delta}-u_{\ell-1})\\
+=& \int_0^1\left(f'((1-s)u_{\ell-1} + s u_{\delta})- f'(u_{\ell-1})\right)\,ds(u_{\delta}-u_{\ell-1})
+\end{align*}
+%
+If $f'$ is quadratic, the simpson rule gives for the integral
+%
+\begin{align*}
+\frac23\left( f'(\frac{u_{\ell-1} + u_{\ell}}{2})- f'(u_{\ell-1})\right) + \frac16\left( f'(u_{\ell})- f'(u_{\ell-1})\right)
+\end{align*}
+%
+For trapez we get
+%
+\begin{align*}
+\frac12\left( f'(u_{\ell})- f'(u_{\ell-1})\right)
+\end{align*}
+%
+%
+%---------------------------------------
+\begin{lemma}\label{lemma:}
+
+%
+\begin{equation}\label{eq:}
+\eta^2_{\ell}(u_{\delta}) = \frac12\norm{f'(u_{\ell})- f'(u_{\ell-1})}\norm{u_\delta - u_{\ell-1}}_{L^2(I_{\ell})}
+\end{equation}
+% 
+\end{lemma}
+%
+%
+%-------------------------------------------------------------------------
+\subsection{Dual scheme}\label{subsec:}
+%-------------------------------------------------------------------------
+%
+We have to consider with $v\in H^1(I,X)$ and $w=v-v_{\delta}$
+%%
+%
+\begin{align*}
+-\int_0^T \left(\scp{u_{\delta}}{w'}+ \scp{A u_{\delta}}{w}\right)+ \scp{u_T}{w(T)} = \int_0^T \scp{l+f(\tilde u) - A \tilde u}{w} + \scp{u_0}{w(0)} \quad\forall v\in U_{\delta}.
+\end{align*}
+%
+Integration by parts gives
+%
+\begin{align*}
+&-\int_0^T \scp{u_{\delta}}{w'} + \scp{u_T}{w(T)} - \scp{u_0}{w(0)}= \int_0^T \scp{u_{\delta}'}{w} \\
+&- \sum_{\ell=1}^{N-1} \scp{[u_{\delta}(t_{\ell})]}{w(t_{\ell})} + \scp{u_{\delta}(0)-u0}{w(0)} - \scp{u_{\delta}(T)-u_T}{w(T)}
+\end{align*}
+%
+
+
+
+%
+%==========================================
+\section{Analysis in the linear case $f(u)=-Au$ with SPD $A$}\label{sec:}
+%==========================================
+%
+The equation reads
+%
+\begin{equation}\label{eq:ode_A}
+u\in U:\; \int_0^T \scp{u' +Au}{v} + \scp{u(0)}{v_0} = \int_0^T \scp{l}{v} + \scp{u_0}{v_0} \quad\forall (v,v_0)\in V\times\R^n.
+\end{equation}
+%
+%
+We suppose $A$ to symmetric and positive definite and denote $\norm{u}_{A^k}=\norm{A^{k/2}u}$, $k\in\Z$. We equip $U$ and $V$ with the norms
+%
+\begin{align*}
+\norm{u}_U^2 := \norm{A^{-\frac12}u'}^2_{L^2(I,\R^n)} + \norm{A^{\frac12}u}^2_{L^2(I,\R^n)} + \norm{u(0)}^2_{\R^n} + \norm{u(T)}^2_{\R^n},\quad 
+\norm{v}_V^2 := \norm{A^{\frac12}v}^2_{L^2(I,\R^n)}
+\end{align*}
+%
+Denoting the bilinear form on the left of (\ref{eq:ode_A}) by $a$, we wish to show that
+%
+\begin{equation}\label{eq:ode_A_infsup}
+\inf_{u\in U\setminus\Set{0}}\inf_{(v,v_0)\in V\times\R^n\setminus\Set{0}} \frac{a(u,v)}{\norm{u}_U\norm{v}_V}=\gamma>0.
+\end{equation}
+%
+First, testing with $(v,v_0)=(A^{-1}(u'+ Au),2u(0))$ we have
+%
+\begin{align*}
+\norm{(v,v_0)}^2_{V\times\R^n} \le 4\norm{u(0)}^2_{\R^n} + \norm{A^{-\frac12}(u'+ Au)}^2_{L^2(I,\R^n)} \le 4\norm{u}^2_U.
+\end{align*}
+%
+and
+%
+\begin{align*}
+a(u, (v,v_0)) =& \norm{A^{-\frac12}u'}^2_{L^2(I,\R^n)} + 2\norm{u(0)}^2 + 2\int_0^T \scp{u}{u'} + \norm{A^{\frac12}u}^2_{L^2(I,\R^n)}\\
+=& \norm{A^{-\frac12}u'}^2_{L^2(I,\R^n)} + \norm{u(1)}^2 + \norm{u(0)}^2  + \norm{A^{\frac12}u}^2_{L^2(I,\R^n)}
+\end{align*}
+%
+since
+%
+\begin{align*}
+ 2\int_0^T \scp{u}{u'} = \norm{u(1)}^2 - \norm{u(0)}^2.
+\end{align*}
+%
+This yields $\gamma\ge\frac12$ in (\ref{eq:ode_A_infsup}).
+
+
+
+%
+For the discrete scheme
+%
+\begin{equation}\label{eq:ode_A_delta}
+u_{\delta}\in U_{\delta}:\; \int_0^T \scp{u_{\delta}' +Au_{\delta}}{v} + \scp{u(0)}{v_0} = \int_0^T \scp{l}{v} + \scp{u_0}{v_0} \quad\forall (v,v_0)\in V_{\delta}\times\R^n.
+\end{equation}
+%
+we let $\pi_{\delta}:L^2(I,\R^n)\to V_{\delta}$ be the $L^2(I,\R^n)$ projection. Then, testing with $(v,v_0)=(A^{-1}\pi_{\delta}(u_{\delta}'+ Au_{\delta}),2u_{\delta}(0))$ yields
+%
+\begin{align*}
+a(u_{\delta}, (v,v_0)) =& \norm{A^{-\frac12}\pi_{\delta}u_{\delta}'}^2_{L^2(I,\R^n)} + 2\norm{u_{\delta}(0)}^2 + 2\int_0^T \scp{\pi_{\delta}u_{\delta}}{u_{\delta}'} + \norm{A^{\frac12}\pi_{\delta}u_{\delta}}^2_{L^2(I,\R^n)}
+\end{align*}
+%
+In case
+%
+\begin{equation}\label{eq:ode_A_delta_condCN}
+u_{\delta}' \in V_{\delta}
+\end{equation}
+%
+we get 
+%
+\begin{align*}
+a(u_{\delta}, (v,v_0)) = \norm{A^{-\frac12}u_{\delta}'}^2_{L^2(I,\R^n)} + \norm{u_{\delta}(1)}^2 + \norm{u_{\delta}(0)}^2  + \norm{A^{\frac12}\pi_{\delta}u_{\delta}}^2_{L^2(I,\R^n)}
+\end{align*}
+%
+which is weaker, since it only controls the projection of the solution in the $A$-norm. This explains the oscillations of the Crank-Nicolson scheme for the heat equation.
+
+
+Without (\ref{eq:ode_A_delta_condCN}) we have
+%
+\begin{align*}
+a(u_{\delta}, (v,v_0)) =& \norm{A^{-\frac12}\pi_{\delta}u_{\delta}'}^2_{L^2(I,\R^n)} + \norm{u_{\delta}(1)}^2 + \norm{u_{\delta}(0)}^2\\
+& + 2\int_0^T \scp{\pi_{\delta}u_{\delta}-u_{\delta}}{u_{\delta}'} + \norm{A^{\frac12}\pi_{\delta}u_{\delta}}^2_{L^2(I,\R^n)}
+\end{align*}
+%
+We get the correct norms under the assumptions
+%
+%
+\begin{equation}\label{eq:ode_A_delta_stab1}
+\norm{A^{-\frac12}u_{\delta}'}^2_{L^2(I,\R^n)} \lesssim \norm{A^{-\frac12}\pi_{\delta}u_{\delta}'}^2_{L^2(I,\R^n)}
+\end{equation}
+%
+%
+and
+%
+\begin{equation}\label{eq:ode_A_delta_stab1}
+\norm{A^{\frac12}\left(\pi_{\delta}u_{\delta}- u_{\delta}\right)}^2_{L^2(I,\R^n)} \lesssim \int_0^T \scp{\pi_{\delta}u_{\delta}-u_{\delta}}{u_{\delta}'} + \norm{A^{\frac12}\pi_{\delta}u_{\delta}}^2_{L^2(I,\R^n)}
+\end{equation}
+%
+
+
+%
+%
+%==========================================
+\section{Linearization (semi-implicit scheme)}\label{sec:}
+%==========================================
+%
+
+by $D^k_{\delta}$ and $P^k_{\delta}$ the spaces of general and continuous piecewise $k$-th order polynomials, respectively. We note that
+$\dim D^k_{\delta} = (N-1)(k+1)$ and $\dim P^k_{\delta} = N + (N-1)(k-1) = \dim D^{k-1}_{\delta}+1$. 
+%
+Let $f_{\delta}$ be a piecewise polynomial approximation of $f$. We define
+%
+\begin{equation}\label{eq:}
+a_{\delta}(u)(v,v_0) = \sum_{k=0}^{N-1}\int_{I_{\ell}}\scp{u'(t) - f_k^{\delta}(u)}{v(t)}\, dt + \scp{u(0)}{v_0}
+\end{equation}
+%
+and the discrete problem for $k\in \N$ 
+%
+\begin{equation}\label{eq:weak_form_ap}
+u_{\delta}\in P^k_{\delta}:\; a(u_{\delta})(v,v_0) = b(v,v_0)\quad \forall (v,v_0)\in D^{k-1}_{\delta}\times \R^n.
+\end{equation}
+%
+The choice, with $u_k:=u(t_{\ell})$,
+%
+\begin{equation}\label{eq:}
+f_k^{\delta}(u) = f(u_k) +  f'(u_k)(u-u_k)
+\end{equation}
+%
+leads to a semi-implicit scheme.
+
+%
+%==========================================
+\section{Definition of the method}\label{sec:}
+%==========================================
+%
+We consider the smooth autonomous ODE
+%
+\begin{equation}\label{eq:ode}
+u'(t) = f(u(t)),\quad t\in I=]0,T[,\qquad u(0) = u_0.
+\end{equation}
+%
+We let $\delta=(0=t_0<t_1<\cdots < t_N=T)$ be a partition, $I_{\ell}:=]t_{\ell-1},t_k[$, $1\le k\le N$. We denote by $D^k_{\delta}$ and $P^k_{\delta}$ the spaces of general and continuous piecewise $k$-th order polynomials. We note that
+$\dim D^k_{\delta} = (N-1)(k+1)$ and $\dim P^k_{\delta} = N + (N-1)(k-1) = \dim D^{k-1}_{\delta}+1$. We define the function spaces $X=H^1(I,\R^n)$ and $Y=L^2(I,\R^n)\times \R^n$ and the form
+$a:X\times Y\to \R$
+%
+\begin{equation}\label{eq:ode_form}
+a(u)(v,w) := \int_I(u'(t) - f(u(t)))v(t)\, dt + \scp{u(0)}{w}.
+\end{equation}
+%
+Then with the linear form
+%
+\begin{equation}\label{eq:}
+b(v,w) := \scp{u_0}{w}
+\end{equation}
+%
+a weak formulation of (\ref{eq:ode}) reads
+%
+\begin{align*}
+u\in X:\; a(u)(v,w) = b(v,w)\quad \forall (v,w)\in Y.
+\end{align*}
+%
+Let $f_{\delta}$ be a piecewise polynomial approximation of $f$. We define for $k\in \N$ $X_{\delta}:=P^k_{\delta}$, $Y_{\delta}:=D^{k-1}_{\delta}\times \R^n$,
+%
+\begin{equation}\label{eq:}
+a_{\delta}(u)(v) = \sum_{\ell=1}^N\int_{I_{\ell}}(u'(t) - f_{\delta}(u))v(t)\, dt + \scp{u(0)}{w}
+\end{equation}
+%
+and the discrete problem
+%
+\begin{align*}
+u_{\delta}\in X_{\delta}:\; a(u_{\delta})(v,w) = b(v,w)\quad \forall (v,w)\in Y_{\delta}.
+\end{align*}
+%
+%
+%==========================================
+\section{CG2 variants with linearization}\label{sec:}
+%==========================================
+%
+We use a quadratic approximation written be means of an hierarchical basis with piecewise linear test functions and linearization
+%
+\begin{equation}\label{eq:}
+f_{\delta}(u) = f(u_0) + f'(u_0)(u-u_0).
+\end{equation}
+% 
+Transforming all intervals to $[0,1]$ we have the development 
+%
+\begin{equation}\label{eq:cg2_quadratic_onrefint}
+u(t) = (1-t)u_0 + t u_1 + t(1-t)u_2
+\end{equation}
+%
+with $u_0$ known and $u_1$ and $u_2$ verifying
+%
+\begin{align*}
+\int_0^1 \left( u'(t) - (f(u_0) + f'(u_0)(u-u_0))\right) \psi(t)\,dt = 0\quad \psi \in\Psi.\\
+\int_0^1 \left( (u_1-u_0) + (1-2t)u_2 - (f(u_0) + f'(u_0)( t (u_1-u_0) + t(1-t)u_2 )\right) \psi(t)\,dt = 0\quad \psi \in\Psi.\\
+\int_0^1 \left( u_1 + (1-2t)u_2 - f'(u_0)( t u_1 + t(1-t)u_2 ) \right) \psi(t)\,dt = \int_0^1 \left( u_0 + f(u_0) - t f'(u_0)u_0  )\right) \psi(t)\,dt\quad \psi \in\Psi.\\
+\int_0^1 \left( u_1 + (1-2t)u_2 - f'(u_0)( t u_1 + t(1-t)u_2 ) \right) \psi(t)\,dt = \int_0^1 \left( u_0 + f(u_0) - t f'(u_0)u_0  )\right) \psi(t)\,dt\quad \psi \in\Psi.
+\end{align*}
+%
+%
+Denoting $A:=f'(u_0)$ and be $b:=u_0 + f(u_0)$ we have
+%
+\begin{align*}
+\alpha(\psi) u_1 + \beta(\psi) u_2= \int_0^1  b  \psi(t)\,dt + \alpha(\psi) u_0,\quad \psi \in \Psi\\
+\alpha(\psi):= \int_0^1 \left( M - tA \right) \psi(t)\,dt,\quad \beta(\psi) := \int_0^1 \left( (1-2t)M - t(1-t)A \right) \psi(t)\,dt
+\end{align*}
+%
+%
+%-------------------------------------------------------------------------
+\subsection{CG2-DG1}\label{subsec:}
+%-------------------------------------------------------------------------
+%
+With $\Psi=\Set{1, 1-t}$ we have
+%
+\begin{align*}
+\int_0^1t(1-t)=\frac16,\quad \int_0^1 (1-2t)(1-t)=\frac16,\quad \int_0^1 t(1-t)^2=\frac12 - \frac23 + \frac14=\frac1{12}
+\end{align*}
+%
+%
+\begin{align*}
+\begin{bmatrix}
+M - \frac12 A & \frac16 A\\
+\frac12 M - \frac16 A &  \frac16 M - \frac1{12} A
+\end{bmatrix}
+\begin{bmatrix}
+u_1 \\ u_2
+\end{bmatrix}
+=
+\begin{bmatrix}
+b \\\frac12 b
+\end{bmatrix}
++
+\begin{bmatrix}
+(M - \frac12 A) u_0  \\ (\frac12 M - \frac16 A) u_0 
+\end{bmatrix}
+\end{align*}
+%
+%
+%-------------------------------------------------------------------------
+\subsection{CG2-2DG0}\label{subsec:}
+%-------------------------------------------------------------------------
+%
+With $\Psi=\Set{\chi_{[0,1]}, \chi_{[0,\frac12]}}$ we have
+%
+\begin{align*}
+\int_0^{\frac12} t\,dt = \int_0^{\frac12} (1-2t)\,dt = \frac14,\quad \int_0^{\frac12} t(1-t)\,dt = \frac12(\frac23\times\frac14\times\frac34 + \frac16\times\frac14 )=\frac{1}{12},\quad
+\int_0^{\frac12} (1-t)\,dt =\frac14
+\end{align*}
+%
+
+%
+\begin{align*}
+\begin{bmatrix}
+M - \frac12 A & \frac16 A\\
+\frac12 M - \frac14 A & \frac14 M - \frac1{12} A
+\end{bmatrix}
+\begin{bmatrix}
+u_1 \\ u_2
+\end{bmatrix}
+=
+\begin{bmatrix}
+b \\\frac12 b
+\end{bmatrix}
++
+\begin{bmatrix}
+(M - \frac12 A) u_0  \\ (\frac12 M - \frac14 A) u_0 
+\end{bmatrix}
+\end{align*}
+%
+%
+%-------------------------------------------------------------------------
+\subsection{2CG1-DG1}\label{subsec:}
+%-------------------------------------------------------------------------
+%
+We replace the quadratic in (\ref{eq:cg2_quadratic_onrefint}) by a piecewise linear
+%
+\begin{equation}\label{eq:cg2_quadratic_onrefint}
+u(t) = (1-t)u_0 + t u_1 + \phi(t) u_2,\quad \phi(t) = \frac12\min\Set{t, 1-t} = \frac{1-|2t-1|}{4} 
+\end{equation}
+%
+Then with
+%
+\begin{align*}
+\int_0^1 \phi(t) = \frac18,\quad \int_0^1 \phi(t)(1-t) = \frac{1}{16},\quad \int_0^1 \phi'(t) = 0,\quad \int_0^1 \phi'(t)(1-t) =\frac12\frac34\frac12 - \frac12\frac12\frac14=\frac18
+\end{align*}
+%
+With $\Psi=\Set{1, 1-t}$ we have
+%
+\begin{align*}
+\begin{bmatrix}
+M - \frac12 A & \frac18 A\\
+\frac12 M - \frac16 A &  \frac18 M - \frac{1}{16}A
+\end{bmatrix}
+\begin{bmatrix}
+u_1 \\ u_2
+\end{bmatrix}
+=
+\begin{bmatrix}
+b \\\frac12 b
+\end{bmatrix}
++
+\begin{bmatrix}
+(M - \frac12 A) u_0  \\ (\frac12 M - \frac14 A) u_0 
+\end{bmatrix}
+\end{align*}
+%
+%
+%-------------------------------------------------------------------------
+\subsection{2CG1-2DG0}\label{subsec:}
+%-------------------------------------------------------------------------
+%
+We replace the quadratic in (\ref{eq:cg2_quadratic_onrefint}) by a piecewise linear
+%
+\begin{equation}\label{eq:cg2_quadratic_onrefint}
+u(t) = (1-t)u_0 + t u_1 + \phi(t) u_2,\quad \phi(t) = \frac12\min\Set{t, 1-t} = \frac{1-|2t-1|}{4} 
+\end{equation}
+%
+Then with $\Psi=\Set{\chi_{[0,1]}, \chi_{[0,\frac12]}}$ and
+%
+\begin{align*}
+\int_0^1 \phi(t) = \frac18,\quad \int_0^{\frac12} \phi(t) = \frac{1}{16},\quad \int_0^1 \phi'(t) = 0,\quad \int_0^{\frac12} \phi'(t) = \frac14
+\end{align*}
+%
+%
+\begin{align*}
+\begin{bmatrix}
+M - \frac12 A & \frac18 A\\
+\frac12 M - \frac18 A &  \frac14 M - \frac{1}{16}A
+\end{bmatrix}
+\begin{bmatrix}
+u_1 \\ u_2
+\end{bmatrix}
+=
+\begin{bmatrix}
+b \\\frac12 b
+\end{bmatrix}
++
+\begin{bmatrix}
+(M - \frac12 A) u_0  \\ (\frac12 M - \frac14 A) u_0 
+\end{bmatrix}
+\end{align*}
+%
+%
+%-------------------------------------------------------------------------
+\subsection{CG2$^+$-DG0}\label{subsec:}
+%-------------------------------------------------------------------------
+%
+Another variant is to force the quadratic approximation to be $C_1$. One needs careful scaling on variable intervals and we have to decide what to do on the first interval.
+On $[t_n, t_{n+1}]$, $t_{n+1}= t_n+\delta_n$ we have
+%
+\begin{align*}
+\Rest{u}{I_n}(t) = \frac{t_{n+1}-t}{\delta_n}u_0 + \frac{t-t_n}{\delta_n} u_1 + \frac{(t_{n+1}-t)(t-t_n)}{\delta_n^2} u_2 \\\quad\Rightarrow\quad 
+{\Rest{u}{I_n}}'(t_n) = \frac{u_1-u_0 + u_2}{\delta_n} 
+\end{align*}
+%
+Denoting the previous values by $u_{-1}$ and $u_{-2}$, i.e on $[t_{n-1}, t_n]$ we have 
+%
+\begin{align*}
+\Rest{u}{I_{n-1}}(t) = \frac{t_n-t}{\delta_{n-1}}u_{-1} + \frac{t-t_{n-1}}{\delta_{n-1}} u_0 + \frac{(t_{n}-t)(t-t_{n-1})}{\delta_{n-1}^2} u_2 \\\quad\Rightarrow\quad 
+{\Rest{u}{I_{n-1}}}'(t_n) = \frac{u_0-u_{-1}-u_{-2}}{\delta_{n-1}} 
+\end{align*}
+%
+So the $C^1$-condition reads
+%
+\begin{align*}
+ u_1  + u_2 = \left(1+\frac{\delta_{n-1}}{\delta_n}\right)u_0 -\frac{\delta_{n-1}}{\delta_n}\left( u_{-1}+u_{-2}\right).
+\end{align*}
+%
+%
+\begin{align*}
+\begin{bmatrix}
+M - \frac12 A & \frac16 A\\
+M & M
+\end{bmatrix}
+\begin{bmatrix}
+u_1 \\ u_2
+\end{bmatrix}
+=
+\begin{bmatrix}
+(M + \frac12 A) u_0 + b \\ 2 u_0 - u_{-1} - u_{-2}
+\end{bmatrix}
+\end{align*}
+%
+%==========================================
+\section{General analysis}\label{sec:}
+%==========================================
+%
+We consider 
+%
+\begin{equation}\label{eq:}
+%
+\left\{
+\begin{aligned}
+x\in X:\quad a(x)(y) =& l(y)\quad \forall y \in Y\\
+x_{\delta}\in X_{\delta}:\quad a(x_{\delta})(y) =& l(y)\quad \forall y \in Y_{\delta}
+\end{aligned}
+\right.
+\end{equation}
+%
+Let us suppose the continuous inf-sup uniform condition
+%
+\begin{equation}\label{eq:abstract_infsup}
+\gamma := \inf_{x\in X\setminus\Set{0}}\sup_{y\in Y\setminus\Set{0}} \frac{a'(x_0)(x,y)}{\norm{x}_X\norm{y}_Y}  > 0,\quad \forall x_0\in X.
+\end{equation}
+%
+and its discrete version
+%
+\begin{equation}\label{eq:abstract_infsup_delta}
+\gamma_{\delta} := \inf_{x\in X_{\delta}\setminus\Set{0}}\sup_{y\in Y_{\delta}\setminus\Set{0}} \frac{a_{\delta}'(x_0)(x,y)}{\norm{x}_X\norm{y}_Y}  > 0,\quad \forall x_0\in X_{\delta}.
+\end{equation}
+%
+%
+%-------------------------------------------------------------------------
+\subsection{A priori}\label{subsec:}
+%-------------------------------------------------------------------------
+%
+Let $\widetilde{x}_{\delta} \in X_{\delta}$
+
+%
+%-------------------------------------------------------------------------
+\subsection{A posteriori}\label{subsec:}
+%-------------------------------------------------------------------------
+%
+We have for any $y\in Y$
+%
+\begin{align*}
+\int_0^1a'(x_{\delta}+t(x-x_{\delta}))(x-x_{\delta},y)\,dt =& a(x)(y) - a(x_{\delta})(y)
+= l(y) - a(x_{\delta})(y)\\ \le&  \left(R_1 + R_2\right)\norm{y}_Y,
+\end{align*}
+%
+with
+%
+\begin{align*}
+R_1 := \sup_{y\in Y\setminus\Set{0}}\inf_{y_{\delta}\in Y_{\delta}\setminus\Set{0}}\frac{l(y-y_{\delta}) - a_{\delta}(x_{\delta})(y-y_{\delta})}{\norm{y}_Y} ,\quad R_2 :=  \sup_{y\in Y\setminus\Set{0}}\frac{a(x_{\delta})(y)-a_{\delta}(x_{\delta})(y)}{\norm{y}_Y}. 
+\end{align*}
+%
+Then
+%
+\begin{align*}
+\gamma \norm{x-x_{\delta}} \le& \int_0^1\sup_{y\in Y\setminus\Set{0}}\frac{a'(x_{\delta}+t(x-x_{\delta}))(x-x_{\delta},y)}{\norm{y}_Y}\,dt\\ =& 
+\sup_{y\in Y\setminus\Set{0}}\frac{a(x)(y) - a(x_{\delta})(y)}{\norm{y}_Y} \le R_1 + R_2.
+\end{align*}
+%
+
+
+
+
+
+
+
+%====================================================
+%====================================================
+\end{document}
+%===================================================w

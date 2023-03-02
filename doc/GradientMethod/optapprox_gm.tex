@@ -1,0 +1,348 @@
+% !TEX root = optapprox.tex
+
+%
+%==========================================
+\section{Gradient method}\label{sec:}
+%==========================================
+%
+%
+%---------------------------------------
+\begin{yellow}
+\begin{algorithm}[H]
+\caption{Adaptive \textbf{GM}} 
+\label{algorithm:adaptiveGM} 
+%
+Inputs: $X_0$, $x_0\in X_0$, $t_0>0$, $\lambda>0$, $1>\omega>0$. Set $k=0$.
+%
+\begin{itemize}
+\item[(1)] While $Q^*(x_k, t_k, X_{k})< f(\widetilde{x}(x_k,t_k, X_{k}))$:\quad $t_k = \omega*t_k$.
+\item[(2)] $x_{k+1} = \widetilde{x}(x_k,t_k,X_{k})$.
+\item[(3)] If $\eta^2(x_{k+1}, X_{k})> \qred\eta^2(x_{k}, X_{k}) + \lambda t_{k}(f(x_{k})-f(x_{k+1}))$:\quad $X_{k+1}=\REF(X_{k}, \eta(x_k,X_k))$\\
+\item[(4)] $t_{k+1} = t_k/\omega$.
+\item[(5)] Increment $k$ and go to (1).
+\end{itemize}
+%
+\end{algorithm}
+\end{yellow}
+%---------------------------------------
+% 
+%---------------------------------------
+\begin{lemma}\label{lemma:}
+If the level set $\mathcal L_f(x_0):=\SetDef{x\in X}{f(x)\le f(x_0)}$ is bounded and $\nabla f$ is $L$-Lipschitz on this set, the line-search step (1) terminates and its number of iterations is uniformly bounded with step sizes $t_k\ge 1/(2L)$. 
+If in addition $f$ is $\mu$-strictly convex we have $t_k\le 1/\mu$.
+\end{lemma}
+%
+%---------------------------------------
+\begin{proof}
+The lower bound of the step-size follows from the following standard inequality for a function with $L$-Lipschitz gradient
+%
+\begin{align*}
+f(x) \le f(y) + \scp{\nabla f(y)}{x-y} + \frac{L}{2}\norm{x-y}^2,
+\end{align*}
+%
+which implies for $t_k \le 1/L$ with $\widetilde{x}:=\widetilde{x}(x_k,t_k, X_{k})$
+%
+\begin{align*}
+f(\widetilde{x}) \le Q(x_k, \widetilde{x}, \frac1L) = Q(x_k, \widetilde{x}, t_{k}) + \frac12(L-\frac{1}{t_k})\norm{\widetilde{x}-x_k}^2 \le Q^*(x_k, t_k, X_{k}).
+\end{align*}
+%
+
+The upper bound of the step-size follows from the definition of $\mu$-convexity:
+%
+\begin{align*}
+f(x) \ge f(y) + \scp{\nabla f(y)}{x-y} + \frac{\mu}{2}\norm{x-y}^2,
+\end{align*}
+%
+giving
+%
+\begin{align*}
+f(\widetilde{x}) \ge Q_{1/\mu}(x_k, \widetilde{x}), X_{k}) = Q^*(x_k, t_k, X_{k}) + \frac12(\mu-\frac{1}{t_k})\norm{\widetilde{x}-x_k}^2. 
+\end{align*}
+%
+The step-size-loop stops if  $Q^*(x_k, t_k, X_{k})\ge f(\widetilde{x})$, which implies $t_k\le 1/\mu$.
+
+
+\end{proof}
+%
+%---------------------------------------
+\begin{lemma}\label{lemma:}
+The iterates of GM satisfy
+%
+\begin{equation}\label{eq:gm:goodestimate1}
+f(x_{k+1}) -f(x_k) \le -\frac{1}{2 t_k}\norm{x_{k+1}-x_k}^2 
+\end{equation}
+%
+and
+%
+\begin{equation}\label{eq:gm:goodestimate2}
+f(x_{k+1}) -f(x^*) \le \frac{1}{2 t_k}\left(\norm{x_k-x^*}^2 - \norm{x_{k+1}-x^*}^2\right) +\frac{\Crel^2}{2\mu}\eta^2(x_k,X_k).
+\end{equation}
+%
+\end{lemma}
+%
+%---------------------------------------
+\begin{proof}
+We have by the line-search step (1) 
+%
+%
+\begin{equation}\label{eq:gm:help0}
+f(x_{k+1}) \le Q^*(x_k, t_k, X_{k})  = f(x_k) - \frac{t_k}{2}\norm{P_{k}\nabla f(x_k)}^2 
+\end{equation}
+%
+%
+which immediately gives (\ref{eq:gm:goodestimate1}), and by $\mu$-convexity
+%
+\begin{align*}
+f(x^*) \ge f(x_k) +  \scp{\nabla f(x_k)}{x^*-x_k} +\frac{\mu}{2}\norm{x^*-x_k}^2, 
+\end{align*}
+%
+such that with (\ref{hyp:estimator:reliability})
+%
+\begin{align*}
+f(x_k) - f(x^*) \le& \scp{\nabla f(x_k)}{x_k-x^*} -\frac{\mu}{2}\norm{x^*-x_k}^2\\
+=& \scp{P_k\nabla f(x_k)}{x_k-x^*} +\scp{(I-P_k)\nabla f(x_k)}{x_k-x^*} -\frac{\mu}{2}\norm{x^*-x_k}^2\\
+\le& \scp{P_k\nabla f(x_k)}{x_k-x^*} +\frac{1}{2\mu}\norm{(I-P_k)\nabla f(x_k)}^2\\
+\le& \scp{P_k\nabla f(x_k)}{x_k-x^*} +\frac{\Crel^2}{2\mu}\eta^2(x_k,X_k)
+\end{align*}
+%
+Adding (\ref{eq:gm:help0}), it then follows with the binomial identity that
+%
+\begin{align*}
+f(x_{k+1}) - f(x^*) \le& \scp{P_{k}\nabla f(x_k)}{x_k-x^*} - \frac{t_k}{2}\norm{P_{k}\nabla f(x_k)}^2 +\frac{\Crel^2}{2\mu}\eta^2(x_k,X_k)\\
+=& \frac{1}{2 t_k}\left(2\scp{t_kP_{k}\nabla f(x_k)}{x_k-x^*} - \norm{t_kP_{k}\nabla f(x_k)}^2\right) +\frac{\Crel^2}{2\mu}\eta^2(x_k,X_k)\\
+=& \frac{1}{2 t_k}\left(\norm{x_k-x^*}^2 - \norm{x_k-x^*-t_kP_{k}\nabla f(x_k)}^2\right) +\frac{\Crel^2}{2\mu}\eta^2(x_k,X_k)\\
+=& \frac{1}{2 t_k}\left(\norm{x_k-x^*}^2 - \norm{x_{k+1}-x^*}^2\right) +\frac{\Crel^2}{2\mu}\eta^2(x_k,X_k).
+\end{align*}
+%
+%
+%
+\end{proof}
+%
+%---------------------------------------
+\begin{theorem}\label{thm:}
+We suppose that $f$ is continuously differentiable, $\mu$-strongly convex,
+the level set $\mathcal L_f(x_0)$ is bounded and $\nabla f$ is $L$-Lipschitz on $\mathcal L_f(x_0)$.
+
+Suppose that
+%
+\begin{equation}\label{eq:timestepcond}
+\overline{t}\ge t_k \ge \underline{t}>0\quad\forall k\in\N.
+\end{equation}
+%
+Let
+%
+\begin{equation}\label{eq:gm:errordef}
+e_k := f(x_{k}) - f(x^*) + C_1 \eta^2(x_{k}, X_k),\qquad C_1 := \frac{\Crel^2}{\mu}.
+\end{equation}
+%
+Then we have for all $m,n\in\N$ and arbitrary $\lambda>0$
+%
+\begin{equation}\label{eq:gm:rconv}
+e_{m+n} \le (C+1) \rho^n e_m,\quad C=\max\Set{\frac{1}{4\mu\underline{t}} +  \frac{2\max\Set{\lambda,2\Cstab^2}\Crel^2}{\mu(1-{\qred})} \overline{t},\,\frac{1+\qred}{1-\qred}},
+\quad \rho = 1 - 1/(C+1).
+\end{equation}
+%
+\end{theorem}
+%
+%---------------------------------------
+\begin{remark}\label{rmk:}
+Supposing that $\underline{t}$ and $\overline{t}$ are proportional to $1/L$, we find that $C$ is proportional to $\kappa_f = L/\mu$ as in the standard gradient method.
+\end{remark}
+%
+%---------------------------------------
+\begin{proof}
+We first claim that
+%
+\begin{equation}\label{eq:gm:help2}
+\eta^2(x_{k+1},X_{k+1}) \le \qred \eta^2(x_{k}, X_k) + \widetilde{\lambda} \overline{t} \left(f(x_{k})-f(x_{k+1})\right),\quad\widetilde{\lambda} := \max\Set{\lambda,2\Cstab^2}. 
+\end{equation}
+%
+If no refinement happens, this follows by rule (3) of the algorithm and the assumption (\ref{eq:timestepcond}).
+If a refinement step happens from $k$ to $k+1$, we have by (\ref{hyp:estimator:reduction}) and (\ref{eq:gm:goodestimate1})
+%
+\begin{align*}
+\eta^2(x_{k+1},X_{k+1}) \le& \qred \eta^2(x_{k}, X_k) + \Cstab^2\norm{x_{k+1}-x_{k}}^2\\
+\le& \qred \eta^2(x_{k}, X_k) + 2\Cstab^2 t_k \left(f(x_{k})-f(x_{k+1})\right).
+\end{align*}
+%
+
+Now let
+%
+\begin{align*}
+\Delta_{k} := f(x_{k}) -f(x^*),\qquad \eta^2_k = \eta^2(x_{k}, X_k),\qquad \zeta_k:= \norm{x_k-x^*}^2.
+\end{align*}
+%
+
+From  (\ref{eq:gm:goodestimate2}), (\ref{eq:gm:help2}) and the assumption on the step-length (\ref{eq:timestepcond}),  we have  for $\beta:=\frac{2\Crel^2}{\mu(1-\qred)}$ 
+%
+\begin{align*}
+\Delta_{k+1} + \beta\eta^2_{k+1} \le  \left(\qred + \frac{\Crel^2}{\mu \beta}\right) \beta\eta^2_{k} 
++ \widetilde{\lambda}\beta \overline{t} \left(f(x_{k})-f(x_{k+1})\right) + \frac{1}{2\underline{t}}\left(\zeta_k - \zeta_{k+1}\right).
+\end{align*}
+%
+such that with $\widetilde{\qred}:= \qred + \frac{\Crel^2}{\mu \beta} = \frac12(1+\qred)<1$
+%
+\begin{align*}
+\Delta_{k+1} + \beta\eta^2_{k+1} \le
+\widetilde{\qred} \beta\eta^2_{k}
++ \widetilde{\lambda}\beta \overline{t} \left(f(x_{k})-f(x_{k+1})\right)
++ \frac{1}{\underline{2t}}\left(\zeta_k - \zeta_{k+1}\right)
+\end{align*}
+%
+Summing up  yields
+%
+\begin{align*}
+\sum_{k=n+1}^{N+1}\left(\Delta_{k} + \beta\eta^2_{k}\right)
+\le& 
+\widetilde{\qred}\beta\sum_{k=n}^{N}\eta^2_k
++ \widetilde{\lambda}\beta \overline{t} \left(f(x_{n})-f(x_{N+1})\right)
++ \frac{1}{2\underline{t}}\left(\zeta_n - \zeta_{N+1}\right) 
+\end{align*}
+%
+such that
+%
+\begin{align*}
+\sum_{k=n+1}^{N+1}\Delta_{k} + (1-\widetilde{\qred})\beta\sum_{k=n+1}^{N+1}\eta^2_k
+\le 
+\widetilde{\qred}\beta\eta^2_n
++  \widetilde{\lambda}\beta \overline{t} \left(f(x_{n})-f(x_{N+1})\right)
++ \frac{1}{2\underline{t}}\left(\zeta_n - \zeta_{N+1}\right) 
+\end{align*}
+%
+This proves $\lim\limits_{N\to\infty}x_N \to x^*$ and then, with $\zeta_n=\norm{x_n-x^*}^2 \le \frac{2}{\mu} \Delta_n$,
+%
+\begin{align*}
+\sum_{k=n+1}^{\infty}\Delta_{k} + (1-\widetilde{\qred})\beta\sum_{k=n+1}^{\infty}\eta^2_k
+\le &
+\widetilde{\qred}\beta\eta^2_n
++  \widetilde{\lambda}\beta \overline{t} \left(f(x_{n})-f(x^*)\right)
++ \frac{1}{2\underline{t}}\zeta_n\\
+\le & 
+\left( \widetilde{\lambda}\beta \overline{t}+ \frac{1}{4\mu\underline{t}}\right) \Delta_{n} + \widetilde{\qred}\beta\eta^2_n
+\end{align*}
+%
+With
+%
+\begin{align*}
+C_1 = (1-\widetilde{\qred})\beta = \frac{\Crel^2}{\mu}
+\end{align*}
+%
+we have
+%
+\begin{align*}
+\sum_{k=n+1}^{\infty}\left( \Delta_{k} + C_1\eta^2_k\right)
+\le&
+\left( \frac{1}{4\mu\underline{t}}+  \widetilde{\lambda}\beta \overline{t}\right) \Delta_{n} + \widetilde{\qred}\beta\eta^2_n\\
+\le&\left( \frac{1}{4\mu\underline{t}}+  \frac{\widetilde{\lambda}C_1}{1-\widetilde{\qred}} \overline{t}\right) \Delta_{n} + \frac{\widetilde{\qred}}{1-\widetilde{\qred}}C_1\eta^2_n\\
+=&\left( \frac{1}{4\mu\underline{t}}+  \frac{2\widetilde{\lambda}C_1}{1-{\qred}} \overline{t}\right) \Delta_{n} + \frac{1+{\qred}}{1-{\qred}}C_1\eta^2_n
+\end{align*}
+%
+%
+\end{proof}
+%
+
+
+%
+%---------------------------------------
+\begin{theorem}\label{thm:}
+If $\lambda$ satisfies
+%
+\begin{equation}\label{eq:}
+\lambda \ge 2\Cstab + 8\kappa_f^2\frac{1-\qred}{\underline{t}^2} 
+\end{equation}
+%
+we have
+%
+\begin{align*}
+\sum_{k=0}^n \dim X_k \le C \eps_n^{-1/s}\quad \forall n\in\N.
+\end{align*}
+%
+\end{theorem}
+%
+%---------------------------------------
+\begin{proof}
+%
+By the Lipschitz-continuity we have
+%
+\begin{align*}
+\norm{(I-P_{X_k})\nabla f(x_k)} = \norm{(I-P_{X_k})(\nabla f(x_k)-\nabla f(x^*)}
+\le L \norm{x^*-x_k},
+\end{align*}
+%
+such that
+%
+\begin{align*}
+\norm{(I-P_{X_k})\nabla f(x_k)}^2 \le \frac{L^2}{\mu} (f(x_k) - f(x^*)). 
+\end{align*}
+%
+Let  $\widetilde{X}_k\in \mathcal X(X_0)$ and $\widetilde{x}_k:=\argmin_{x\in \widetilde{X}_k}f(x)$.
+If $f(\widetilde{x}_k) - f(x^*)\le \gamma e_k$ we have
+%
+\begin{align*}
+f(x_k) - f(x^*) =& f(x_k) - f(\widetilde{x}_k) + f(\widetilde{x}_k) - f(x^*)\\
+\le& f(x_k) - f(\widetilde{x}_k) + \gamma(f(x_k) - f(x^*) + C_1\eta^2(x_k,X_k))
+\end{align*}
+%
+and then for $\gamma <1$
+%
+\begin{align*}
+(1-\gamma) f(x_k) - f(x^*) \le (f(x_k) - f(\widetilde{x}_k)) + \gamma C_1\eta^2(x_k,X_k)
+\end{align*}
+%
+
+
+By strong convexity  we have 
+%
+\begin{align*}
+f(x_k) - f(\widetilde{x}_k) \le& \scp{\nabla f(x_k)}{x_k-\widetilde{x}_k} - \frac{\mu}{2}\norm{x_k-\widetilde{x}_k}^2\\
+=& \scp{P_{X_k}\nabla f(x_k)}{x_k-\widetilde{x}_k} + \scp{(P_{\widetilde{X}_k}-P_{X_k})\nabla f(x_k)}{x_k-\widetilde{x}_k}- \frac{\mu}{2}\norm{x_k-\widetilde{x}_k}^2\\
+\le& \frac{1}{t_k}\norm{x_{k+1}-x_k}\norm{x_k-\widetilde{x}_k} + \norm{(P_{\widetilde{X}_k}-P_{X_k})\nabla f(x_k)}\norm{x_k-\widetilde{x}_k}- \frac{\mu}{2}\norm{x_k-\widetilde{x}_k}^2\\
+\le&\frac{1}{\underline{t}^2\mu}\norm{x_{k+1}-x_k}^2 + \frac{1}{\mu} \norm{(P_{\widetilde{X}_k}-P_{X_k})\nabla f(x_k)}^2
+\end{align*}
+%
+From the refinement criterion we have
+%
+\begin{align*}
+\eta^2(x_{k+1}, X_{k})> \qred\eta^2(x_{k}, X_{k}) + \lambda t_{k}(f(x_{k})-f(x_{k+1}))\ge
+\qred\eta^2(x_{k}, X_{k}) + \lambda \norm{x_{k+1}-x_k}^2
+\end{align*}
+%
+With (\ref{hyp:estimator:stability}) and (\ref{eq:gm:goodestimate1}) we have
+%
+\begin{align*}
+\lambda \norm{x_{k+1}-x_k}^2 \le& (1-\qred)\eta^2(x_{k}, X_{k}) + \Cstab^2\norm{x_{k+1}-x_k}^2
+\end{align*}
+%
+such that with $\xi := \lambda -  2\Cstab^2 >0$
+%
+\begin{align*}
+\norm{x_{k+1}-x_k}^2 \le \frac{1-\qred}{\xi}\eta^2(x_{k}, X_{k}).
+\end{align*}
+%
+%
+Combining these inequalities we get with (\ref{hyp:estimator:reliability})
+%
+\begin{align*}
+\norm{(I-P_{X_k})\nabla f(x_k)}^2 \le& \frac{L^2}{\mu} (f(x_k) - f(x^*))
+\le \frac{L^2 }{\mu(1-\gamma)} \left( (f(x_k) - f(\widetilde{x}_k)) + \gamma C_1\eta^2(x_k,X_k)\right)\\
+\le&  \frac{L^2 }{\mu(1-\gamma)} \left( \left( \frac{1-\qred}{\underline{t}^2\mu\xi}+ \gamma C_1\right)\eta^2(x_{k}, X_{k}) + \frac{1}{\mu} \norm{(P_{\widetilde{X}_k}-P_{X_k})\nabla f(x_k)}^2 \right)\\
+\le&  \frac{L^2 }{\mu(1-\gamma)} \left( \left( \frac{1-\qred}{\underline{t}^2\mu\xi}+ \gamma C_1\right)\Ceff^2\norm{(I-P_{X_k})\nabla f(x_k)}^2 + \frac{1}{\mu} \norm{(P_{\widetilde{X}_k}-P_{X_k})\nabla f(x_k)}^2 \right)
+\end{align*}
+%
+Then for 
+%
+\begin{align*}
+\gamma \le \min\Set{\frac12,\frac{\mu}{4L^2 C_1 \Ceff^2}},\quad
+\xi \ge \frac{8L^2 }{\mu} \frac{1-\qred}{\underline{t}^2\mu} 
+\end{align*}
+%
+we finally have
+%
+\begin{align*}
+\norm{(I-P_{X_k})\nabla f(x_k)}^2 \le  4\kappa_f^2\norm{(P_{\widetilde{X}_k}-P_{X_k})\nabla f(x_k)}^2
+\end{align*}
+%
+
+
+\end{proof}
+%

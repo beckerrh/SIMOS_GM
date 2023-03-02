@@ -1,0 +1,183 @@
+% !TEX root = FemM1.tex
+%----------------------------------------
+
+
+%----------------------------------------
+
+\definecolor{myyellow}{rgb}{0.9, 0.9, 0.01}
+\definecolor{myblue}{rgb}{0.004, 0.1, 0.57}
+\definecolor{myred}{rgb}{0.58, 0.066, 0.}
+\definecolor{mygreen}{rgb}{0.24, 0.55, 0.15}
+\definecolor{mygray}{rgb}{0.4, 0.6, 0.6}
+\definecolor{myviolet}{rgb}{0.3, 0.1, 0.4}
+\definecolor{myorange}{rgb}{0.4654205607476635, 0.33271028037383177, 0.20186915887850468}
+\newcommand{\blue}[1]{\textcolor{myblue}{#1}}
+\newcommand{\red}[1]{\textcolor{myred}{#1}}
+\newcommand{\green}[1]{\textcolor{mygreen}{#1}}
+\newcommand{\gray}[1]{\textcolor{mygray}{#1}}
+\newcommand{\violet}[1]{\textcolor{myviolet}{#1}}
+\definecolor{greenlight}{rgb}{0.95,1,0.95}
+\definecolor{bluelight}{rgb}{0.9,0.9,1}
+\definecolor{graylighy}{rgb}{0.975,0.975,0.975}
+\definecolor{yellowlight}{rgb}{0.999, 0.999, 0.925}
+\definecolor{roselight}{rgb}{0.99, 0.9, 0.95}
+%
+\newenvironment{blueenv}{\color{myblue}}{}
+\newenvironment{greenenv}{\color{mygreen}}{}
+\newenvironment{grayenv}{\color{mygray}}{}
+\newenvironment{yellow}[1][]{\begin{tcolorbox}[breakable,title={#1} , boxrule=2pt, colback=yellowlight]}{\end{tcolorbox}}
+\newenvironment{rose}[1][]{\begin{tcolorbox}[breakable,title={#1} , boxrule=2pt, colback=roselight]}{\end{tcolorbox}}
+
+
+
+%---------------------------------------------------------
+%
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+\newtheorem{example}{Example}
+%
+
+%----------------------------------------
+\newcommand{\dpfrac}[2]{\frac{\partial #1}{\partial #2}} 
+\newcommand{\ddpfracdiag}[2]{\frac{\partial^2 #1}{\partial #2^2}} 
+\newcommand{\ddpfrac}[3]{\frac{\partial^2 #1}{\partial #2\partial #3}} 
+\newcommand{\dddpfrac}[4]{\frac{\partial^3 #1}{\partial #2\partial #3\partial #4}} 
+\newcommand{\dn}[1]{\dpfrac{#1}{n}} 
+\newcommand{\dpt}[1]{\dpfrac{#1}{t}} 
+\newcommand{\dptt}[1]{\frac{\partial^2 #1}{\partial t^2 }}  
+\newcommand{\dbeta}[1]{\dpfrac{#1}{\beta}} 
+
+%----------------------------------------
+% OPT
+%\newcommand{\argmin}{\operatorname{argmin}}
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+
+%---------------------------------------------------------
+%
+% AFEM
+%
+\newcommand{\REF}{{\mbox{\textbf{REF}}}}
+\newcommand{\MARK}{{\mbox{\textbf{MARK}}}}
+\newcommand{\allmeshes}{{\mathbb H}}
+\newcommand{\meshcriterion}{\mathcal C}
+%
+\newcommand{\Csolve}{C_{\rm s}}
+\newcommand{\Cmesh}{C_{\rm mesh}}
+\newcommand{\Cclose}{C_{\rm cls}}
+\newcommand{\Cref}{C_{\rm ref}}
+\newcommand{\Cglobrel}{C_{\rm gr}}
+\newcommand{\Cloceff}{C_{\rm le}}
+\newcommand{\Copt}{C_{\rm opt}}
+\newcommand{\Cneighb}{C_{\rm nei}}
+\newcommand{\Cmeshopt}{C_{\rm mopt}}
+\newcommand{\Cgeom}{C_{\rm g}}
+\newcommand{\Cmeshcrit}{C_{\rm mc}}
+\newcommand{\Cmon}{C_{\rm mon}}
+\newcommand{\Cemon}{C_{\rm em}}
+\newcommand{\Ceststab}{C_{\rm es}}
+\newcommand{\Cinv}{C_{\rm inv}}
+\newcommand{\qmesh}{q_{\rm m}}
+\newcommand{\qsolve}{q_{\rm s}}
+
+\newcommand{\chistop}[1]{{\chi_{#1}^{\rm fin}}}
+\newcommand{\DeltaStop}[1]{{\widetilde{\Delta}_{#1}}}
+\newcommand{\solvecrit}[1]{{\mathcal S_{#1}}}
+\newcommand{\qred}{q_{\rm red}}
+\newcommand{\Crel}{C_{\rm rel}}
+\newcommand{\Cstab}{C_{\rm stab}}
+\newcommand{\Ceff}{C_{\rm eff}}
+
+\newcommand{\Cupp}{C_{\rm up}}
+\newcommand{\Clow}{C_{\rm low}}
+\newcommand{\true}{{\mathtt{true}}}
+\newcommand{\false}{{\mathtt{false}}}
+
+%---------------------------------------------------------
+%
+\newcommand{\Expt}[1]{{\rm E}(#1)}
+\newcommand{\Var}[1]{{\rm Var}(#1)}
+%
+\renewcommand{\Re}{\rm Re} 
+\renewcommand{\Im}{\rm Im}
+\newcommand{\N}{\mathbb N}
+\newcommand{\R}{\mathbb R}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\C}{\mathbb C}
+%
+% 
+\newcommand{\Set}[1]{ \left\{#1\right\}}
+\newcommand{\SetDef}[2]{\left\{#1\;\middle|\;#2\right\}} 
+\newcommand{\Rest}[2]{{#1}_{|_{#2}}}
+\newcommand{\transpose}[1]{#1^{\mathsf{T}}} 
+\newcommand{\transposeInv}[1]{#1^{\mathsf{-T}}} 
+%
+\newcommand{\supp}[1]{\operatorname{supp}\left(#1\right)}
+\renewcommand{\div}{\operatorname{div}}
+\newcommand{\rot}{\operatorname{rot}}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\makeatletter
+\newcommand{\opnorm}{\@ifstar\@opnorms\@opnorm}
+\newcommand{\@opnorms}[1]{%
+  \left|\mkern-1.5mu\left|\mkern-1.5mu\left|
+   #1
+  \right|\mkern-1.5mu\right|\mkern-1.5mu\right|
+}
+\newcommand{\@opnorm}[2][]{%
+  \mathopen{#1|\mkern-1.5mu#1|\mkern-1.5mu#1|}
+  #2
+  \mathclose{#1|\mkern-1.5mu#1|\mkern-1.5mu#1|}
+}
+\makeatother
+\newcommand{\abs}[1]{\left\vert{#1}\right\vert}
+\newcommand{\tnorm}[1]{\opnorm{#1}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\scp}[2]{\langle#1,#2\rangle}
+\newcommand{\Pe}{\mathrm {Pe}}
+\newcommand{\Sides}{\mathcal S}
+\newcommand{\Cells}{\mathcal K}
+\newcommand{\Nodes}{\mathcal N}
+\newcommand{\NodesInt}{{\mathcal N}^{int}}
+\newcommand{\level}{\operatorname{lev}}
+\newcommand{\SidesInt}{\mathcal S^{\rm int}}
+\newcommand{\SidesBdry}{\mathcal S^{\partial}}
+\newcommand{\Kin}{K^{\rm{\footnotesize{in}}}}
+\newcommand{\Kex}{K^{\rm{\footnotesize{ex}}}}
+\newcommand{\inS}[1]{{#1}^{\rm{\footnotesize{in}}}_{S}}
+\newcommand{\exS}[1]{{#1}^{\rm{\footnotesize{ex}}}_{S}}
+\newcommand{\inSs}[1]{{#1}^{\rm{\footnotesize{in}}}}
+\newcommand{\exSs}[1]{{#1}^{\rm{\footnotesize{ex}}}}
+\newcommand{\meanS}[1]{\left\{\{#1\right\}_{S}}
+\newcommand{\jumpS}[1]{\left[#1\right]_{S}}
+\newcommand{\jump}[1]{\left[#1\right]}
+\newcommand{\mean}[1]{\left\{#1\right\}}
+\newcommand{\intS}{\int_{\Sides_{h}}}
+\newcommand{\intSInt}{\int_{\SidesInt_{h}}}
+\newcommand{\intSBound}{\int_{\SidesBound_{h}}}
+%\newcommand{\intK}{\int_{\Cells_{h}}}
+\newcommand{\REFLOC}{{\rm REF}}
+\newcommand{\AFEM}[1]{\textbf{AFEM}($#1$)}
+
+%
+\newcommand{\tesfctu}{\delta\! u}
+\newcommand{\udir}{u^{\rm D}}
+\newcommand{\vdir}{v^{\rm D}}
+\newcommand{\wdir}{w^{\rm D}}
+\newcommand{\uh}{u_{h}}
+\newcommand{\phih}{\phi_{h}}
+\newcommand{\uin}{u^{\rm in}}
+\newcommand{\uex}{u^{\rm ex}}
+\newcommand{\uhin}{u^{\rm in}_{h}}
+\newcommand{\uhex}{u^{\rm ex}_{h}}
+\newcommand{\ubar}{\overline{u}}
+\newcommand{\ustar}{u^{*}}
+\newcommand{\sgn}[1]{\operatorname{sgn}(#1)}
+%
+\newcommand{\In}[1]{#1^{\rm in}}
+\newcommand{\Ex}[1]{#1^{\rm ex}}
+\newcommand{\InDe}[2]{#1^{{\rm in}_{#2}}}
+\newcommand{\ExDe}[2]{#1^{{\rm ex}_{#2}}}

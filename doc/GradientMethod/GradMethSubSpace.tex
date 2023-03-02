@@ -1,0 +1,266 @@
+%----------------------------------------
+\documentclass[12pt,english]{article}
+%----------------------------------------
+%
+
+%---------------------------------------------------------
+\input{../packages.tex}
+\input{../macros.tex}
+%---------------------------------------------------------
+
+\newcommand{\GS}{\mbox{\boldmath\textbf{GSp}}}
+
+
+%-------------------------------------------
+\begin{document}
+%-------------------------------------------
+
+\title{Optimization algorithms with approximation}
+\author{}
+\maketitle
+\tableofcontents
+
+%\begin{abstract}
+%\end{abstract}
+%\linenumbers
+%
+%==========================================
+\section{Introduction}\label{sec:}
+%==========================================
+%
+%
+We consider a Hilbert space $(X,\scp{\cdot}{\cdot})$ with induced norm $\norm{\cdot}$ and the minimization of a smooth $\mu$-strictly convex function $f:X\to\R$:
+%
+\begin{align*}
+\inf_{x\in X} f(x) = \inf\SetDef{f(x)}{x\in X}.
+\end{align*}
+%
+We suppose that a unique minimizer $x^*$ exists.
+%
+
+Our purpose is to analyse gradient algorithms on a sequence of subspaces (finite element spaces for the PDE)
+%
+\begin{align*}
+X_0 \subset \cdots \subset X_k \subset X_{k+1}\subset \cdots \subset X,\quad P_k: X\to X_k,
+\end{align*}
+%
+such that a typical iteration reads: 
+%
+\begin{yellow}
+\begin{equation}\label{eq:pgm}
+x_{k+1} = x_k - t_k P_{k}\nabla f(x_k),
+\end{equation}
+\end{yellow}
+%
+where $P_k$ is the orthogonal projector on $X_k$ and $\nabla f(x)\in X$ is defined by the Riesz map. In order to generate the subspaces $X_k$, we suppose to have 
+an error estimators $\eta_k:X_k\to\R$ and a refinement algorithm satisfying typical hypothesis from the theory of AFEM.
+% 
+In the case $f\in \mathcal S^{1,1}_{\mu,L}(X)$, $X$ finite-dimensional, and $t_k=2/(\mu+L)$ for all $k$ we have the following {convergence estimate}  (Theorem 2.1.15 in \cite{Nesterov18}) for the gradient method (\textbf{GM}):
+%
+\begin{equation}\label{eq:gmlipsmoothest}
+\norm{x_n-x^*} \le \rho^n\norm{x_0-x^*},\quad \rho = 1-1/\kappa,
+\end{equation}
+%
+such that $\eps>0$ is achieved in $n(\eps) = O(\kappa)\ln(1/\eps)$ iterations.
+It is well-known that \textbf{GM} is not optimal for this class of functions. The accelerated gradient method (\textbf{AGM}) \cite{Nesterov18} yields an improved estimate  $n(\eps) = O(\sqrt{\kappa})\ln(1/\eps)$.
+
+Our aim is to establish a similar iteration count for the method on a sequence of subspaces.
+There is important progress of adaptive finite element methods (AFEM) for nonlinear elliptic equations, 
+see \cite{ErnVohralik13a,HeidWihler20,HeidPraetoriusWihler21,HaberlPraetoriusSchimanko21,GantnerHaberlPraetorius21,HeidWihler21,HeidStammWihler21,HeidWihler22}, and our development is based on these works. However, here, we wish to 
+work out the optimization point of view.
+%
+%\cite{}
+%==========================================
+\section{Notation}\label{sec:}
+%==========================================
+%
+We throughout suppose that $f:X\to\R$ is convex and $C^1$ and we use the the Fréchet-Riesz theorem to define
+%
+\begin{align*}
+\scp{\nabla f(y)}{x} = f'(y)(x)\quad \forall x,y\in X.
+\end{align*}
+%
+It is then easy to see, that for all $y$ in a closed subspace $Y\subset X$ and $P_Y:X\to Y$ its orthogonal projector
+%
+\begin{equation}\label{eq:gradrest}
+P_Y\nabla f(y) = \nabla \Rest{f}{Y}.
+\end{equation}
+%
+
+%==========================================
+\section{Assumptions on subspace selection}\label{sec:}
+%==========================================
+%
+
+Let $X_0\subset X$ be a subspace. We suppose to have a lattice of admissible closed subspaces 
+%
+\begin{equation}\label{eq:}
+\mathcal X(X_0) = \Set{X_0\subset Y\subset X}.
+\end{equation}
+%
+The partial order on $\mathcal X(X_0)$ is given by $Y\ge Z$ if and only if $Y$ is a superspace of $Z$. We 
+then have the finest common coarsening $Y\land Z$ and the coarsest common refinement $Y\lor Z$, respectively.
+We let
+%
+\begin{align*}
+\mathcal X(Y) = \SetDef{Z\in \mathcal X(X_0)}{Y\land Z = Y},\quad Y\in \mathcal X(x_0).
+\end{align*}
+%
+We make the following assumptions. First we have a reliable error estimator $\eta$ such that for all $Y\in \mathcal X(X_0)$
+%
+\begin{align}
+\label{eq:hyp:estimator:reliability}\tag{H1}
+\norm{(I-P_Y)\nabla f(y)}\le& \Crel \eta(y,Y)&\quad&\forall y\in Y\\
+\label{hyp:estimator:stability}\tag{H2}
+\abs{\eta(y, Y)-\eta(z, Y)}\le& \Cstab \norm{y-z}&\quad&\forall y,z\in Y
+\end{align}
+%
+and a subspace generator $Y^+=\GS(Y, y)$ such that with $0\le\qred<1$
+%
+\begin{align}
+\label{hyp:estimator:reduction}\tag{H2}
+%
+\eta^2(y, Y^+)\le& \qred \eta^2(y,Y) &\quad&\forall y\in Y
+%
+\end{align}
+%
+
+
+%==========================================
+\section{Gradient method with constant step-size}\label{sec:}
+%==========================================
+%
+Here we suppose in addition that $f$ has a $L$-Lipschitz continuous gradient
+%
+\begin{align*}
+\norm{\nabla f(x)-\nabla f(y)} \le L \norm{x-y}\quad \forall x,y\in X.
+\end{align*}
+%
+Setting $\beta=0$ in the following algorithm, we have the standard gradient method with fixed step-size.
+%
+%---------------------------------------
+\begin{yellow}
+\begin{algorithm}[H]
+\caption{GM with constant step-size} 
+\label{algorithm:Descent} 
+%
+Inputs: $X_0, x_0\in X_0$, $t_0>0, 0\le\beta<1$, $\lambda>0$. Set $x_{-1}=x_0$ and $k=0$.
+%
+\begin{itemize}
+\item[(1)] $y_{k} = (1+\beta)x_k - \beta x_{k-1}$.
+\item[(2)] $x_{k+1} = y_k - \frac{1}{L}P_{X_k}\nabla f(y_k)$.
+\item[(3)] If $\eta(x_{k+1},X_k) \ge \qred \eta(x_{k},X_k) + \lambda(f(x_k)-f(x_{k+1})$:\\ 
+$\qquad X_{k+1} = \GS(X_K, x_{k+1})$,\\
+Else: $X_{k+1} = X_k$.
+\item[(4)] Increment $k$ and go to (1).
+\end{itemize}
+%
+\end{algorithm}
+\end{yellow}
+%---------------------------------------
+
+We will write for brevity $P_k = P_{X_k}$ etc.
+By the Lipschitz-condition and convexity we have for any $x\in X$ with (\ref{eq:gradrest})
+%
+\begin{align*}
+f(x_{k+1}) \le& f(y_k) + \scp{\nabla f(y_k)}{x_{k+1}-y_k} + \frac{L}{2}\norm{P_k\nabla f(y_k)}^2\\
+=&  f(y_k) + \scp{P_k \nabla f(y_k)}{x_{k+1}-y_k} + \frac{L}{2}\norm{P_k\nabla f(y_k)}^2\\
+\le& f(x) + \scp{\nabla f(y_k)}{y_k-x}-\frac{\mu}{2}\norm{x-y_k}^2 - \frac{1}{2L}\norm{P_k\nabla f(y_k)}^2
+\end{align*}
+%
+Let $\theta = \frac{1-\beta}{1+\beta}$. Taking the last inequality $\theta$-times with $x=x^*$ and 
+$1-\theta$-times with $x=x_k$, we have, setting $\Delta f_k:=f(x_k)-f(x^*)$
+%
+\begin{align*}
+\Delta f_{k+1} - (1-\theta)\Delta f_k \le& \scp{\nabla f(y_k)}{y_k-(1-\theta) x_k -\theta x^*} - \frac{1}{2L}\norm{P_k\nabla f(y_k)}^2\\&-\frac{\mu\theta}{2}\norm{x^*-y_k}^2-\frac{\mu(1-\theta)}{2}\norm{x_k-y_k}^2
+\end{align*}
+%
+Let
+%
+\begin{align*}
+R_k := \theta\scp{(I-P_k)\nabla f(y_k)}{y_k-x^*},
+\end{align*}
+%
+such that
+%
+\begin{align*}
+\scp{\nabla f(y_k)}{y_k-(1-\theta) x_k -\theta x^*} = R_k + \scp{P_k\nabla f(y_k)}{y_k-(1-\theta) x_k -\theta x^*}
+\end{align*}
+%
+
+and
+%
+\begin{align*}
+z_k := \frac{x_k}{\theta} -\frac{1-\theta}{\theta}x_{k-1}= x_k +\frac{1-\theta}{\theta}(x_k-x_{k-1}).
+\end{align*}
+%
+We also have with $\theta(1+\beta) = 1-\beta$
+%
+\begin{align*}
+z_k = y_k  + \frac{1-\theta-\theta\beta}{\theta\beta}(y_k-x_{k})= y_k  + \frac{y_k-x_{k}}{\theta}
+\end{align*}
+%
+
+Then with $2ab-a^2=b^2-(a-b)^2$
+%
+\begin{align*}
+&\scp{P_k\nabla f(y_k)}{y_k-(1-\theta) x_k -\theta x^*}-\frac{1}{2L}\norm{P_k\nabla f(y_k)}^2=\\
+&\frac{L}{2}\left(\norm{y_k-(1-\theta) x_k -\theta x^*}^2-\norm{x_{k+1}-(1-\theta) x_k -\theta x^*}^2\right)=\\
+&\frac{\theta^2L}{2}\left(\norm{x_k+\frac{y_k-x_k}{\theta} - x^*}^2-\norm{z_{k+1}- x^*}^2\right)=
+\frac{\theta^2L}{2}\left(\norm{z_k -(y_k-x_k) - x^*}^2-\norm{z_{k+1}- x^*}^2\right)
+\end{align*}
+%
+Since with $-2ab= (a-b)^2-a^2-b^2$
+%
+\begin{align*}
+\norm{z_k -(y_k-x_k) - x^*}^2 =& \norm{z_k - x^*}^2 - 2\theta\scp{z_k -x^*}{z_k-y_k} + \norm{y_k-x_k}^2\\
+=& (1-\theta) \norm{z_k - x^*}^2 + (\theta^2-\theta)\norm{z_k-y_k}^2 + \theta \norm{y_k-x^*}^2
+\end{align*}
+%
+we have
+%
+%
+\begin{align*}
+\Delta f_{k+1} + (1-\theta)\Delta f_k \le& \frac{\theta^2L}{2}\left((1-\theta)\norm{z_k - x^*}^2-\norm{z_{k+1}- x^*}^2\right)
++ \left(\frac{\theta^3L}{2}-\frac{\theta\mu}{2}\right)\norm{y_k-x^*}^2 + R_k
+\end{align*}
+%
+We have
+%
+\begin{align*}
+(1-\theta)\norm{z_k - x^*}^2 + \theta \norm{y_k-x^*}^2 =& \norm{(1-\theta)z_k+\theta y_k - x^*}^2 + \theta(1-\theta)\norm{z_k -y_k}^2\\
+=& \norm{y_k  + (1-\theta)\frac{y_k-x_{k}}{\theta} - x^*}^2 + \frac{1-\theta}{\theta}\norm{y_k -x_k}^2
+\end{align*}
+%
+
+%
+\begin{align*}
+R_k \le \frac{1}{\mu}\norm{(I-P_k)\nabla f(y_k)}^2 + \frac{\theta\mu}{4}\norm{y_k-x^*}^2
+\le  \frac{\Crel^2}{\mu}\eta^2(X_k,y_k)  + \frac{\theta\mu}{4}\norm{y_k-x^*}^2
+\end{align*}
+%
+If the criterion in step (3) of the algorithm does not hold, we have
+%
+\begin{align*}
+\eta(x_{k+1},X_k) \le \qred \eta(x_{k},X_k) + \lambda(f(x_k)-f(x_{k+1})
+\end{align*}
+%
+Otherwise, we have
+%
+\begin{align*}
+\eta(x_{k+1},X_k) \le \qred \eta(x_{k+1},X_k)\le \qred \eta(x_{k},X_k)+ \Cstab\norm{x_{k+1}-x_{k}}
+\end{align*}
+%
+
+%
+
+
+
+
+%-----------------------------------------------
+\printbibliography
+%-----------------------------------------------
+%
+%-------------------------------------------
+\end{document}      
+%-------------------------------------------

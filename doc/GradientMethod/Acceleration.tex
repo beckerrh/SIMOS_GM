@@ -1,0 +1,1455 @@
+% !TEX encoding = UTF-8 Unicode
+%----------------------------------------
+\documentclass[english,12pt,a4paper]{article}
+%----------------------------------------
+%
+%----------------------------------------
+\input{../packages}
+\input{../macros.tex}
+%====================================================
+
+\title{Acceleration}
+\author{Roland Becker}
+\date{\today}
+\usepackage{environ}
+
+
+
+%====================================================
+\begin{document}
+%====================================================
+\maketitle
+\setcounter{tocdepth}{2}
+\tableofcontents
+%
+%
+%==========================================
+\section{Acceleration of sequences}\label{sec:}
+%==========================================
+%
+%
+\begin{yellow}
+\begin{algorithm}[H]
+\caption{AGM fixed step size} 
+\label{algorithm:AGMfixed} 
+%
+Choose $x_0\in X$, $0\le \beta,\rho \le 1$. Set $x_{-1}=x_0$ and $k=0$.
+%
+\begin{itemize}
+\item[(1)] $y_{k} = x_{k} + \beta(x_{k}-x_{k-1})$
+\item[(2)] $x_{k+1} = \rho y_k$.
+\item[(3)] Increment $k$ and go to (1).
+\end{itemize}
+%
+\end{algorithm}
+\end{yellow}
+%
+%---------------------------------------
+\begin{lemma}\label{lemma:}
+%
+Let $\rho\le 1$ and $\beta^*(\rho)$ be the solution to
+%
+\begin{equation}\label{eq:ac_z_geom_cond1}
+\frac{(1+\beta)^2}{\beta} = \frac{4}{\rho}.
+\end{equation}
+%
+Then for all $0\le \beta\le \beta^*(\rho)$ and
+%
+\begin{equation}\label{eq:ac_z_q_theta}
+\theta = \rho(1+\beta) \frac{1- \sqrt{1-S}}{2},\quad
+q = \rho(1+\beta) \frac{1+ \sqrt{1-S}}{2}, \quad  S := \frac{4 \rho\beta}{\rho^2(1+\beta)^2}
+\end{equation}
+%
+we have
+%
+\begin{equation}\label{eq:ac_formula}
+x_{n} = \left( \theta^n + (\rho-\theta)\sum_{k=0}^{n-1} q^{n-1-k}\theta^k\right)x_0.
+\end{equation}
+%
+\end{lemma}
+%
+%---------------------------------------
+\begin{proof}
+Let 
+%
+\begin{align*}
+z_k := x_k - \theta x_{k-1}\quad (k\ge1).
+\end{align*}
+%
+We have 
+\begin{align*}
+z_1 = (\rho-\theta)x_0,\quad z_{k+1} = q z_k\quad (k\ge1)
+\end{align*}
+%
+if and only 
+%
+\begin{align*}
+x_{k+1} = (\theta + q) x_k - \theta q x_{k-1},
+\end{align*}
+%
+which leads to
+%
+\begin{align*}
+\theta + q = \rho(1+\beta), \quad \theta q = \rho\beta
+\end{align*}
+%
+Taking squares and subtracting we have
+%
+\begin{align*}
+(\theta - q)^2 = \rho^2(1+\beta)^2 - 4 \rho\beta \quad \left( = \rho^2(1-\beta)^2 - 4 \rho\beta(1-\rho)\right).
+\end{align*}
+%
+The function $\phi(x)=(1+x)^2/x$ is strictly decreasing and convex on $]0,1]$ and $\phi(1)=4$. So for $\beta$ satisfying (\ref{eq:ac_z_geom_cond1}) we  have 
+$S\le 1$.
+%
+\begin{align*}
+2\theta = \rho(1+\beta) - \sqrt{\rho^2(1+\beta)^2 - 4 \rho\beta} \;\Rightarrow\; (\ref{eq:ac_z_q_theta})
+\end{align*}
+%
+This implies with $\beta\le 1$ that $\theta\le \rho$. 
+%
+Finally, it is clear that (\ref{eq:ac_formula}) holds for $n=0$. Then by induction
+%
+\begin{align*}
+x_{n+1} =& z_{n+1}+\theta x_n = q^{n} z_1 +\theta x_n= q^{n} (\rho-\theta)x_0 + \left(\theta^{n+1} + (\rho-\theta)\sum_{k=0}^{n-1} q^{n-1-k}\theta^{k+1}\right)x_0\\
+=& \left(\theta^{n+1} + (\rho-\theta)\sum_{k=1}^{n} q^{n-k}\theta^{k}+ q^{n} (\rho-\theta)\right)x_0
+= \left(\theta^{n+1} + (\rho-\theta)\sum_{k=0}^{n} q^{n-k}\theta^{k}\right)x_0
+\end{align*}
+%
+\end{proof}
+%
+It follows from (\ref{eq:ac_formula}) that
+%
+\begin{align*}
+x_{n} = \left( \theta^n + (\rho-\theta)\sum_{k=0}^{n-1} \left(\frac{\theta}{q}\right)^k q^{n-1}\right)x_0.
+\end{align*}
+%
+This expression is minimized if $\beta$ is chosen such that $q=\theta$.
+%---------------------------------------
+\begin{theorem}\label{thm:}
+Let $\beta=\beta^*$. Then we have
+%
+%
+\begin{equation}\label{eq:ac_betaopt}
+\beta = \frac{2-\rho - 2\sqrt{1-\rho}}{\rho} = 1 + \frac{2\sqrt{1-\rho}\left(\sqrt{1+\rho}-1\right)}{\rho}
+\end{equation}
+%
+%
+\begin{equation}\label{eq:ac_betaot_conv}
+x_{n} = \left( \frac{\rho}{1+\sqrt{1-\rho}} \right)^n\left( 1 + 2n \sqrt{1-\rho}\right)x_0.
+\end{equation}
+\end{theorem}
+%
+%---------------------------------------
+\begin{remark}\label{rmk:}
+For $\rho = 1 -1/\kappa$, we find $\rho^* = 1 - \frac{1+\kappa^{-\frac12}}{1+\kappa^{\frac12}} \approx 1 -1/\sqrt{\kappa}$ and $\beta^*\approx 1-2/\sqrt{\kappa}$.
+\end{remark}
+%
+%---------------------------------------
+\begin{proof}
+%
+From (\ref{eq:ac_formula}) we get
+\begin{align*}
+x_{n} = \theta^n\left( 1 + n\frac{(\rho-\theta)}{\theta}\right)x_0.
+\end{align*}
+%
+We have 
+%
+\begin{align*}
+\theta = \rho\frac{1+\beta}{2}, \quad \frac{(\rho-\theta)}{\theta} = \frac{1-\beta}{1+\beta}
+\end{align*}
+%
+and
+%
+\begin{align*}
+\frac{(1+\beta)^2}{\beta} = \frac{4}{\rho},\quad \frac{(1-\beta)^2}{\beta} = \frac{4(1-\rho)}{\rho}
+\quad\Rightarrow\quad  \frac{1-\beta}{1+\beta} = 2 \sqrt{1-\rho}
+\end{align*}
+%
+and
+%
+\begin{align*}
+\beta^2 + (2-\frac{4}{\rho})\beta = -1\quad\Rightarrow\quad \left(\beta - \frac{2-\rho}{\rho}\right)^2
+=  \frac{(2-\rho)^2-\rho^2}{\rho^2}=  \frac{4(1-\rho)}{\rho^2}
+\end{align*}
+%
+so we get (\ref{eq:ac_betaopt}). We have $\beta\ge0$ since $\sqrt{1-x}\le 1 - x/2$ and $\beta\le 1$ since $1-\rho \le \sqrt{1-\rho}$.
+We finally have
+%
+\begin{align*}
+\theta =  \rho\frac{1+\frac{2-\rho}{\rho} - \frac{2\sqrt{1-\rho}}{\rho}}{2}
+=  \frac{\rho+2-\rho - 2\sqrt{1-\rho}}{2} = 1 - \sqrt{1-\rho}
+\end{align*}
+%
+
+
+
+
+\end{proof}
+%
+
+
+%
+%
+%==========================================
+\section{Accelerated gradient methods}\label{sec:}
+%==========================================
+%
+%
+%-------------------------------------------------------------------------
+\subsection{Constant step size}\label{subsec:}
+%-------------------------------------------------------------------------
+%
+%
+\begin{yellow}
+\begin{algorithm}[H]
+\caption{AGM fixed step size} 
+\label{algorithm:AGMfixed} 
+%
+Choose $x_0\in X$, $0\le \beta \le 1$. Set $x_{-1}=x_0$ and $k=0$.
+%
+\begin{itemize}
+\item[(1)] $y_{k} = x_{k} + \beta(x_{k}-x_{k-1})$
+\item[(2)] $x_{k+1} = y_k- \frac1L \nabla f(y_k)$.
+\item[(3)] Increment $k$ and go to (1).
+\end{itemize}
+%
+\end{algorithm}
+\end{yellow}
+%
+
+Let us start with, for any $x\in X$,
+%
+%
+\begin{align*}
+%
+\left\{
+\begin{aligned}
+f(x_{k+1}) \le&   f(y_k)  -\frac{1}{2L}\norm{\nabla f(y_k)}^2\\
+f(x) \ge& f(y_k) + \scp{\nabla f(y_k)}{x-y_k} + \frac{\mu}{2}\norm{x-y_k}^2
+\end{aligned}
+\right.\\
+\quad\Rightarrow\quad 
+f(x_{k+1})-f(x)\le \scp{\nabla f(y_k)}{y_k-x} -\frac{1}{2L}\norm{\nabla f(y_k)}^2  -\frac{\mu}{2}\norm{x-y_k}^2
+%
+\end{align*}
+%
+
+Let 
+%
+\begin{align*}
+ u_k := \frac{y_k-(1-\theta)x_k}{\theta} = x_k + \frac{y_k-x_k}{\theta}= x_k + \frac{\beta}{\theta}(x_k-x_{k-1})\\
+v_k := \frac{x_k-(1-\theta)x_{k-1}}{\theta}  = x_{k} + \frac{(1-\theta)(x_k-x_{k-1})}{\theta} = x_{k} + \frac{(1-\theta)(y_k-x_{k})}{\theta\beta}
+\end{align*}
+%
+
+Using $2ab -a^2 = b^2-(a-b)^2$ we have
+%
+\begin{align*}
+\scp{\nabla f(y_k)}{y_k -(1-\theta)x_k -\theta x^*} -\frac{1}{2L}\norm{\nabla f(y_k)}^2 = \frac{L\theta^2}{2}\left( \norm{u_k -x^*}^2 - \norm{v_{k+1}-x^*}^2\right)
+\end{align*}
+%
+and
+%
+\begin{align*}
+\theta\norm{y_k-x^*}^2+(1-\theta)\norm{y_k-x_k}^2 =& \norm{y_k - (1-\theta)x_k - \theta x^*}^2 + \theta(1-\theta)\norm{x_k-x^*}^2 \\
+=& \theta^2\norm{u_k-x^*}^2 + \theta(1-\theta)\norm{x_k-x^*}^2
+\end{align*}
+%
+Then with $\rho := 1 - 1/\kappa_f$
+%
+\begin{align*}
+\Delta f_{k+1} - (1-\theta) \Delta f_k \le \frac{\theta^2 L}{2}\left( \rho\norm{u_k -x^*}^2 - \norm{v_{k+1} -x^*}^2\right) - \frac{\theta(1-\theta)\mu}{2}\norm{x_k-x^*}^2
+\end{align*}
+%
+Now let
+%
+\begin{align*}
+\beta \le \lambda \le 1-\theta,\quad w_k = x_k + \frac{\lambda}{\theta}(x_k-x_{k-1})
+\end{align*}
+%
+Then
+%
+\begin{align*}
+\norm{u_k -x^*}^2 =& \norm{w_k -x^*}^2 + 2\scp{w_k-x^*}{u_k-w_{k}} + \norm{u_k-w_{k}}^2
+\end{align*}
+%
+since $u_k-w_{k} = \frac{\beta-\lambda}{\theta}(x_k-x_{k-1}) = \frac{\beta-\lambda}{\theta}\frac{\theta}{\lambda}(w_k-x_{k})$
+%
+\begin{align*}
+2\scp{w_k-x^*}{u_k-w_{k}} =& 2\frac{\beta-\lambda}{\lambda}\scp{w_k-x^*}{w_k-x_{k}}\\ =& \frac{\beta-\lambda}{\lambda}\left( \norm{w_k-x^*}^2 + \norm{w_k-x_{k}}^2 -\norm{x_k-x^*}^2 \right)
+\end{align*}
+%
+so
+%
+\begin{align*}
+\norm{u_k -x^*}^2 =& \norm{w_k -x^*}^2 + 2\scp{w_k-x^*}{u_k-w_{k}} + \norm{u_k-w_{k}}^2\\
+=& \norm{w_k -x^*}^2 + \frac{\beta-\lambda}{\lambda}\left( \norm{w_k-x^*}^2 + \norm{w_k-x_{k}}^2 -\norm{x_k-x^*}^2 \right) + \norm{u_k-w_{k}}^2\\
+=& \left(1-\frac{\lambda-\beta}{\lambda}\right)\norm{w_k -x^*}^2+\frac{\lambda-\beta}{\lambda}\norm{x_k-x^*}^2 - \frac{\beta(\lambda-\beta)}{\theta^2}\norm{x_k-x_{k-1}}^2
+\end{align*}
+%
+%
+Similarly with $v_k-w_{k} = \frac{1-\theta-\lambda}{\theta}(x_k-x_{k-1}) = \frac{1-\theta-\lambda}{\theta}\frac{\theta}{\lambda}(w_k-x_{k})$
+%
+\begin{align*}
+2\scp{w_k-x^*}{v_k-w_{k}} =& 2\frac{1-\theta-\lambda}{\lambda}\scp{w_k-x^*}{w_k-x_{k}}\\ =& \frac{1-\theta-\lambda}{\lambda}\left( \norm{w_k-x^*}^2 + \norm{w_k-x_{k}}^2 -\norm{x_k-x^*}^2 \right)
+\end{align*}
+%
+
+%
+\begin{align*}
+\norm{v_k -x^*}^2 =& \norm{w_k -x^*}^2 + 2\scp{w_k-x^*}{v_k-w_{k}} + \norm{v_k-w_{k}}^2\\
+=& \norm{w_k -x^*}^2 + \frac{1-\theta-\lambda}{\lambda}\left( \norm{w_k-x^*}^2 + \norm{w_k-x_{k}}^2 -\norm{x_k-x^*}^2 \right) + \norm{v_k-w_{k}}^2\\
+=& \left(1 + \frac{1-\theta-\lambda}{\lambda}\right)\norm{w_k -x^*}^2 - \frac{1-\theta-\lambda}{\lambda}\norm{x_k-x^*}^2+  \frac{(1-\theta)(1-\theta-\lambda)}{\theta^2} \norm{x_k-x_{k-1}}^2
+\end{align*}
+%
+
+Then we have
+%
+\begin{align*}
+\rho\norm{u_k -x^*}^2 - \norm{v_{k+1} -x^*}^2 = \rho\left(1-\frac{\lambda-\beta}{\lambda}\right)\norm{w_k -x^*}^2-\left(1 + \frac{1-\theta-\lambda}{\lambda}\right)\norm{w_{k+1} -x^*}^2\\
++\rho\frac{\lambda-\beta}{\lambda}\norm{x_k-x^*}^2 + \frac{1-\theta-\lambda}{\lambda}\norm{x_{k+1}-x^*}^2\\
+- \rho\frac{\beta(\lambda-\beta)}{\theta^2}\norm{x_k-x_{k-1}}^2-\frac{(1-\theta)(1-\theta-\lambda)}{\theta^2} \norm{x_{k+1}-x_k}^2
+\end{align*}
+%
+TEST: for $\lambda=1-\theta$ we have $w_k=v_k$ and
+%
+\begin{align*}
+\rho\norm{u_k -x^*}^2 - \norm{v_{k+1} -x^*}^2 = \rho\left(1-\frac{\lambda-\beta}{\lambda}\right)\norm{v_k -x^*}^2-\norm{v_{k+1} -x^*}^2\\
++\rho\frac{\lambda-\beta}{\lambda}\norm{x_k-x^*}^2
+- \rho\frac{\beta(\lambda-\beta)}{\theta^2}\norm{x_k-x_{k-1}}^2
+\end{align*}
+%
+
+
+
+
+
+
+
+
+
+
+\dotfill ALL IN Xk \dotfill
+
+
+We have
+%
+\begin{align*}
+\norm{u_k -x^*}^2 =& \norm{x_k -x^*}^2 + 2\scp{x_k-x^*}{u_k-x_{k}} + \norm{u_k-x_{k}}^2\\
+ =& \norm{x_k -x^*}^2 + 2\frac{\beta}{\theta}\scp{x_k-x^*}{x_k-x_{k-1}} + \frac{\beta^2}{\theta^2}\norm{x_k-x_{k-1}}^2\\
+=& \norm{x_k -x^*}^2 + \frac{\beta}{\theta}\left( \norm{x_k-x^*}^2 + \norm{x_k-x_{k-1}}^2 -\norm{x_{k-1}-x^*}^2\right)+ \frac{\beta^2}{\theta^2}\norm{x_k-x_{k-1}}^2\\
+=& \frac{\beta+\theta}{\theta}\norm{x_k -x^*}^2  + \frac{\beta(\beta+\theta)}{\theta^2}\norm{x_k-x_{k-1}}^2 - \frac{\beta}{\theta}\norm{x_{k-1}-x^*}^2
+\end{align*}
+%
+and similarly
+%
+\begin{align*}
+\norm{v_k -x^*}^2 =& \frac{1}{\theta}\norm{x_k -x^*}^2  + \frac{1-\theta}{\theta^2}\norm{x_k-x_{k-1}}^2 - \frac{1-\theta}{\theta}\norm{x_{k-1}-x^*}^2
+\end{align*}
+%
+such that
+%
+\begin{align*}
+\rho\norm{u_k -x^*}^2 - \norm{v_{k+1} -x^*}^2 =& \frac{1-\theta+\rho(\beta+\theta)}{\theta}\norm{x_k -x^*}^2-\frac{1}{\theta}\norm{x_{k+1} -x^*}^2 - \frac{\beta\rho}{\theta}\norm{x_{k-1}-x^*}^2\\
++& \frac{\rho\beta(\beta+\theta)}{\theta^2}\norm{x_k-x_{k-1}}^2-\frac{1-\theta}{\theta^2}\norm{x_{k+1}-x_{k}}^2
+\end{align*}
+%
+Then with 
+%
+\begin{align*}
+\frac{\theta L}{2} \left(1-\theta+\rho(\beta+\theta)\right) - \frac{\mu\theta(1-\theta)}{2}
+=& \frac{\theta L}{2} \left(1-\theta+\rho(\beta+\theta) - \frac{1-\theta}{\kappa_f}\right)\\
+=& \frac{\theta L}{2} \left(\rho(1-\theta)+\rho(\beta+\theta)\right)
+= \frac{\theta L}{2} \left(\rho(1+\beta)\right)
+\end{align*}
+%
+and $e_k:=\frac{ L}{2}\norm{x_k -x^*}^2$, $d_k:=\frac{\theta L}{2}\norm{x_k -x^*}^2$ we have
+%
+\begin{align*}
+\Delta f_{k+1} \le& (1-\theta) \Delta f_k  + \theta\left( \rho(1+\beta)e_k-e_{k+1} - \beta\rho e_{k-1}\right)+\left( \rho\beta(\beta+\theta)d_k-(1-\theta)d_{k+1}\right)
+\end{align*}
+%
+or with $\alpha:=\rho\beta(\beta+\theta)$
+%
+\begin{align*}
+\theta \Delta f_{k+1} +(1-\rho)e_{k+1}  + (1-\theta-\alpha)\frac{ L}{2} \norm{x_{k+1}-x_{k}}^2\le (1-\theta) \left( \Delta f_k- \Delta f_{k+1}\right)\\
++ \rho(e_k-e_{k+1}) -\beta\rho(e_{k-1}-e_k) + \frac{ L\alpha}{2}\left( \norm{x_k-x_{k-1}}^2-\norm{x_{k+1}-x_{k}}^2\right)
+\end{align*}
+%
+Let $a_k:= \theta \Delta f_{k} +(1-\rho)e_{k}  + (1-\theta-\alpha)\frac{ L}{2} \norm{x_{k}-x_{k-1}}^2$. Then
+%
+\begin{align*}
+\sum_{k=n+1}^{\infty} a_k \le& (1-\theta) \Delta f_n + \rho e_n -\beta\rho e_{n-1} + \frac{ L\alpha}{2}\norm{x_n-x_{n-1}}^2\\
+\le& \max\Set{\frac{1-\theta}{\theta}, \frac{\rho}{1-\rho},  \frac{\alpha}{1-\theta-\alpha}} a_n
+\end{align*}
+%
+
+
+
+
+
+
+
+
+
+
+\dotfill WORKS \dotfill\\
+
+
+
+Let 
+%
+\begin{align*}
+ u_k := \frac{1}{\theta}\left(y_k-(1-\theta)x_k\right) = x_k + \frac{y_k-x_k}{\theta}
+\end{align*}
+%
+
+Using $2ab -a^2 = b^2-(a-b)^2$ we have
+%
+\begin{align*}
+\scp{\nabla f(y_k)}{\theta u_k -\theta x^*} -\frac{1}{2L}\norm{\nabla f(y_k)}^2 = \frac{L}{2}\left( \norm{\theta u_k -\theta x^*}^2 - \norm{x_{k+1}-(1-\theta)x_k -\theta x^*}^2\right)
+\end{align*}
+%
+Let
+%
+\begin{align*}
+v_k := \frac{x_k}{\theta}-\frac{(1-\theta)x_{k-1}}{\theta}  = x_{k} + \frac{(1-\theta)(x_k-x_{k-1})}{\theta} = x_{k} + \frac{(1-\theta)(y_k-x_{k})}{\theta\beta}
+\end{align*}
+%
+and $\Delta f_k:= f(x_k)-f^*$.  We then have with $0<\theta<1$
+%
+\begin{align*}
+\Delta f_{k+1} -(1-\theta)\Delta f_k \le&  \frac{L\theta^2}{2}\left( \norm{u_k -x^*}^2 - \norm{v_{k+1}-x^*}^2\right) -\frac{\theta\mu}{2}\norm{x^*-y_k}^2 -\frac{(1-\theta)\mu}{2}\norm{x_k-y_k}^2
+\end{align*}
+%
+Next we have
+%
+\begin{align*}
+v_k  = y_{k} + \frac{(1-\theta-\theta\beta)(y_k-x_{k})}{\theta\beta},\quad u_k = y_k + \frac{(1-\theta)(y_k-x_k)}{\theta}\\
+v_k - u_k = \frac{(1-\theta-\beta)(y_k-x_{k})}{\theta\beta} = \lambda(v_k-y_k),\quad \lambda := \frac{1-\theta-\beta}{1-\theta-\theta\beta},
+\end{align*}
+%
+such that
+%
+\begin{align*}
+\norm{u_k-x^*}^2 =&  \norm{v_k-x^*}^2 -2\scp{v_k-x^*}{v_k-u_k}^2 + \norm{v_k-u_k}^2\\
+=& \norm{v_k-x^*}^2 -2\lambda\scp{v_k-x^*}{v_k-y_k}^2 + \norm{v_k-u_k}^2\\
+=& \norm{v_k-x^*}^2 -\lambda\left(\norm{v_k-x^*}^2 + \norm{v_k-y_k}^2 - \norm{y_k-x^*}^2\right) + \norm{v_k-u_k}^2\\
+=& (1-\lambda)\norm{v_k-x^*}^2 -\lambda(1-\lambda) \norm{v_k-y_k}^2 + \lambda\norm{y_k-x^*}^2
+\end{align*}
+%
+It follows that
+%
+\begin{align*}
+\Delta f_{k+1} -(1-\theta)\Delta f_k \le  \frac{L\theta^2}{2}\left( (1-\lambda)\norm{v_k -x^*}^2 - \norm{v_{k+1}-x^*}^2\right)\\
+ + \left( \frac{L\theta^2}{2}\lambda - \frac{\theta\mu}{2}\right)\norm{x^*-y_k}^2 -\left(\frac{(1-\theta)\mu}{2}+\frac{L(1-\theta-\beta) (1-\theta)}{2\beta}\right)\norm{x_k-y_k}^2
+\end{align*}
+%
+since
+%
+\begin{align*}
+\lambda(1-\lambda)\left(\frac{1-\theta-\theta\beta}{\theta\beta}\right)^2 =  \frac{1-\theta-\beta}{1-\theta-\theta\beta} \frac{\beta(1-\theta)}{1-\theta-\theta\beta}\left(\frac{1-\theta-\theta\beta}{\theta\beta}\right)^2 =
+\frac{(1-\theta-\beta) (1-\theta)}{\theta^2\beta}
+\end{align*}
+%
+We now chose $\theta$ such that $\lambda=\theta$, i.e.
+%
+\begin{align*}
+\theta^{-1} = \frac{1-\theta-\theta\beta}{1-\theta-\beta} = 1  + \frac{\beta(1-\theta)}{1-\theta-\beta}\quad\Rightarrow\quad 
+\frac{1-\theta}{\theta} = \frac{\beta(1-\theta)}{1-\theta-\beta}\quad\Rightarrow\quad \\
+1-\theta-\beta = \theta\beta\quad\Rightarrow\quad 
+\theta = \frac{1-\beta}{1+\beta} \quad\Rightarrow\quad \beta = \frac{1-\theta}{1+\theta}
+\end{align*}
+%
+Then
+%
+\begin{align*}
+\Delta f_{k+1} -(1-\theta)\Delta f_k \le  \frac{L\theta^2}{2}\left( (1-\theta)\norm{v_k -x^*}^2 - \norm{v_{k+1}-x^*}^2\right)\\
+ + \left( \frac{L\theta^3}{2} - \frac{\theta\mu}{2}\right)\norm{x^*-y_k}^2 -\left(\frac{(1-\theta)\mu}{2}+\frac{L\theta(1-\theta)}{2}\right)\norm{x_k-y_k}^2
+\end{align*}
+%
+%---------------------------------------
+\begin{proposition}\label{prop:}
+Suppose that $f$ is $\mu$-strongly convex and $\nabla f$ is $L$-Lipschitz and let $\kappa_f:=L/\mu$. Set
+\begin{equation}\label{eq:}
+\theta := \frac{1-\beta}{1+\beta},\quad v_k = x_k + \frac{y_k-x_k}{\theta},\quad e_k := \Delta f_k + \frac{L\theta^2}{2}\norm{v_k -x^*}^2
+\end{equation}
+
+Under the condition
+%
+\begin{equation}\label{eq:condtheta}
+\theta \le \kappa_f^{-\frac12}
+\end{equation}
+%
+we have
+%
+\begin{equation}\label{eq:}
+e_{k+1} \le (1-\theta) e_k  -\frac{1-\theta}{2}\left(\mu + L\theta\right)\norm{x_k-y_k}^2
+\end{equation}
+%
+\end{proposition}
+%
+%---------------------------------------
+
+In case $\mu=0$ we cannot satisfy (\ref{eq:condtheta}). But we have
+\begin{align*}
+\norm{x^*-y_k}^2 =& \norm{x^*-x_k}^2 + 2\beta\scp{x^*-x_k}{x_k-x_{k-1}} +  \norm{y_k-x_k}^2 \\
+=& \norm{x^*-x_k}^2 + \beta\left( \norm{x^*-x_{k-1}}^2 - \norm{x^*-x_k}^2 - \norm{x_k-x_{k-1}}^2 \right) +  \norm{y_k-x_k}^2
+\end{align*}
+
+
+
+
+
+
+
+
+%
+%-------------------------------------------------------------------------
+\subsection{Acceleration of sequences}\label{subsec:}
+%-------------------------------------------------------------------------
+%
+%
+%---------------------------------------
+\begin{yellow}
+\begin{algorithm}[H]
+\caption{Acceleration fixed step} 
+\label{algorithm:Descent} 
+%
+Inputs: $x_0\in X$, $0<\rho<1$, $0\le \beta \le 1$, Set $k=0$.
+%
+\begin{itemize}
+\item[(1)] $x_{k+1} = \rho((1+\beta)x_k - \beta x_{k-1})$.
+\item[(4)] Increment $k$ and go to (1).
+\end{itemize}
+%
+\end{algorithm}
+\end{yellow}
+%---------------------------------------
+
+Classical two-step analysis
+%
+\begin{align*}
+\begin{bmatrix}
+x_{k+1} \\ x_{k}
+\end{bmatrix}
+=
+\rho
+\begin{bmatrix}
+1+ \beta & -\beta\\ \rho^{-1}&0
+\end{bmatrix}
+\begin{bmatrix}
+x_{k} \\ x_{k-1}
+\end{bmatrix}
+\end{align*}
+
+
+%
+\begin{align*}
+\begin{bmatrix}
+1 & 0\\ -(1+\beta)& 1
+\end{bmatrix}
+\begin{bmatrix}
+x_{k+1} \\ y_{k+1}
+\end{bmatrix}
+=
+\begin{bmatrix}
+0 & \rho\\ -\beta& 0
+\end{bmatrix}
+\begin{bmatrix}
+x_{k} \\ y_{k}
+\end{bmatrix}
+\quad
+\begin{bmatrix}
+1 & 0\\ -(1+\beta)& 1
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+0 & \rho\\ -\beta& 0
+\end{bmatrix}
+=
+\begin{bmatrix}
+0 & \rho\\ -\beta& \rho(1+\beta)
+\end{bmatrix}\\
+\begin{bmatrix}
+x_{k+1} \\ y_{k+1}
+\end{bmatrix}
+=
+\begin{bmatrix}
+0 & \rho\\ -\beta& \rho(1+\beta)
+\end{bmatrix}
+\begin{bmatrix}
+x_{k} \\ y_{k}
+\end{bmatrix}
+\quad
+y_{k+1} = (1+\beta)x_{k+1} - \beta x_{k}
+\end{align*}
+%
+\begin{align*}
+\lambda^2 - \rho(1+\beta)\lambda = -\beta\rho \quad\Leftrightarrow\quad \left(\lambda - \frac{\rho(1+\beta)}{2}\right)^2=\frac{\rho^2(1+\beta)^2}{4} - \frac{4\beta\rho}{4}=\frac{\rho^2 + \beta^2 +2\beta\rho(\rho-2)}{4}
+\end{align*}
+%
+If
+%
+\begin{align*}
+\rho(1+\beta)^2 = 4\beta \quad\Leftrightarrow\quad \beta^2 -2\beta(2/\rho -1) = -1\quad\Leftrightarrow\quad 
+\left(\beta - (2/\rho -1)\right)^2=(2/\rho -1)^2-1
+\end{align*}
+%
+we have
+%
+\begin{equation}\label{eq:}
+\lambda = \frac{\rho(1+\beta)}{2} = \frac{2\beta}{1+\beta}
+\end{equation}
+%
+%
+
+%
+%
+\begin{align*}
+\lambda^2 -(1+\beta)\lambda = - \rho^{-1}\beta\\
+\left(\lambda - \frac{1+\beta}{2}\right)^2 = \frac{1 + 2\beta + \beta^2 - 4\rho^{-1}\beta}{4}
+\end{align*}
+%
+%
+\begin{align*}
+1 + 2\beta + \beta^2 - 4\rho^{-1}\beta \ge 0 \quad\Leftrightarrow\quad 
+\left(\beta + (1-2\rho^{-1})\right)^2\ge (1-2\rho^{-1})^2-1 = 4(\rho^{-2}-\rho^{-1})\\
+\quad\Leftrightarrow\quad \beta \ge (2\rho^{-1}-1) \pm 2 \rho^{-1}\sqrt{1-\rho}
+\end{align*}
+%
+%
+\begin{align*}
+1 + 2\beta + \beta^2 - 4\rho^{-1}\beta \ge 0 \quad\Leftrightarrow\quad 
+\left(1-\beta\right)^2 \ge 4(\rho^{-1}-1)\beta
+\end{align*}
+%
+%
+\begin{align*}
+\phi(x) = \frac{(1-x)^2}{x}\quad (0<x<1)\quad y = \phi(x) \quad\Leftrightarrow\quad -1 = -2x -xy +x^2\\
+ \quad\Leftrightarrow\quad (x- (1+y/2))^2= (1+y/2)^2-1 = y^2/4 + y\\
+ x = 1+y/2 - \sqrt{y^2/4 + y} = 1 - \frac{\sqrt{y^2+4y}-y}{2}\\
+ \phi'(x) = \frac{x^2-1}{x^2},\quad \phi''(x) = 2x^{-3}
+\end{align*}
+%
+
+Then
+%
+\begin{align*}
+\lambda =  \frac{1+\beta}{2} \pm \frac{\sqrt{1 + 2\beta + \beta^2 - 4\rho^{-1}\beta}}{2}
+= \frac{1+\beta}{2} \pm \frac{\sqrt{(1 -\beta)^2 - 4(\rho^{-1}-1)\beta}}{2}
+\end{align*}
+%
+Suppose this minimized, if the square root is zero.
+
+%
+\begin{align*}
+\beta = 1 - \frac{\sqrt{y^2+4y}-y}{2},\quad y = 4(\rho^{-1}-1) = 4\frac{1-\rho}{\rho},\quad \\
+y^2+4y = \frac{16(1-\rho)^2+16\rho(1-\rho)}{\rho^2}=16(1-\rho)\frac{1-\rho+\rho}{\rho^2}=\frac{16(1-\rho)}{\rho^2}\\
+\beta = 1 - \frac12\left( \frac{4\sqrt{1-\rho}}{\rho}-4\frac{1-\rho}{\rho}\right)
+ = 1 - 2\frac{\sqrt{1-\rho}-(1-\rho)}{\rho}
+\end{align*}
+%
+and
+%
+\begin{align*}
+\lambda =  \frac{1+\beta}{2}  = 1 -\frac{\sqrt{1-\rho}-(1-\rho)}{\rho}
+\end{align*}
+%
+If $\rho = 1 - 1/K= (K-1)/K$
+%
+\begin{align*}
+\beta = 1 - 2\frac{\sqrt{1-\rho}-(1-\rho)}{\rho} = 1 - 2(K^{-\frac12}-K^{-1})\frac{K}{K-1}
+= 1 - 2\frac{K^{\frac12}-1}{K-1} = 1 -\frac{2}{K^{\frac12}+1}\\
+\lambda = 1 - \frac{1}{K^{\frac12}+1}
+\end{align*}
+%
+Eigenvector
+%
+\begin{align*}
+\begin{bmatrix}
+\rho\lambda \\ 1
+\end{bmatrix}
+\end{align*}
+%
+
+
+
+
+%
+%-------------------------------------------------------------------------
+\subsection{Accelerated gradient method}\label{subsec:}
+%-------------------------------------------------------------------------
+%
+We will use the following fact about geometrical convergence.
+%---------------------------------------
+\begin{lemma}\label{lemma:geomconv}
+Let $a_n\ge 0$, $n\in\N$. Then under the condition that there is $C\ge0$ such that
+%
+\begin{equation}\label{eq:geomconvhyp}
+\sum_{k=n+1}^{\infty} a_k \le C a_n\quad \forall n\in\N
+\end{equation}
+%
+we have
+%
+\begin{equation}\label{eq:geomconvres}
+a_{m+n} \le (C+1) \rho^m a_n\quad \forall m,n\in\N, \quad\rho=\frac{C}{C+1}.
+\end{equation}
+%
+\end{lemma}
+% 
+%---------------------------------------
+\begin{proof}
+Let $S_n := \sum_{k=n}^{\infty} a_k$. By (\ref{eq:geomconvhyp}) we have
+%
+\begin{align*}
+S_{n+1} \le C\left( S_{n}-S_{n+1}\right)\quad\Rightarrow\quad S_{n+1} \le \rho S_n.
+\end{align*}
+%
+Then it follows again from (\ref{eq:geomconvhyp}) by induction that
+%
+\begin{align*}
+S_{n+m} \le \rho^m S_n \quad\Rightarrow\quad a_{n+m} \le S_{n+m} \le  \rho^m S_n = \rho^m (a_n + S_{n+1}) 
+\le (C+1) \rho^m a_n.
+\end{align*}
+%
+
+\end{proof}
+%
+
+%
+We will use the following generalization of Lemma~\ref{lemma:geomconv}.
+%---------------------------------------
+\begin{lemma}\label{lemma:geomconv2}
+Let $a_n\ge 0$, $n\in\N$. Under the condition that there is $C>0,D\ge0$ such that
+%
+\begin{equation}\label{eq:geomconvhyp2}
+\sum_{k=1}^{\infty} a_k \le C a_0,\quad
+\sum_{k=n+1}^{\infty} a_k \le C a_n + D a_{n-1}\quad \forall n\in\N_1
+\end{equation}
+%
+there exists $0\le \beta < 1$ such that 
+%
+\begin{equation}\label{eq:geomconvres2}
+(1-\beta) a_{n+1} + \beta a_{n} \le  \rho^n (C+\beta)a_0
+\end{equation}
+%
+with 
+%
+\begin{equation}\label{eq:}
+\rho = 1 - 1/E,\quad E \le C+D + \frac{D}{C+D},\quad \beta = D/E.
+\end{equation}
+%
+\end{lemma}
+% 
+%---------------------------------------
+\begin{proof}
+Let $S_n := \sum_{k=n}^{\infty} a_k$. By (\ref{eq:geomconvhyp2}) we have $S_1\le C (S_0-S_1)$ and for $n\ge1$
+%
+\begin{align*}
+S_{n+1} \le C\left( S_{n}-S_{n+1}\right) + D\left( S_{n-1}-S_{n}\right)\quad\Rightarrow\quad 
+(C+1) S_{n+1} \le (C-D)S_{n}+ D S_{n-1}
+\end{align*}
+%
+Let for $n\ge1$ and $\beta\in\R$
+%
+\begin{align*}
+\widetilde{S}_n := (1-\beta) S_n + \beta S_{n-1}
+\end{align*}
+%
+Then we wish to find $E\ge0$ such that for $n\ge1$
+%
+\begin{equation}\label{eq:gm_geom2_help1}
+(E+1) \widetilde{S}_{n+1} \le E \widetilde{S}_n 
+\end{equation}
+%
+which amounts to
+%
+\begin{align*}
+(1-\beta)(E+1) S_{n+1}  \le (E-\beta -2\beta E) S_n + \beta E S_{n-1}
+\end{align*}
+%
+Choosing
+%
+\begin{equation}\label{eq:gm_geom2_help2}
+E= \sqrt{D + \frac{(C+D)^2}{4}}+ \frac{C+D}{2},\quad
+\beta  =\sqrt{D + \frac{(C+D)^2}{4}}-\frac{C+D}{2}
+\end{equation}
+%
+we have $\beta E=D$ and $E-C-D=\beta$, which shows (\ref{eq:gm_geom2_help1}). We have with $\sqrt{1+2x}\le 1+x$
+%
+\begin{align*}
+E= \frac{C+D}{2}\left(1+\sqrt{1+\frac{4D}{(C+D)^2}}\right)\le \frac{C+D}{2}\left( 2 + \frac{2D}{(C+D)^2}\right)
+= C+D + \frac{D}{C+D}.
+\end{align*}
+%
+Since $E>D$ we have $\beta<1$. From (\ref{eq:gm_geom2_help1}) we find for $n\ge 1$
+%
+\begin{align*}
+\widetilde{S}_{n+1} \le \rho^n \widetilde{S}_1 
+\end{align*}
+%
+Then
+%
+\begin{align*}
+(1-\beta) a_{n+1} + \beta a_{n} \le& \widetilde{S}_{n} \le \rho^n \widetilde{S}_1 =
+ \rho^n \left( (1-\beta) S_1 + \beta S_{0}\right)\\
+=& \rho^n \left( (1-\beta) S_1 + \beta (S_{1}+a_0)\right)
+= \rho^n(C+\beta) a_0
+\end{align*}
+%
+
+\end{proof}
+
+%
+%---------------------------------------
+\begin{yellow}
+\begin{algorithm}[H]
+\caption{AGM with line search} 
+\label{algorithm:Descent} 
+%
+Inputs: $x_0\in X$, $t_0>0$. Set $y_0=x_0$ $k=0$.
+%
+\begin{itemize}
+\item[(1)] While $f(x^*_Q(t_k,y_k) > Q^*(t_k, y_k)$ : $t_k = t_k/2$.
+\item[(2)] $x_{k+1} = x^*_Q(t_k,y_k)$.
+\item[(3)] $y_{k+1} = x_{k+1} + \beta_k (x_{k+1}-x_{k})$.
+\item[(4)] $t_{k+1} = 2*t_k$.
+\item[(5)] Increment $k$ and go to (1).
+\end{itemize}
+%
+\end{algorithm}
+\end{yellow}
+
+We have
+\begin{align*}
+y_{k+1} =  y_k -t_k \nabla f(y_k) + \beta_k(x_{k+1}-x_k)
+\end{align*}
+%
+
+
+We have
+%
+\begin{align*}
+f(x_{k+1})- f(x_k) \le &  \frac{1}{2t_k}\left( \norm{y_k-x_k}^2 - \norm{x_{k+1}-x_k}^2\right)\\
+=& \frac{1}{2t_k}\left( \beta^2\norm{x_k-x_{k-1}}^2 - \norm{x_{k+1}-x_k}^2 \right)\\
+\red{\le}& \frac{\beta^2}{2L}\left( \norm{x_k-x_{k-1}}^2 - \norm{x_{k+1}-x_k}^2 \right)
+-\frac{1-\beta^2}{2L} \norm{x_{k+1}-x_k}^2
+\end{align*}
+%
+and
+%
+\begin{align*}
+\frac{\mu}{2} \norm{x_{k+1}- x^*}^2 \le& f(x_{k+1})- f(x^*) \le  \frac{1}{2t_k}\left( \norm{y_k-x^*}^2 - \norm{x_{k+1}-x^*}  \right)\\
+\le &  \frac{L}{2}\left( (1+\delta)\norm{x_k-x^*}^2 - \norm{x_{k+1}-x^*} +(1+\delta^{-1})\beta_{k-1}^2\norm{x_{k+1}-x_k}^2\right)
+\end{align*}
+%
+so
+%
+\begin{align*}
+\norm{x_{k+1}- x^*}^2 \le \frac{\kappa}{\kappa+1} \left( (1+\delta)\norm{x_k-x^*}^2 +(1+\delta^{-1})\beta_{k-1}^2\norm{x_{k+1}-x_k}^2\right)
+\end{align*}
+%
+and
+%
+\begin{align*}
+\norm{x_{k+1}- x^*}^2 + \frac{(1+\delta^{-1})\beta2L}{1-\beta^2} \left(f(x_{k+1})- f(x_k)\right)\le& 
+\frac{(1+\delta^{-1})\beta^3}{1-\beta^2}\left( \norm{x_k-x_{k-1}}^2 - \norm{x_{k+1}-x_k}^2 \right)\\
+&+ (1+\delta)\frac{\kappa}{\kappa+1}\norm{x_k-x^*}^2
+\end{align*}
+%
+
+
+
+%
+%-------------------------------------------------------------------------
+\subsection{AGM for quadratyics}\label{subsec:}
+%-------------------------------------------------------------------------
+%
+Let 
+%
+\begin{equation}\label{eq:}
+f(x) = \frac12 \transpose{x} A x  
+\end{equation}
+%
+and consider
+%
+%
+\begin{equation}\label{eq:}
+%
+\left\{
+\begin{aligned}
+x_{k+1} =& y_k - t A y_k\\
+y_{k+1} =& y_k  + \beta(y_k-x_k) - s A y_k
+\end{aligned}
+\right.
+%
+\end{equation}
+%
+The iteration reads in matrix-form
+%
+\begin{align*}
+\begin{bmatrix}
+x_{k+1} \\ y_{k+1}
+\end{bmatrix}
+=
+\begin{bmatrix}
+0 & I-tA\\
+-\beta & (1+\beta)I - sA
+\end{bmatrix}
+\begin{bmatrix}
+x_{k} \\ y_{k}
+\end{bmatrix}
+\end{align*}
+%
+We have
+%
+\begin{align*}
+y_{k+1} = (1+\beta) (I-tA) y_k - \beta (I-tA)y_{k-1}
+\end{align*}
+%
+Les racines de
+%
+\begin{align*}
+y^2 - (1+\beta)\theta y = -\beta\theta
+\end{align*}
+%
+sont
+%
+\begin{align*}
+y = \frac{(1+\beta)\theta}{2} \pm \sqrt{\frac{(1+\beta)^2\theta^2}{4} - \beta\theta}
+\end{align*}
+%
+
+
+
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsubsection{Eigenvalues}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+Let
+%
+\begin{align*}
+B := (1+\beta)I - sA, \quad C := I-tA
+\end{align*}
+%
+
+%
+\begin{align*}
+&C y = \mu x, \quad  -\beta x + B y = \mu y
+\\
+&\quad\Rightarrow\quad 
+\\
+&-\beta Cy + \mu B y = \mu^2 y
+\\
+&\quad\Rightarrow\quad 
+\\
+&\left( \mu - \frac12 B\right)^2 y = (\frac14 B^2 - \beta C)
+\end{align*}
+%
+In the Nesterov-scheme we  have $s=(1+\beta)t$ 
+and  $t=1/\lambda_{\rm max}$, so $B = (1+\beta)C$ and for any $\lambda\in\sigma(A)$ with 
+$\theta=\theta(\lambda)=1-\lambda/\lambda_{\rm max}$
+%
+\begin{align*}
+\left( \mu - \frac{1+\beta}{2} \theta\right)^2 = \frac{(1+\beta)^2}{4} \theta^2 - \beta \theta
+\end{align*}
+%
+so
+%
+\begin{align*}
+\abs{\mu} = \begin{cases}
+\frac{1+\beta}{2}\theta+\sqrt{\frac{(1+\beta)^2}{4} \theta^2-\beta\theta}  &\quad (1+\beta)^2 \theta \ge 4\beta \\
+\sqrt{\beta \theta} &\quad \mbox{else}
+\end{cases}
+\end{align*}
+%
+%
+With $\phi(x) = \alpha x + \sqrt{\alpha^2 x^2-\beta x}$ we have $\phi'(x) = \alpha + \frac{2\alpha^2 x- \beta}{2\sqrt{\alpha^2 x^2-\beta x}}\ge0 $ for $0\le x \le 1$ if $\alpha^2x^2\ge \beta x$, so with $\rho = (1-\lambda_{\rm min}/\lambda_{\rm max})=\theta(\lambda_{\rm min})$
+%
+\begin{align*}
+\abs{\mu}(\lambda) = \begin{cases}
+\frac{1+\beta}{2}\rho+ \frac{\sqrt{\rho}}{2}\sqrt{(1+\beta)^2\rho-4\beta}  &\quad (1+\beta)^2 \rho \ge 4\beta \\
+\sqrt{\beta \rho} &\quad \mbox{else}
+\end{cases}
+\end{align*}
+%
+Let $\rho=1-A^2 = (1-A)(1+A)$. Let $\beta := (1-A)/(1+A) = \rho/(1+A)^2$. Then
+%
+\begin{align*}
+\frac{(1+\beta)^2 \rho}{4\beta} = \frac{2(1+A)^2}{4(1+A)}= \frac{1+A}{2}\le 1 \quad (A\le 1),
+\end{align*}
+%
+so
+%
+\begin{align*}
+\abs{\mu}(\lambda) = \frac{1-A}{1+A}
+\end{align*}
+%
+Let now
+%
+\begin{align*}
+\frac{(1+\beta)^2}{4\beta} =\rho^{-1}, \quad \mu = \sqrt{\beta\rho}
+\end{align*}
+%
+%
+\begin{align*}
+\begin{bmatrix}
+-\mu I  & I-tA\\
+-\beta & (1+\beta)(I - tA)-\mu I
+\end{bmatrix}
+\begin{bmatrix}
+x \\ y
+\end{bmatrix}
+=0
+\end{align*}
+%
+Then
+%
+\begin{align*}
+ (I-tA)y=&\mu x\\
+((1+\beta)(I - tA)-\mu I)y =& \beta x
+\end{align*}
+%
+i.e.
+%
+\begin{align*}
+\mu x = \rho y \quad\Leftrightarrow\quad x = \sqrt{\frac{\rho}{\beta}}y
+\end{align*}
+%
+
+
+%
+
+
+
+
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsubsection{Singular values}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+In order to bound the norm of the iteration matrix, we use the singular values, so 
+%
+\begin{align*}
+\begin{bmatrix}
+0 & -\beta \\
+I-tA & (1+\beta)I - sA
+\end{bmatrix}
+\begin{bmatrix}
+0 & I-tA\\
+-\beta & (1+\beta)I - sA
+\end{bmatrix}
+=
+\begin{bmatrix}
+\beta^2 &-\beta((1+\beta)I - sA)\\
+-\beta((1+\beta)I - sA) & ((1+\beta)I - sA)^2 + (I-tA)^2
+\end{bmatrix}
+\end{align*}
+%
+Let
+%
+\begin{align*}
+\begin{bmatrix}
+\beta^2I &-\beta((1+\beta)I - sA)\\
+-\beta((1+\beta)I - sA) & ((1+\beta)I - sA)^2 + (I-tA)^2
+\end{bmatrix}
+\begin{bmatrix}
+x \\ y
+\end{bmatrix}
+=
+\mu^2
+\begin{bmatrix}
+x \\ y
+\end{bmatrix}
+\end{align*}
+%
+or
+%
+\begin{align*}
+\begin{bmatrix}
+\beta^2I &-\beta B\\
+-\beta B & B^2 + C^2
+\end{bmatrix}
+\begin{bmatrix}
+x \\ y
+\end{bmatrix}
+=
+\mu^2
+\begin{bmatrix}
+x \\ y
+\end{bmatrix},\quad B := (1+\beta)I - sA, \quad C := I-tA
+\end{align*}
+%
+so
+%
+\begin{align*}
+&(\mu^2-\beta^2) x = -\beta By,\quad -\beta B x + (B^2 + C^2)y = \mu^2 y\\
+&\Rightarrow \\
+&\beta^2 B^2 y + (\mu^2-\beta^2)(B^2 + C^2)y = (\mu^2-\beta^2)\mu^2 y\\
+&\Rightarrow \\
+& (\mu^2-\beta^2)\mu^2 y = -\beta^2 C^2 y + \mu^2(B^2 + C^2)y\\
+&\Rightarrow \\
+& \mu^4-(\beta^2I + B^2+C^2)\mu^2 y = -\beta^2 C^2 y\\ 
+&\Rightarrow \\
+& \left( \mu^2-\frac{\beta^2I + B^2+C^2}{2}\right)^2 y = \left(   \frac{\beta^4I + B^4+C^4 + 2\beta^2 B^2 -2\beta^2 C^2 + \beta^2B^2C^2}{4}\right)y 
+\end{align*}
+%
+
+
+
+
+In the Nesterov-scheme we  have $s=(1+\beta)t$ 
+and  $t=1/\lambda_{\rm max}$, so $B = (1+\beta)C$ and
+%
+\begin{align*}
+\left( \mu^2-\frac{\beta^2I + (2+\beta)C^2}{2}\right)^2 y = \left(   \frac{\beta^4I + (1 + (1+\beta)^4 +\beta^2(1+\beta)^2)C^4 + 2\beta^2((1+\beta)^2-1) C^2 }{4}\right)y
+\end{align*}
+%
+
+
+
+
+
+
+with $\kappa=\lambda_{\rm max}/\lambda_{\rm min}$ and 
+$\rho=1 -1/\kappa$
+%
+
+
+
+
+
+
+
+
+
+
+\dotfill
+
+%---------------------------------------
+%%
+%%---------------------------------------
+%\begin{proposition}\label{prop:}
+%We have
+%%
+%\begin{equation}\label{eq:}
+%y_{1}  = y_0 - t_0 \frac{1-\beta_0\beta_{1}}{1-\beta_0}\nabla f(y_0).
+%\end{equation}
+%%
+%\end{proposition}
+%%
+%%---------------------------------------
+%\begin{proof}
+%The update formula gives
+%%
+%\begin{align*}
+%y_{1} = x_{1} + \frac{1-\beta_{1}}{1-\beta_0}\beta_0 (x_{1}-y_{0})
+%\quad\Rightarrow\quad 
+%y_{1} = \frac{1-\beta_0\beta_{1}}{1-\beta_0} x_{1} - \frac{1-\beta_{1}}{1-\beta_0}\beta_0 y_{0}
+%\quad\Rightarrow\quad\\ 
+% x_{1} = \frac{1-\beta_0}{1-\beta_0\beta_{1}}y_{1} + \frac{1-\beta_1}{1-\beta_0\beta_{1}}\beta_0 y_{0}
+%\quad\Rightarrow\quad 
+% x_{1} = y_{1} + \frac{1-\beta_1}{1-\beta_0\beta_{1}}\beta_0 (y_{0}-y_1)\\
+%\quad\Rightarrow\quad 
+%y_{1}  = y_0 - t_0 \frac{1-\beta_0\beta_{1}}{1-\beta_0}\nabla f(y_0)\\
+%\end{align*}
+%%
+%The update formula gives
+%%
+%\begin{align*}
+%y_{2} = x_{2} + \frac{1-\beta_{2}}{1-\beta_1}\beta_1 (x_{2}-x_{1})
+%\quad\Rightarrow\quad 
+% x_{2} = \frac{1-\beta_1}{1-\beta_1\beta_{2}}y_{2} + \frac{1-\beta_2}{1-\beta_1\beta_{2}}\beta_1 x_{1}
+% \\
+%\quad\Rightarrow\quad 
+% x_{2} = \frac{1-\beta_1}{1-\beta_1\beta_{2}}y_{2} + \frac{1-\beta_2}{1-\beta_1\beta_{2}}\beta_1 
+% \left(
+% y_{1} + \frac{1-\beta_1}{1-\beta_0\beta_{1}}\beta_0 (y_{0}-y_1)
+% \right)\\
+%\quad\Rightarrow\quad 
+% x_{2} = y_2  + \frac{1-\beta_2}{1-\beta_1\beta_{2}}\beta_1 
+% \left(
+% y_{1}-y_2 + \frac{1-\beta_1}{1-\beta_0\beta_{1}}\beta_0 (y_{0}-y_1)
+% \right)\\
+%\quad\Rightarrow\quad 
+% y_{1} -t_1\nabla f(y_1) = y_2  + \frac{1-\beta_2}{1-\beta_1\beta_{2}}\beta_1 
+% \left(
+% y_{1}-y_2 + \frac{1-\beta_1}{1-\beta_0\beta_{1}}\beta_0 (y_{0}-y_1)
+% \right)\\
+% %
+% %
+%\quad\Rightarrow\quad 
+%  y_{2} = \frac{1-\beta_1\beta_{2}}{1-\beta_1} y_{1} -t_1\frac{1-\beta_1\beta_{2}}{1-\beta_1}\nabla f(y_1) - \frac{1-\beta_2}{1-\beta_1}\beta_1 
+% \left(
+% y_{1} + \frac{1-\beta_1}{1-\beta_0\beta_{1}}\beta_0 (y_{0}-y_1)
+% \right)\\
+%\quad\Rightarrow\quad 
+%  y_{2} = y_{1} -t_1\frac{1-\beta_1\beta_{2}}{1-\beta_1}\nabla f(y_1) - \frac{1-\beta_2}{1-\beta_0\beta_{1}}\beta_1\beta_0 (y_{0}-y_1)
+%\end{align*}
+%\end{proof}
+%%
+%%---------------------------------------
+\begin{lemma}\label{lemma:agm_mony_monx}
+We have
+%
+\begin{equation}\label{eq:agm_mony_monx}
+f(y_{k}) \le  f(x_k)  \quad\Rightarrow\quad f(x_{k+1}) \le  f(x_k)
+\end{equation}
+%
+\end{lemma}
+%%
+%---------------------------------------
+\begin{proof}
+We have by hypothesis and convexity
+%
+\begin{align*}
+f(x_{k+1}) \ge f(y_{k+1}) \ge f(x_{k+1}) + \beta( f(x_{k+1}) -  f(x_k))
+\end{align*}
+%
+\end{proof}
+%
+%---------------------------------------
+\begin{lemma}\label{lemma:agm_cond1}
+Suppose that
+%
+\begin{equation}\label{eq:agm_cond1}
+\scp{\nabla f(y_k)}{x_{k+1}-x_k} \le 0.
+\end{equation}
+%
+\end{lemma}
+%
+%---------------------------------------
+\begin{proof}
+By the update rule (\ref{eq:agm_cond1}) is equivalent to
+%
+\begin{equation}\label{eq:agm_cond2}
+\scp{\nabla f(y_k)}{y_{k+1}-x_{k+1}} \le 0,
+\end{equation}
+%
+which gives with the update for $x_{k+1}$
+%
+\begin{align*}
+\scp{\nabla f(y_k)}{y_{k+1}-y_{k}} \le - t \norm{\nabla f(y_k)}^2,
+\end{align*}
+%
+
+
+
+
+We have by convexity
+%
+\begin{align*}
+f(y_{k}) \ge&  f(y_{k+1}) + \scp{\nabla f(y_{k+1})}{y_{k}-y_{k+1}}\\
+=& f(y_{k+1}) + \scp{\nabla f(y_{k})}{y_{k}-y_{k+1}} + \scp{\nabla f(y_{k+1})-\nabla f(y_{k})}{y_{k}-y_{k+1}}
+\end{align*}
+%
+
+\end{proof}
+%
+
+
+
+
+%---------------------------------------
+\begin{proposition}\label{prop:}
+Suppose that $f$ is $\mu$-strongly convex and $\nabla f$ is $L$-Lipschitz. Then with $\kappa_f:=L/\mu$
+%
+\begin{equation}\label{eq:}
+???%\Delta f_n \le  \frac{2L+\mu}{\mu} \rho^n \Delta f_0,\quad \rho = 1 - \frac{1}{2\kappa_f}. 
+\end{equation}
+%
+\end{proposition}
+%
+%---------------------------------------
+\begin{proof}
+%
+By the step-length rule  we have
+%
+%
+\begin{equation}\label{eq:gm_proof_help1}
+f(x_{k+1}) \le  f(y_k) - \frac{t_k}{2} \norm{\nabla f(y_k)}^2
+\end{equation}
+%
+%
+By convexity we have
+%
+\begin{align*}
+f(y_k) \le  f(x_{k}) + \scp{\nabla f(y_k)}{y_{k}-x_{k}},\quad 
+f(y_k) \le  f(x^*) + \scp{\nabla f(y_k)}{y_{k}-x^*}. 
+\end{align*}
+%
+Convex combination with $0\le \alpha_k\le 1$ gives
+%
+\begin{align*}
+f(y_k) \le \alpha_k f(x_{k}) + (1-\alpha_k)f(x^*) + \scp{\nabla f(y_k)}{y_{k}-\alpha_k x_{k}-(1-\alpha_k)x^*}
+\end{align*}
+%
+With (\ref{eq:gm_proof_help1}), $\Delta f_k := f(x_k)-f(x^*)$ and the binomial identity $2ab-a^2 = b^2 -(b-a)^2$ we have
+%
+\begin{align*}
+\Delta f_{k+1} - \alpha_k\Delta f_k =&  f(x_{k+1})-\alpha_k f(x_k)-(1-\alpha_k) f(x^*)\\ 
+\le& \scp{\nabla f(y_k)}{y_{k}-\alpha_k x_{k}-(1-\alpha_k)x^*} - \frac{t_k}{2} \norm{\nabla f(y_k)}^2\\
+=& \frac{1}{2t_k} \left( \norm{y_{k}-\alpha_k x_{k}-(1-\alpha_k)x^*}^2 - \norm{y_{k}-\alpha_k x_{k}-(1-\alpha_k)x^*-t_k \nabla f(y_k)}^2\right)\\ 
+=& \frac{1}{2t_k} \left( \norm{y_{k}-\alpha_k x_{k}-(1-\alpha_k)x^*}^2 - \norm{x_{k+1}-\alpha_k x_{k}-(1-\alpha_k)x^*}^2\right)\\ 
+=& \frac{(1-\alpha_k)^2}{2t_k} \left( \norm{\frac{y_{k}-\alpha_k x_{k}}{1-\alpha_k}-x^*}^2 - \norm{\frac{x_{k+1}-\alpha_k x_{k}}{1-\alpha_k}-x^*}^2\right) 
+\end{align*}
+%
+Now we want
+
+%
+\begin{align*}
+\frac{x_{k+1}-\alpha_k x_{k}}{1-\alpha_k} = \frac{y_{k+1}-\alpha_{k+1} x_{k+1}}{1-\alpha_{k+1}}
+\quad\Leftrightarrow\quad 
+y_{k+1} = x_{k+1} + \beta_k \left(x_{k+1}-x_k\right),\quad \beta_k = \frac{\alpha_k(1-\alpha_{k+1})}{1-\alpha_k} 
+\end{align*}
+%
+%
+such that
+%
+\begin{align*}
+\Delta f_{k+1} \le \alpha_k\Delta f_k + \frac{(1-\alpha_k)^2}{2t_k} \left( \norm{x^* - \xi_k}^2 - \norm{x^*+ \xi_{k+1}}^2\right) ,\quad
+\xi_k = y_k + \frac{\alpha_k}{1-\alpha_k}(y_k-x_k)
+\end{align*}
+%
+
+%
+%---------------BLUEBLUEBLUE------------
+\begin{blueenv}
+%
+Or 
+%
+\begin{align*}
+(1+\alpha_k) \Delta f_{k+1} -\alpha_k \Delta f_{k} =& f(x_{k+1})-f(x^*) + \alpha_k\left(  f(x_{k+1})-f(x_{k})\right)\\
+\le& \scp{\nabla f(y_k)}{(1+\alpha_k) y_{k}-\alpha_k x_k -x^*} - \frac{t_k(1+\alpha_k)}{2} \norm{\nabla f(y_k)}^2 \\
+=& \frac{(1+\alpha_k)}{2t_k} \left( 2\scp{t_k\nabla f(y_k)}{ y_{k}-\frac{\alpha_k x_k +x^*}{(1+\alpha_k)}}-\norm{t_k\nabla f(y_k)}^2 \right)\\
+=& \frac{(1+\alpha_k)}{2t_k} \left( \norm{ y_{k}-\frac{\alpha_k x_k +x^*}{(1+\alpha_k)}}^2-\norm{x_{k+1}-\frac{\alpha_k x_k +x^*}{(1+\alpha_k)}}^2 \right)\\
+=& \frac{1}{2t_k(1+\alpha_k)} \left( \norm{ (1+\alpha_k)y_{k}-\alpha_k x_k -x^*}^2-\norm{(1+\alpha_k)x_{k+1}-\alpha_k x_k -x^*}^2 \right)
+\end{align*}
+%
+we want
+%
+\begin{align*}
+(1+\alpha_k)y_{k}-\alpha_k x_k = (1+\alpha_{k-1})x_{k}-\alpha_{k-1} x_{k-1} 
+\end{align*}
+%
+i.e.
+%
+\begin{align*}
+ y_{k} = x_k + \frac{\alpha_{k-1}}{1+\alpha_k}\left( x_k - x_{k-1}\right)
+\end{align*}
+%
+Then 
+%
+\begin{align*}
+\Delta f_{k+1} \le \alpha_k \left( \Delta f_{k} - \Delta f_{k+1}\right) +
+\frac{1}{2t_k(1+\alpha_k)} \left( \norm{ x^*-\xi_k }^2-\norm{x^*-\xi_{k+1} }^2 \right)
+\end{align*}
+%
+with
+%
+\begin{equation}\label{eq:}
+\xi_k = x_k + \alpha_{k-1} (x_k - x_{k-1})
+\end{equation}
+%
+
+%
+\begin{align*}
+\xi_k -y_k = \frac{\alpha_k\alpha_{k-1} }{1+\alpha_k}\left( x_k - x_{k-1}\right) = \alpha_k (y_k-x_k)
+= \frac{\alpha_k }{1+\alpha_k}(\xi_k-x_k)
+\end{align*}
+%
+
+
+%
+\end{blueenv}
+%---------------BLUEBLUEBLUE------------
+%
+
+
+Let
+%
+\begin{align*}
+0 < \underline{\alpha}\le\alpha_k\le \overline{\alpha} <1.
+\end{align*}
+%
+%
+\begin{align*}
+\norm{x^* - \xi_k} \le 
+\end{align*}
+%
+Then we get
+%
+\begin{align*}
+(1-\overline{\alpha})\sum_{k=n+1}^{\infty} \Delta f_{k} \le \overline{\alpha} \Delta f_{n} + L(1-\underline{\alpha})^2\norm{x^* - \xi_n}^2 \le \overline{\alpha} \Delta f_{n} + 2\kappa_f(1-\underline{\alpha})^2\left( f(\xi_n)-f(x^*)\right)
+\end{align*}
+\dotfill
+\end{proof}
+
+%
+%---------------??????-------------
+%
+%---------------BLUEBLUEBLUE------------
+%
+\begin{blueenv}
+If we impose
+%
+%
+\begin{align*}
+f(\xi_n) \le  f(x_n)
+\quad\Rightarrow\quad  
+f(\xi_n) - f(x^*) \le  f(x_n) -f(x^*),\quad \underline{\beta} = \alpha \overline{\beta}
+\end{align*}
+%
+%
+\begin{align*}
+\sum_{k=n+1}^{\infty} \Delta f_k\le \left( 
+\frac{\overline{\beta}+2\kappa_f(1-\alpha\overline{\beta})^2}{1-\overline{\beta}}
+\right) \Delta f_n
+\end{align*}
+%
+Let 
+%
+\begin{align*}
+\phi(s) := \frac{s+2\kappa_f(1-\alpha s)^2}{1-s},\quad
+\phi'(s) := \frac{(1-2\alpha s2\kappa_f(1-\alpha s))(1-s) + \left(s+2\kappa_f(1-\alpha s)^2\right)2s}{(1-s)^2}
+\end{align*}
+%
+\end{blueenv}
+%
+%---------------BLUEBLUEBLUE------------
+
+%
+%---------------GREENGREEN------------
+\begin{greenenv}
+%
+We have 
+%
+\begin{align*}
+Q(t_n, y_{n-1}, x_n) \le Q(t_n, y_{n-1}, \xi_n)
+\quad\Rightarrow\quad\\ 
+\scp{\nabla f(y_{n-1})}{x_n-y_{n-1}} + \frac{1}{2t_n}\norm{x_n-y_{n-1}}^2
+\le 
+\scp{\nabla f(y_{n-1})}{\xi_n-y_{n-1}} + \frac{1}{2t_n}\norm{\xi_n-y_{n-1}}^2
+\quad\Rightarrow\quad\\ 
+0
+\le 
+2t_n\scp{\nabla f(y_{n-1})}{x_n-x_{n-1}} + 2\scp{x_n-y_{n-1}}{x_n-x_{n-1}} + \frac{\beta}{1-\beta}\norm{x_n-x_{n-1}}^2
+\end{align*}
+%
+
+%
+\end{greenenv}
+%---------------GREENGREEN------------
+%
+
+
+
+
+
+%====================================================
+%\printbibliography
+%====================================================
+\end{document}
+%===================================================w

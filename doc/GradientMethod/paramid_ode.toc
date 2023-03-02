@@ -1,0 +1,7 @@
+\contentsline {section}{\numberline {1}Parameter estimation problem}{1}{section.1}%
+\contentsline {section}{\numberline {2}FEM discretization}{2}{section.2}%
+\contentsline {section}{\numberline {3}General parameter estimation problem}{2}{section.3}%
+\contentsline {section}{\numberline {4}Numerical experiments}{4}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Bock's example}{4}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Lorenz}{5}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Oscillator}{5}{subsection.4.3}%

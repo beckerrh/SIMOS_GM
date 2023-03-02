@@ -1,0 +1,15 @@
+\begin{thebibliography}{1}
+
+\bibitem{Feischl22}
+M.~Feischl, ``Inf-sup stability implies quasi-orthogonality,'' {\em Math.
+  Comp.}, vol.~91, no.~337, pp.~2059--2094, 2022.
+
+\bibitem{Bock87}
+H.~G. Bock, {\em Randwertproblemmethoden zur {P}arameteridentifizierung in
+  {S}ystemen nichtlinearer {D}ifferentialgleichungen}, vol.~183 of {\em Bonner
+  Mathematische Schriften [Bonn Mathematical Publications]}.
+\newblock Universit\"{a}t Bonn, Mathematisches Institut, Bonn, 1987.
+\newblock Dissertation, Rheinische Friedrich-Wilhelms-Universit\"{a}t, Bonn,
+  1985.
+
+\end{thebibliography}

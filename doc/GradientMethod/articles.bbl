@@ -1,0 +1,259 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated as
+% required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+\datalist[entry]{none/global//global/global}
+  \entry{ODonoghueCandes15}{article}{}
+    \name{author}{2}{}{%
+      {{hash=OB}{%
+         family={O'Donoghue},
+         familyi={O\bibinitperiod},
+         given={Brendan},
+         giveni={B\bibinitperiod},
+      }}%
+      {{hash=CE}{%
+         family={Cand\`es},
+         familyi={C\bibinitperiod},
+         given={Emmanuel},
+         giveni={E\bibinitperiod},
+      }}%
+    }
+    \keyw{OptAlgo, GradientMethod}
+    \strng{namehash}{OBCE1}
+    \strng{fullhash}{OBCE1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelalpha}{OC15}
+    \verb{doi}
+    \verb 10.1007/s10208-013-9150-3
+    \endverb
+    \field{issn}{1615-3375}
+    \field{number}{3}
+    \field{pages}{715\bibrangedash 732}
+    \field{title}{Adaptive restart for accelerated gradient schemes}
+    \verb{url}
+    \verb https://doi.org/10.1007/s10208-013-9150-3
+    \endverb
+    \field{volume}{15}
+    \field{journaltitle}{Found. Comput. Math.}
+    \field{year}{2015}
+  \endentry
+
+  \entry{Allen-ZhuOrecchia14}{booklet}{}
+    \name{author}{2}{}{%
+      {{hash=AZZ}{%
+         family={Allen-Zhu},
+         familyi={A\bibinithyphendelim Z\bibinitperiod},
+         given={Zeyuan},
+         giveni={Z\bibinitperiod},
+      }}%
+      {{hash=OL}{%
+         family={Orecchia},
+         familyi={O\bibinitperiod},
+         given={Lorenzo},
+         giveni={L\bibinitperiod},
+      }}%
+    }
+    \keyw{GradientMethod}
+    \strng{namehash}{AZZOL1}
+    \strng{fullhash}{AZZOL1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelalpha}{AZO14}
+    \field{howpublished}{ArXiv}
+    \field{title}{A Novel, Simple Interpretation of Nesterov's Accelerated
+  Method as a Combination of Gradient and Mirror Descent}
+    \field{year}{2014}
+  \endentry
+
+  \entry{DrusvyatskiyFazelRoy18a}{article}{}
+    \name{author}{3}{}{%
+      {{hash=DD}{%
+         family={Drusvyatskiy},
+         familyi={D\bibinitperiod},
+         given={Dmitriy},
+         giveni={D\bibinitperiod},
+      }}%
+      {{hash=FM}{%
+         family={Fazel},
+         familyi={F\bibinitperiod},
+         given={Maryam},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=RS}{%
+         family={Roy},
+         familyi={R\bibinitperiod},
+         given={Scott},
+         giveni={S\bibinitperiod},
+      }}%
+    }
+    \keyw{GradientMethod}
+    \strng{namehash}{DDFMRS1}
+    \strng{fullhash}{DDFMRS1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelalpha}{DFR18}
+    \verb{doi}
+    \verb 10.1137/16M1072528
+    \endverb
+    \field{issn}{1052-6234}
+    \field{number}{1}
+    \field{pages}{251\bibrangedash 271}
+    \field{title}{An optimal first order method based on optimal quadratic
+  averaging}
+    \verb{url}
+    \verb https://doi.org/10.1137/16M1072528
+    \endverb
+    \field{volume}{28}
+    \field{journaltitle}{SIAM J. Optim.}
+    \field{year}{2018}
+  \endentry
+
+  \entry{BubeckLeeSingh15}{booklet}{}
+    \name{author}{3}{}{%
+      {{hash=BS}{%
+         family={Bubeck},
+         familyi={B\bibinitperiod},
+         given={S{\'e}bastien},
+         giveni={S\bibinitperiod},
+      }}%
+      {{hash=LYT}{%
+         family={Lee},
+         familyi={L\bibinitperiod},
+         given={Yin\bibnamedelima Tat},
+         giveni={Y\bibinitperiod\bibinitdelim T\bibinitperiod},
+      }}%
+      {{hash=SM}{%
+         family={Singh},
+         familyi={S\bibinitperiod},
+         given={Mohit},
+         giveni={M\bibinitperiod},
+      }}%
+    }
+    \keyw{GradientMethod}
+    \strng{namehash}{BSLYTSM1}
+    \strng{fullhash}{BSLYTSM1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelalpha}{BLS15}
+    \field{howpublished}{ArXiv}
+    \field{title}{A geometric alternative to Nesterov's accelerated gradient
+  descent}
+    \field{year}{2015}
+  \endentry
+
+  \entry{JahaniGudapatiMa21}{article}{}
+    \name{author}{5}{}{%
+      {{hash=JM}{%
+         family={Jahani},
+         familyi={J\bibinitperiod},
+         given={Majid},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=GNVC}{%
+         family={Gudapati},
+         familyi={G\bibinitperiod},
+         given={Naga Venkata\bibnamedelima C.},
+         giveni={N\bibinitperiod\bibinitdelim V\bibinitperiod\bibinitdelim
+  C\bibinitperiod},
+      }}%
+      {{hash=MC}{%
+         family={Ma},
+         familyi={M\bibinitperiod},
+         given={Chenxin},
+         giveni={C\bibinitperiod},
+      }}%
+      {{hash=TR}{%
+         family={Tappenden},
+         familyi={T\bibinitperiod},
+         given={Rachael},
+         giveni={R\bibinitperiod},
+      }}%
+      {{hash=TM}{%
+         family={Tak\'{a}\v{c}},
+         familyi={T\bibinitperiod},
+         given={Martin},
+         giveni={M\bibinitperiod},
+      }}%
+    }
+    \keyw{GradientMethod}
+    \strng{namehash}{JM+1}
+    \strng{fullhash}{JMGNVCMCTRTM1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelalpha}{Jah+21}
+    \verb{doi}
+    \verb 10.1007/s10589-021-00269-4
+    \endverb
+    \field{issn}{0926-6003}
+    \field{number}{2}
+    \field{pages}{369\bibrangedash 404}
+    \field{title}{Fast and safe: accelerated gradient methods with optimality
+  certificates and underestimate sequences}
+    \verb{url}
+    \verb https://doi.org/10.1007/s10589-021-00269-4
+    \endverb
+    \field{volume}{79}
+    \field{journaltitle}{Comput. Optim. Appl.}
+    \field{year}{2021}
+  \endentry
+
+  \entry{ParkSalgadoWise21}{article}{}
+    \name{author}{3}{}{%
+      {{hash=PJH}{%
+         family={Park},
+         familyi={P\bibinitperiod},
+         given={Jea-Hyun},
+         giveni={J\bibinithyphendelim H\bibinitperiod},
+      }}%
+      {{hash=SAJ}{%
+         family={Salgado},
+         familyi={S\bibinitperiod},
+         given={Abner\bibnamedelima J.},
+         giveni={A\bibinitperiod\bibinitdelim J\bibinitperiod},
+      }}%
+      {{hash=WSM}{%
+         family={Wise},
+         familyi={W\bibinitperiod},
+         given={Steven\bibnamedelima M.},
+         giveni={S\bibinitperiod\bibinitdelim M\bibinitperiod},
+      }}%
+    }
+    \keyw{GradientMethod}
+    \strng{namehash}{PJHSAJWSM1}
+    \strng{fullhash}{PJHSAJWSM1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelalpha}{PSW21}
+    \verb{doi}
+    \verb 10.1007/s10915-021-01615-8
+    \endverb
+    \field{issn}{0885-7474}
+    \field{number}{1}
+    \field{pages}{Paper No. 17, 37}
+    \field{title}{Preconditioned accelerated gradient descent methods for
+  locally {L}ipschitz smooth objectives with applications to the solution of
+  nonlinear {PDE}s}
+    \verb{url}
+    \verb https://doi.org/10.1007/s10915-021-01615-8
+    \endverb
+    \field{volume}{89}
+    \field{journaltitle}{J. Sci. Comput.}
+    \field{year}{2021}
+  \endentry
+\enddatalist
+\endinput
