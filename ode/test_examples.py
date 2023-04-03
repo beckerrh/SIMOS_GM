@@ -151,7 +151,7 @@ def compare_methods(app, methods, n):
 
 #------------------------------------------------------------------
 if __name__ == "__main__":
-    import cg1, cg2, cgp
+    import cgp
     import applications, analytical_solutions, classes
     methods = [cgp.CgP(k=1), cgp.CgP(k=2), cgp.CgP(k=3)]
     # compare_methods(applications.Cubic(), methods, n=60)
