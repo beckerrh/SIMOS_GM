@@ -89,5 +89,3 @@ def run_adaptive(app, method, n0, itermax, nplots=5, eps=1e-4, theta=0.8, F=None
     plt.legend()
     plt.grid()
     plt.show()
-
-

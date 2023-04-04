@@ -1,5 +1,6 @@
 import numpy as np
-from SIMOS_GM.ode.classes import Application
+# from SIMOS_GM.ode.classes import Application
+from classes import Application
 
 #------------------------------------------------------------------
 class Exponential(Application):
