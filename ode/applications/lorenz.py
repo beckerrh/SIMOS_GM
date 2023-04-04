@@ -1,33 +1,6 @@
 from SIMOS_GM.ode import classes
 import numpy as np
 
-
-#------------------------------------------------------------------
-class Cubic(classes.Application):
-    def __init__(self, u0=1/100, scale=500):
-        super().__init__(u0=u0, T=1)
-        self.f = lambda u: [scale*u**2*(1-u)]
-        self.df = lambda u: [scale*(2*u-6*u**2)]
-
-#------------------------------------------------------------------
-class BockTest(classes.Application):
-    def __init__(self, mu2=1):
-        self.mu2 = mu2
-        self.p = np.pi
-        self.nparam = 1
-        super().__init__(u0=[0,np.pi], T=1)
-        self.f = lambda u: [u[1], self.mu2*u[0]]
-        self.df = lambda u: [[0,1],[self.mu2,0]]
-        self.l = lambda t: np.array([0*t, -(self.mu2+self.p**2)*np.sin(self.p*t)])
-        self.sol_ex = lambda t: [np.sin(self.p*t), self.p*np.cos(self.p*t)]
-        self.dsol_ex = lambda t: np.array([self.p*np.cos(self.p*t), -self.p**2*np.sin(self.p*t)])
-        self.f_p0 = lambda u: [0*u[0],0*u[0]]
-        # self.l_p0 = lambda t: np.array([0*t, -2*self.p*np.sin(self.p*t)- (self.mu2+self.p**2)*t*np.cos(self.p*t)])
-        self.l_p0 = lambda t: [0*t, -2*self.p*np.sin(self.p*t)- (self.mu2+self.p**2)*t*np.cos(self.p*t)]
-        self.u_zero_p0 = lambda : [0,0]
-
-    def setParameter(self, p): self.p = p
-
 #------------------------------------------------------------------
 class Lorenz(classes.Application):
     def __init__(self, T=30, sigma=10, rho=28, beta=8/3, param=None):
@@ -39,7 +12,6 @@ class Lorenz(classes.Application):
             self.param = param
         self.sigma, self.rho, self.beta = sigma, rho, beta
         self.f = lambda u: [self.sigma*(u[1]-u[0]), self.rho*u[0]-u[1]-u[0]*u[2], u[0]*u[1]-self.beta*u[2]]
-        # self.df = lambda u: np.array([[-self.sigma, self.sigma,0], [rho-u[2],-1,-u[0]], [u[1],u[0],-self.beta]])
         self.df = lambda u: [[-self.sigma, self.sigma,0], [self.rho-u[2],-1,-u[0]], [u[1],u[0],-self.beta]]
         self.f_p0 = lambda u: [0 * u[0], 0 * u[1], 0 * u[2]]
         self.f_p1 = lambda u: [0 * u[0], 0 * u[1], 0 * u[2]]
@@ -81,12 +53,45 @@ class Lorenz(classes.Application):
         plt.draw()
         return ax
 
-    def plot(self, fig, t, u, axkey=(1,1,1), label_u=r'$u_{\delta}$', label_ad=''):
+    def plot(self, fig, t, u, axkey=(1,1,1), label_u=r'$u_{\delta}$', label_ad='', title=''):
         import matplotlib.pyplot as plt
         from matplotlib import cm
         from mpl_toolkits.mplot3d import Axes3D
         # print(f"{axkey=}")
         ax = fig.add_subplot(*axkey, projection='3d')
+        if title: ax.set_title(title)
         return self.plotax(t, u, ax, label_u+label_ad)
+
+
+def random(n=1000):
+    import matplotlib.pyplot as plt
+    from SIMOS_GM.ode import cgp
+    fig = plt.figure(figsize=plt.figaspect(0.75))
+    app = Lorenz()
+    method = cgp.CgP(k=1)
+    t = np.linspace(0, app.T, n)
+    # tm = 0.5 * (t[1:] + t[:-1])
+    sol_ap = method.run_forward(t, app, random=True)
+    u_ap, u_apm = method.interpolate(t, sol_ap)
+    app.plot(fig, t, u_ap, title="u" + method.name)
+    plt.show()
+
+def compare():
+    from SIMOS_GM.ode import compare_methods, cgp
+    methods = [cgp.CgP(k=1), cgp.CgP(k=2), cgp.CgP(k=3)]
+    compare_methods.compare_methods(Lorenz(), methods, n=1000)
+
+def adaptive():
+    from SIMOS_GM.ode import cgp, adaptive
+    # X1(30) ≃ −3.892637
+    F = classes.FunctionalEndTime(0)
+    F = classes.FunctionalMean(0)
+    sigma, rho, beta = 41.13548392, 21.54881541,  0.22705707
+    app = Lorenz(T=15, sigma=sigma, rho=rho, beta=beta)
+    adaptive.run_adaptive(app, cgp.CgP(k=2), n0=1000, itermax=60, F=F, theta=0.9, nplots=20, eps=1e-8)
+
+#------------------------------------------------------------------
+if __name__ == "__main__":
+    random()
 
 

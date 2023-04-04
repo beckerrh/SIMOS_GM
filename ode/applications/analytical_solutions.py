@@ -22,13 +22,35 @@ class Exponential(Application):
         self.rate = p[0]
         self.u0 = p[1]
 #------------------------------------------------------------------
+class Stiff1(Application):
+    def __init__(self, a=2, T=10, u0=[2,3]):
+        super().__init__(u0=u0, T=T)
+        self.a = a
+        self.f = lambda u: [-2*u[0]+u[1],(self.a-1)*u[0]-self.a*u[1]]
+        self.l = lambda t: [2*np.sin(t),self.a*(np.cos(t)-np.sin(t))]
+        # self.df = lambda u: [[self.alpha, self.gamma], [0, self.beta]]
+        self.df = lambda u: [[-2, 1], [self.a-1, -self.a]]
+        self.sol_ex = lambda t: [2*np.exp(-t)+np.sin(t), 2*np.exp(-t)+np.cos(t)]
+        self.dsol_ex = lambda t: [-2*np.exp(-t)+np.cos(t), -2*np.exp(-t)-np.sin(t)]
+        # self.f_p0 = lambda u: [u]
+        # self.l_p0 = lambda t: np.array([0 * t])
+        # self.u_zero_p0 = lambda : [0]
+        # self.f_p1 = lambda u: [0*u]
+        # self.l_p1 = lambda t: np.array([0 * t])
+        # self.u_zero_p1 = lambda : [1]
+        # self.nparam = 2
+    # def setParameter(self, p):
+    #     assert p.ndim ==1
+    #     self.rate = p[0]
+    #     self.u0 = p[1]
+#------------------------------------------------------------------
 class Oscillator(Application):
-    def __init__(self, freq=1):
+    def __init__(self, freq=2):
         self.freq = freq
         self.nparam = 1
         super().__init__(u0=[1, 0], T=4*np.pi)
-        self.f = lambda u: [u[1], -self.freq*u[0]]
-        self.df = lambda u: [[0, 1], [-self.freq, 0]]
+        self.f = lambda u: [self.freq*u[1], -self.freq*u[0]]
+        self.df = lambda u: [[0, self.freq], [-self.freq, 0]]
         self.sol_ex = lambda t: [np.cos(self.freq*t), -np.sin(self.freq*t)]
         self.dsol_ex = lambda t: [-self.freq*np.sin(self.freq*t), -self.freq*np.cos(self.freq*t)]
         self.f_p0 = lambda u: [0*u[0], -u[0]]

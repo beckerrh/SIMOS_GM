@@ -1,36 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import ticker
-import utils
-
-#------------------------------------------------------------------
-def plot_sol_mesh_est(t, app, u_node, est, kiter, z_node=None, est_d=None):
-    nplots = 3
-    if z_node is not None: nplots +=1
-    # fig = plt.figure(figsize=plt.figaspect(1/nplots))
-    fig = plt.figure(figsize=1.5*plt.figaspect(1))
-    fig.suptitle(f"{kiter=}  n={len(t)}")
-    figshape = (1, nplots)
-    figshape = (2, 2)
-    app.plot(fig, t, u_node, axkey=(*figshape, 1), label_ad="u")
-    ax = fig.add_subplot(*figshape, 4)
-    tm = 0.5 * (t[1:] + t[:-1])
-    ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.1e}"))
-    ax.yaxis.tick_right()
-    plt.plot(tm, t[1:] - t[:-1], '-X', label=r'$\delta$')
-    plt.legend()
-    plt.grid()
-    ax = fig.add_subplot(*figshape, 3)
-    for key in est.keys():
-        plt.plot(tm, est[key], label=f"p {key}")
-        if z_node is not None:
-            plt.plot(tm, est_d[key], label=f"d {key}")
-    plt.legend()
-    plt.grid()
-    if z_node is not None:
-        app.plot(fig, t, z_node, axkey=(*figshape, 2), label_ad="z")
-    plt.show()
-
+import utils, plotutils
 
 #------------------------------------------------------------------
 def run_adaptive(app, method, n0, itermax, nplots=5, eps=1e-4, theta=0.8, F=None):
@@ -81,7 +51,7 @@ def run_adaptive(app, method, n0, itermax, nplots=5, eps=1e-4, theta=0.8, F=None
         estvals_p.append(estval_p['sum'])
         ns.append(len(t))
         if kiter in kplots:
-            plot_sol_mesh_est(t, app, u_node, est_p, kiter, z_node, est_d)
+            plotutils.plot_sol_mesh_est(t, app, u_node, est_p, kiter, z_node, est_d)
         rho_p = estvals_p[-1]/estvals_p[max(-2,-kiter)]
         if F is not None:
             rho_d = estvals_d[-1]/estvals_d[max(-2,-kiter)]
@@ -101,7 +71,7 @@ def run_adaptive(app, method, n0, itermax, nplots=5, eps=1e-4, theta=0.8, F=None
             message += '\n' + 68 * '='
         print(message)
         if eta < eps:
-            plot_sol_mesh_est(t, app, u_node, est_p, kiter, z_node, est_d)
+            plotutils.plot_sol_mesh_est(t, app, u_node, est_p, kiter, z_node, est_d)
             print(f"Tolerance achieved {eta:7.2e}<{eps:7.2e}")
             break
     fig = plt.figure(figsize=plt.figaspect(1))
@@ -121,48 +91,3 @@ def run_adaptive(app, method, n0, itermax, nplots=5, eps=1e-4, theta=0.8, F=None
     plt.show()
 
 
-
-#------------------------------------------------------------------
-def compare_methods(app, methods, n):
-    import matplotlib.pyplot as plt
-    u = {}
-    # fig, axs = plt.subplots(nrows=2, ncols=1, sharex=False)
-    nm = len(methods)
-    fig = plt.figure(figsize=plt.figaspect(0.5))
-    fig.suptitle(f"compare_methods app={app.name}")
-    pltcount = 1
-    for method in methods:
-        t = np.linspace(0, app.T, n)
-        tm = 0.5 * (t[1:] + t[:-1])
-        sol_ap = method.run_forward(t, app)
-        est, estval = method.estimator(t, sol_ap, app)
-        u_ap, u_apm = method.interpolate(t, sol_ap)
-        app.plot(fig, t, u_ap, axkey=(nm, 2, pltcount), title=method.name)
-        pltcount += 1
-        ax = fig.add_subplot(nm, 2, pltcount)
-        ax.set_title(f'{method.name}')
-        pltcount += 1
-        for k in est.keys():
-            ax.plot(tm, est[k], label=f'est_{k}')
-        ax.legend()
-        ax.grid()
-    plt.show()
-    return u
-
-#------------------------------------------------------------------
-if __name__ == "__main__":
-    import cg1, cg2, cgp
-    import applications, analytical_solutions, classes
-    methods = [cgp.CgP(k=1), cgp.CgP(k=2), cgp.CgP(k=3)]
-    # compare_methods(applications.Cubic(), methods, n=60)
-    # compare_methods(applications.Lorenz(), methods, n=400)
-    # compare_methods(analytical_solutions.Oscillator(), methods, n=30)
-    # compare_methods(analytical_solutions.SinusIntegration(), methods, n=30)
-    # compare_methods(applications.BockTest(), methods, n=100)
-
-    # X1(30) ≃ −3.892637
-    F = classes.FunctionalEndTime(0)
-    F = classes.FunctionalMean(0)
-    sigma, rho, beta = 41.13548392, 21.54881541,  0.22705707
-    app = applications.Lorenz(T=15, sigma=sigma, rho=rho, beta=beta)
-    run_adaptive(app, cgp.CgP(k=2), n0=1000, itermax=60, F=F, theta=0.9, nplots=20, eps=1e-8)

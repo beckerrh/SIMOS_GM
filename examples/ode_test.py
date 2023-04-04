@@ -1,8 +1,8 @@
 import sys, os
 SCRIPT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
-import matplotlib.pyplot as plt
-from SIMOS_GM.ode import cgp, applications, classes, analytical_solutions
+from SIMOS_GM.ode import cgp, applications
+from SIMOS_GM.ode.applications import analytical_solutions
 from SIMOS_GM import utility
 from SIMOS_GM.ode import classes
 from SIMOS_GM.ode import utils
@@ -109,7 +109,6 @@ class ParameterTest():
         print(msg)
         self.iter += 1
         if plotiteration and self.iter%3==0:
-            from matplotlib import ticker
             tm = 0.5 * (t[1:] + t[:-1])
             dt = t[1:] - t[:-1]
             plt.show()
@@ -240,7 +239,6 @@ def test_gradient(method, app, functionals, observations, x, n0, plot=False):
             for j in range(xm.shape[1]):
                 zm[i,j] = pt.f(np.array([xm[i,j],ym[i,j]]))
         from matplotlib import cm
-        from mpl_toolkits.mplot3d import Axes3D
         ax = plt.subplot(111, projection='3d')
         ax.plot_surface(xm, ym, zm, cmap=cm.gnuplot_r, alpha=0.7)
         ax.contour(xm, ym, zm, np.linspace(0, 20, 10), offset=-1, linewidths=2, cmap=cm.gray)
@@ -265,7 +263,7 @@ if __name__ == "__main__":
         x0 = 1
     elif example == 'exp':
         F = [classes.FunctionalEndTime(), classes.FunctionalMean()]
-        app = analytical_solutions.Exponential(T=2,u0=10)
+        app = analytical_solutions.Exponential(T=2, u0=10)
         x = np.linspace(-0.1,0.9, 5), np.linspace(-1,14, 5)
         C = np.array([16,20])
         n0 = 10

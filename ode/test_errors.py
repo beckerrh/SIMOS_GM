@@ -194,27 +194,29 @@ def test_errors(method, app, add_errors =[], itermax=10, ref='random', functiona
 
 #------------------------------------------------------------------
 if __name__ == "__main__":
-    import analytical_solutions, applications
-    import cg1, cg2, cgp
+    import applications
+    from SIMOS_GM.ode.applications import analytical_solutions
+    import cgp
     # method = cg2.Cg2P()
     # method = cg1.Cg1D(alpha=0.1)
     # method = cg1.Cg1P(alpha=0)
-    method = cgp.CgP(k=3)
+    method = cgp.CgP(k=2)
     app = analytical_solutions.Exponential()
     app = analytical_solutions.Quadratic()
     app = applications.BockTest()
     app = analytical_solutions.Oscillator()
+    app = analytical_solutions.Stiff1(a=100)
     # app = analytical_solutions.QuadraticIntegration()
     # app = analytical_solutions.LinearIntegration()
     # app = analytical_solutions.SinusIntegration()
 
 
     # add_errors = []
-    # add_errors = []
+    add_errors = ['L2']
     import classes
     functionals = [classes.FunctionalEndTime(0), classes.FunctionalMean(0)]
     functionals = []
-    test_errors(method, app, itermax=10, functionals=functionals)
+    test_errors(method, app, itermax=10, functionals=functionals, add_errors=add_errors)
 
     # test_adaptive(method, apps, itermax=10)
 

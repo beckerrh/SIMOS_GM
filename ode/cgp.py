@@ -13,6 +13,7 @@ class CgP(classes.Method):
         assert k>=1
         self.k = k
         self.int_x, self.int_w = np.polynomial.legendre.leggauss(k+1)
+        # self.int_x, self.int_w = np.polynomial.legendre.leggauss(k+2)
         self.int_n = len(self.int_w)
         self.psi, self.phi = [], []
         for i in range(k):
@@ -49,6 +50,15 @@ class CgP(classes.Method):
                     self.int_psipsi[i, j] += self.int_w[ii] * self.psi[i](self.int_x[ii]) * self.psi[j](self.int_x[ii])
         self.diagT = np.diagonal(self.T)[1:]
         self.coefM = np.diagonal(self.M, offset=-1)
+        if plotbasis:
+            i = np.arange(1,k)
+            assert np.allclose(self.diagT, 2/(2*i+1))
+            assert np.allclose(self.coefM, 2/(4*i**2-1))
+            # print(f"{self.diagT=}")
+            # print(2/(2*i+1))
+            # print(f"{self.coefM=}")
+            # print(2/(4*i**2-1))
+            sys.exit(1)
         self.int_psi_weights = np.empty(shape=(len(self.psi),self.int_n))
         self.int_psi = np.empty(shape=(len(self.psi),self.int_n))
         self.int_psik = np.empty(shape=(self.int_n))
@@ -64,7 +74,7 @@ class CgP(classes.Method):
         self.psi_mid = np.array([self.psi[ik](0) for ik in range(self.k)])
         self.phi_mid = np.array([self.phi[ik](0) for ik in range(self.k)])
 #------------------------------------------------------------------
-    def run_forward(self, t, app, linearization=None):
+    def run_forward(self, t, app, linearization=None, random=None):
         if linearization is not None:
             utilde_node, utilde_coef = linearization
         u_ic = app.u_zero()
@@ -80,6 +90,10 @@ class CgP(classes.Method):
             # lint = np.asarray(fl_vec(tm+0.5*self.int_x[:,np.newaxis]*dt)).T
             lint = np.asarray(app.l(tm+0.5*self.int_x[:,np.newaxis]*dt)).T
             # print(f"{(tm+0.5*self.int_x[:,np.newaxis]*dt).shape=} {lint.shape=}")
+        if random:
+            assert np.allclose(np.diff(dt),0)
+            lintrandom = np.random.randn(len(dt))
+            print(f"{lintrandom[0]=} {lintrandom.mean()=}")
         if linearization is not None:
             uint = utilde_node[:-1, np.newaxis] + np.einsum('ikp,kl->ilp', utilde_coef, self.int_phi)
             lintf = np.asarray(app.f(uint.T)).T.reshape(uint.shape)
@@ -113,7 +127,12 @@ class CgP(classes.Method):
                 Aloc[ik, ik - 1] = -0.5 * dt * self.coefM[ik - 1] * A0
             if apphasl:
                 bloc += 0.5*dt*np.einsum('jk,lj->lk', lint[it], self.int_psi_weights)
+            if random:
+                bloc[0] += 0.5*np.sqrt(dt)*lintrandom[it]
+            # print(f"{Aloc.shape=} {Aloc.swapaxes(1,2).shape=} {bloc.shape=}")
             usol = np.linalg.solve(Aloc.swapaxes(1,2).reshape(self.k*dim,self.k*dim), bloc.flat).reshape((self.k,dim))
+            # usol = np.linalg.solve(Aloc.swapaxes(1,2).reshape(self.k*dim,self.k*dim), bloc.flat).reshape((self.k,dim))
+            # usol = np.linalg.solve(Aloc.reshape(self.k*dim,self.k*dim), bloc.flat).reshape((self.k,dim))
             u_coef[it] = usol
             u_node[it + 1] = 2*usol[0] + u_node[it]
         return u_node, u_coef
@@ -302,7 +321,7 @@ class CgP(classes.Method):
 #------------------------------------------------------------------
 def test_alpha_wave(method):
     import matplotlib.pyplot as plt
-    import analytical_solutions
+    from SIMOS_GM.ode.applications import analytical_solutions
     app = analytical_solutions.Oscillator()
     t = np.linspace(0,app.T,20)
     u_ap = method.run_forward(t, app)
@@ -318,7 +337,7 @@ def test_alpha_wave(method):
 #------------------------------------------------------------------
 def test_dual_wave(method, nt=20):
     import matplotlib.pyplot as plt
-    import analytical_solutions
+    from SIMOS_GM.ode.applications import analytical_solutions
     app = analytical_solutions.Oscillator()
     t = np.linspace(0,app.T, nt)
     tm = 0.5*(t[1:]+t[:-1])
@@ -359,6 +378,6 @@ def test_dual_wave(method, nt=20):
     plt.show()
 #------------------------------------------------------------------
 if __name__ == "__main__":
-    cgp = CgP(k=1)
+    cgp = CgP(k=5, plotbasis=True)
     # test_alpha_wave(method=cgp)
-    test_dual_wave(method=cgp, nt=20)
+    # test_dual_wave(method=cgp, nt=20)
