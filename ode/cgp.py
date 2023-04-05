@@ -1,10 +1,10 @@
 import numpy as np  
 import sys, os
-# SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-# sys.path.append(os.path.dirname(SCRIPT_DIR))
-# print("***", SCRIPT_DIR)
-# from SIMOS_GM.ode import classes
-import classes
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(SCRIPT_DIR))
+print("***", SCRIPT_DIR)
+from SIMOS_GM.ode import classes
+# import classes
 
 #==================================================================
 class CgP(classes.Method):

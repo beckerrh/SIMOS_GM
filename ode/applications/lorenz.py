@@ -1,5 +1,5 @@
-# from SIMOS_GM.ode import classes
-import classes
+from SIMOS_GM.ode import classes
+# import classes
 import numpy as np
 
 #------------------------------------------------------------------
