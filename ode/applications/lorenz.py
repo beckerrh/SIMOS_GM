@@ -1,4 +1,12 @@
+if __name__ == "__main__":
+    import sys, os
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    SCRIPT_DIR =  os.path.abspath(os.path.join(__file__ ,"../../../.."))
+    print(f"{SCRIPT_DIR=}")
+    sys.path.append(SCRIPT_DIR)
+
 from SIMOS_GM.ode import classes
+# from .. import classes
 # import classes
 import numpy as np
 
