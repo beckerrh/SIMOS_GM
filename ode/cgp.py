@@ -133,7 +133,7 @@ class CgP(classes.Method):
             if apphasl:
                 bloc += 0.5*dt*np.einsum('jk,lj->lk', lint[it], self.int_psi_weights)
             if random:
-                bloc[0] += 0.5*np.sqrt(dt)*lintrandom[it]
+                bloc[0] += 10*np.sqrt(dt)*lintrandom[it]
             # print(f"{Aloc.shape=} {Aloc.swapaxes(1,2).shape=} {bloc.shape=}")
             usol = np.linalg.solve(Aloc.swapaxes(1,2).reshape(self.k*dim,self.k*dim), bloc.flat).reshape((self.k,dim))
             # usol = np.linalg.solve(Aloc.swapaxes(1,2).reshape(self.k*dim,self.k*dim), bloc.flat).reshape((self.k,dim))

@@ -72,17 +72,24 @@ class Lorenz(classes.Application):
         return self.plotax(t, u, ax, label_u+label_ad)
 
 
-def random(n=1000):
+def random(n=1000, niter=1000, nplots=3):
     import matplotlib.pyplot as plt
     from SIMOS_GM.ode import cgp
-    fig = plt.figure(figsize=plt.figaspect(0.75))
+    fig = plt.figure(figsize=plt.figaspect(1/3))
     app = Lorenz()
     method = cgp.CgP(k=1)
     t = np.linspace(0, app.T, n)
-    # tm = 0.5 * (t[1:] + t[:-1])
-    sol_ap = method.run_forward(t, app, random=True)
-    u_ap, u_apm = method.interpolate(t, sol_ap)
-    app.plot(fig, t, u_ap, title="u" + method.name)
+    uplots = []
+    for iter in range(niter):
+        sol_ap = method.run_forward(t, app, random=True)
+        u_ap, u_apm = method.interpolate(t, sol_ap)
+        if not iter: u_ap_mean = np.zeros_like(u_ap)
+        u_ap_mean += u_ap/niter
+        if iter//nplots == 0: uplots.append(u_ap)
+    nplots = len(uplots)
+    for i in range(nplots): 
+        app.plot(fig, t, uplots[i], axkey=(1, nplots+1, i+1), title=f"u{i}")
+    app.plot(fig, t, u_ap_mean, axkey=(1, nplots+1, nplots+1), title="umean")
     plt.show()
 
 def compare():
