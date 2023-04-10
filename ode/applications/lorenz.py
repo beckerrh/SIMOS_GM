@@ -77,7 +77,7 @@ def random(n=1000, niter=1000, nplots=3):
     from SIMOS_GM.ode import cgp
     fig = plt.figure(figsize=plt.figaspect(1/3))
     app = Lorenz()
-    method = cgp.CgP(k=1)
+    method = cgp.CgP(k=2)
     t = np.linspace(0, app.T, n)
     uplots = []
     for iter in range(niter):
