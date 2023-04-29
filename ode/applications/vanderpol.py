@@ -11,7 +11,7 @@ class VanDerPol(classes.Application):
 
 #------------------------------------------------------------------
 if __name__ == "__main__":
-    from SIMOS_GM.ode import compare_methods, cgp
+    from SIMOS_GM.ode import compare, cgp
 
     methods = [cgp.CgP(k=1), cgp.CgP(k=2), cgp.CgP(k=3), cgp.CgP(k=4), cgp.CgP(k=5), cgp.CgP(k=6)]
     compare_methods.compare_methods(VanDerPol(mu=0.8), methods, n=100)

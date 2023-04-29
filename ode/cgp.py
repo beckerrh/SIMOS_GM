@@ -79,7 +79,7 @@ class CgP(classes.Method):
         self.psi_mid = np.array([self.psi[ik](0) for ik in range(self.k)])
         self.phi_mid = np.array([self.phi[ik](0) for ik in range(self.k)])
 #------------------------------------------------------------------
-    def run_forward(self, t, app, linearization=None, random=None):
+    def run_forward(self, t, app, linearization=None, lintrandom=None):
         if linearization is not None:
             utilde_node, utilde_coef = linearization
         u_ic = app.u_zero()
@@ -95,10 +95,6 @@ class CgP(classes.Method):
             # lint = np.asarray(fl_vec(tm+0.5*self.int_x[:,np.newaxis]*dt)).T
             lint = np.asarray(app.l(tm+0.5*self.int_x[:,np.newaxis]*dt)).T
             # print(f"{(tm+0.5*self.int_x[:,np.newaxis]*dt).shape=} {lint.shape=}")
-        if random:
-            assert np.allclose(np.diff(dt),0)
-            lintrandom = np.random.randn(len(dt))
-            print(f"{lintrandom[0]=} {lintrandom.mean()=}")
         if linearization is not None:
             uint = utilde_node[:-1, np.newaxis] + np.einsum('ikp,kl->ilp', utilde_coef, self.int_phi)
             lintf = np.asarray(app.f(uint.T)).T.reshape(uint.shape)
@@ -132,8 +128,8 @@ class CgP(classes.Method):
                 Aloc[ik, ik - 1] = -0.5 * dt * self.coefM[ik - 1] * A0
             if apphasl:
                 bloc += 0.5*dt*np.einsum('jk,lj->lk', lint[it], self.int_psi_weights)
-            if random:
-                bloc[0] += 10*np.sqrt(dt)*lintrandom[it]
+            if lintrandom is not None:
+                bloc[0] += lintrandom[it]*utilde
             # print(f"{Aloc.shape=} {Aloc.swapaxes(1,2).shape=} {bloc.shape=}")
             usol = np.linalg.solve(Aloc.swapaxes(1,2).reshape(self.k*dim,self.k*dim), bloc.flat).reshape((self.k,dim))
             # usol = np.linalg.solve(Aloc.swapaxes(1,2).reshape(self.k*dim,self.k*dim), bloc.flat).reshape((self.k,dim))
@@ -195,11 +191,12 @@ class CgP(classes.Method):
             if self.k > 1: b2 = -0.25*self.coefM[0]* dt * A0 @ z_coef[it,1]
         return b0, z_coef, zT
 # ------------------------------------------------------------------
-    def interpolate(self, t, u_ap):
+    def interpolate(self, t, u_ap, mean=False):
         u_node, u_coef = u_ap
+        if not mean: return u_node
         return u_node, u_node[:-1]+np.einsum('ijk,j', u_coef, self.phi_mid)
 #------------------------------------------------------------------
-    def interpolate_dual(self, t, z_ap):
+    def interpolate_dual(self, t, z_ap, mean=False):
         z0, z_coef, zT = z_ap
         z_n = np.empty(shape=(len(t),len(z0)))
         z_n[-1] = np.einsum('kp,k->p', z_coef[-1,:,:], [self.psi[j](1) for j in range(self.k)])
@@ -209,6 +206,7 @@ class CgP(classes.Method):
         # z_n[0] += 0.5*z0
         # z_n[-1] = zT
         # z_n[0] = z0
+        if not mean: return z_n
         return z_n, np.einsum('ijk,j', z_coef, self.psi_mid)
 #------------------------------------------------------------------
     def compute_functional(self, t, u_ap, func):
