@@ -1,7 +1,6 @@
 from SIMOS_GM.ode import classes
 import numpy as np
 
-
 #------------------------------------------------------------------
 class Cubic(classes.Application):
     def __init__(self, u0=1/100, scale=500):

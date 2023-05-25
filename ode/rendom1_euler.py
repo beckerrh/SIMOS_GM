@@ -84,6 +84,8 @@ class CgP(classes.Method):
     def run_forward(self, t, app, linearization=None, lintrandom=None, q=0):
         if linearization is not None:
             utilde_node, utilde_coef = linearization
+        if lintrandom is not None:
+            self.alpha=0
         u_ic = app.u_zero()
         dim, nt = app.dim, t.shape[0]
         # print(f"{dim=} {u_ic=}")
@@ -129,13 +131,11 @@ class CgP(classes.Method):
                 bloc[0] += dt*A0@u_node[it]
             # print(f"{M.shape=} {Aloc[0, 0].shape=} {A0.shape=}")
             # Aloc[0, 0] = 2*M - dt*A0
-            Aloc[0, 0] = 2*M - dt*A0
+            Aloc[0, 0] = 2*M - (1+self.alpha)*dt*A0
             for ik in range(1,self.k):
                 Aloc[ik, ik] = self.diagT[ik - 1] * M
                 Aloc[ik - 1, ik] = 0.5 * dt * self.coefM[ik - 1] * A0
                 Aloc[ik, ik - 1] = -0.5 * dt * self.coefM[ik - 1] * A0
-            if self.alpha:
-                Aloc[self.k-1, self.k - 1] -= self.alpha*dt*A0
             if apphasl:
                 bloc += 0.5*dt*np.einsum('jk,lj->lk', lint[it], self.int_psi_weights)
             if lintrandom is not None:

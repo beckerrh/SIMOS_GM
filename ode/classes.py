@@ -19,7 +19,7 @@ class Application():
         if dim is not None: self.dim = dim
         if T is not None: self.T = T
         self.nplots = nplots
-        if u0:
+        if u0 is not None:
             if isinstance(u0, list) or isinstance(u0, np.ndarray):
                 self.u0 = u0
             else:
@@ -50,7 +50,7 @@ class Application():
             if gs is not None:
                 raise ValueError(f"got gs but no fig")
             fig = plt.figure(constrained_layout=True)
-            appname = kwargs.pop('title', self.application.__class__.__name__)
+            appname = kwargs.pop('title', self.__class__.__name__)
             fig.suptitle(f"{appname}")
         if gs is None:
             gs = fig.add_gridspec(1, 1)[0,0]
