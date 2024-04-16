@@ -28,6 +28,8 @@ class Lorenz(classes.Application):
         self.sigma, self.rho, self.beta = sigma, rho, beta
         self.f = lambda u: [self.sigma*(u[1]-u[0]), self.rho*u[0]-u[1]-u[0]*u[2], u[0]*u[1]-self.beta*u[2]]
         self.df = lambda u: [[-self.sigma, self.sigma,0], [self.rho-u[2],-1,-u[0]], [u[1],u[0],-self.beta]]
+        self.FP1 =  [np.sqrt(beta*(rho-1)), np.sqrt(beta*(rho-1)),rho-1]
+        self.FP2 =  [-np.sqrt(beta*(rho-1)), -np.sqrt(beta*(rho-1)),rho-1]
         self.f_p0 = lambda u: [0 * u[0], 0 * u[1], 0 * u[2]]
         self.f_p1 = lambda u: [0 * u[0], 0 * u[1], 0 * u[2]]
         self.f_p2 = lambda u: [0 * u[0], 0 * u[1], 0 * u[2]]
@@ -81,6 +83,19 @@ class Lorenz(classes.Application):
         ax.set_title(title)
         plt.draw()
         return ax
+    def plot(self, t, u):
+        import matplotlib.pyplot as plt
+        ax = plt.figure().add_subplot(projection='3d')
+        x,y,z = u[:,0], u[:,1], u[:,2]
+        ax.plot(x, y, z, label='u', lw=0.5)
+        ax.plot(x[-1], y[-1], z[-1], 'X', label="u(T)")
+        ax.plot(x[0], y[0], z[0], 'X', label="u(0)")
+        ax.plot(*self.FP1, color='k', marker="8", ls='')
+        ax.plot(*self.FP2, color='k', marker="8", ls='')
+        ax.view_init(26, 130)
+        ax.legend()
+        plt.show()
+
 
 #------------------------------------------------------------------
 class Lorenz2(Lorenz):
@@ -279,14 +294,11 @@ def attractor(rho=25, T=1000, dt=1e-3):
 
 #------------------------------------------------------------------
 if __name__ == "__main__":
-    # compare()
-    # read(T=600, M=1, q=0, k=1, rho=13)
-    # for j in range(1,4,2):
-    #     print(f"T={200*j}")
-    #     for i in range(6):
-    #         random(iter=i, T=200*j, M=1, q=0, k=1, rho=13)
-    for nsample in np.arange(1,100,4):
-        random(rho=13, T=10, q=0.1, iter=-2, M=nsample * 100, alpha=0, bins=50)
-    attractor()
+    from SIMOS_GM.ode import compare, cgp
 
-
+    method = cgp.CgP(k=2)
+    app = Lorenz()
+    t = np.linspace(0, 20, 1000)
+    u_node, u_coef = method.run_forward(t, app)
+    print(f"{u_node.max()=}")
+    app.plot(t, u_node)
